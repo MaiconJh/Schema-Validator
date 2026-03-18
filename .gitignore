@@ -1,0 +1,241 @@
+# ============================================
+# ARQUIVOS DE BUILD E COMPILAÇÃO
+# ============================================
+# Diretórios gerados durante a compilação do projeto
+
+# Build do Gradle/Maven
+build/
+target/
+
+# Saída de compilação do IntelliJ IDEA
+out/
+
+# Arquivos de classe Java
+*.class
+
+# Arquivos JAR packaging
+*.jar
+*.war
+*.ear
+*.ear
+
+# Arquivos de dependências (libs locais)
+lib/
+libs/
+
+
+# ============================================
+# ARQUIVOS DO GRADLE
+# ============================================
+# Arquivos e diretórios relacionados ao Gradle
+
+# Wrapper do Gradle (não precisa ser versionado)
+gradle/wrapper/
+
+# Cache do Gradle
+.gradle/
+
+# Build do Gradle (pode variar dependendo da configuração)
+!gradle/wrapper/gradle-wrapper.jar
+
+# Cache de tarefas do Gradle
+.gradle/
+
+# Output do Gradle
+build/
+
+
+# ============================================
+# CONFIGURAÇÕES DO INTELLIJ IDEA
+# ============================================
+# Arquivos de configuração do IntelliJ IDEA
+
+# Diretório de configurações do IDEA
+.idea/
+
+# Arquivos de projeto do IDEA
+*.iml
+*.ipr
+*.iws
+
+# Diretório de saída do IDEA
+out/
+
+# Configurações do projeto
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml
+.idea/libraries/
+
+
+# ============================================
+# CONFIGURAÇÕES DO VS CODE
+# ============================================
+# Arquivos de configuração do Visual Studio Code
+
+.vscode/
+
+# Configurações de workspace do VSCode
+*.code-workspace
+
+
+# ============================================
+# ARQUIVOS DE SISTEMA
+# ============================================
+# Arquivos de sistema operacional
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+
+# ============================================
+# ARQUIVOS DE LOG
+# ============================================
+# Arquivos de log e saída de console
+
+*.log
+logs/
+
+
+# ============================================
+# ARQUIVOS TEMPORÁRIOS E DE CACHE
+# ============================================
+# Arquivos temporários e de cache diversos
+
+# Cache do Maven
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Arquivos temporários
+*.swp
+*.swo
+*~
+.~*
+
+# Cache do sistema
+*.bak
+*.tmp
+*.orig
+*.*~
+
+# Arquivos de backup
+*.backup
+
+
+# ============================================
+# VARIÁVEIS DE AMBIENTE
+# ============================================
+# Arquivos que podem conter configurações sensíveis
+
+.env
+.env.local
+.env.*.local
+
+# Credenciais
+*.pem
+*.key
+*.cert
+
+
+# ============================================
+# DEPENDÊNCIAS E REGISTROS
+# ============================================
+# Arquivos de dependências que podem ser regenerados
+
+# npm/Yarn (se usado)
+node_modules/
+package-lock.json
+yarn.lock
+
+# pip (se usado)
+__pycache__/
+*.egg-info/
+.eggs/
+
+
+# ============================================
+# TESTES
+# ============================================
+# Diretórios de testes que podem ser regenerados
+
+# Testes do Gradle
+/bin/
+/test/
+/src/test/
+
+# Relatórios de testes
+test-results/
+junit-platform.properties
+
+
+# ============================================
+# DOCUMENTAÇÃO
+# ============================================
+# Arquivos de documentação gerados
+
+docs/_build/
+site/
+
+# JavaDoc gerado
+javadoc/
+
+
+# ============================================
+# PLUGINS DO PAPER/SPIGOT
+# ============================================
+# Arquivos específicos para desenvolvimento de plugins Minecraft
+
+# Arquivos compilados do plugin (não versionar)
+*.jar
+
+# Dados de runtime do servidor (em ambiente local)
+server.properties
+spigot.yml
+bukkit.yml
+paper.yml
+
+
+# ============================================
+# EXCEÇÕES IMPORTANTES
+# ============================================
+# Exceções para arquivos que DEVEM ser versionados
+
+# Este arquivo deve ser versionado
+!.gitignore
+
+# O arquivo de wrapper do Gradle deve ser versionado
+!gradle/wrapper/gradle-wrapper.jar
+
+# O arquivo de build do Gradle pode ser necessário
+build.gradle
+build.gradle.kts
+settings.gradle
+settings.gradle.kts
+
+# O diretório src deve ser versionado
+src/
+
+# O diretório resources deve ser versionado
+resources/
+
+# Documentação do projeto
+README.md
+LICENSE

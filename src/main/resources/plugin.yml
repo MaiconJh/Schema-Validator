@@ -1,10 +1,10 @@
 name: Schema-Validator
-version: '${version}'
-main: com.yourname.schemacr.core.SchemaValidatorPlugin
+version: '0.1.0-SNAPSHOT'
+main: com.maiconjh.schemacr.core.SchemaValidatorPlugin
 description: Skript addon skeleton for YAML/JSON schema validation.
 api-version: '1.21'
-author: yourname
-website: https://example.com
+author: MaiconJH
+website: https://github.com/MaiconJH/Schema-Validator
 depend:
   - Skript
 softdepend:

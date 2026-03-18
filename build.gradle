@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group = 'com.yourname'
+group = 'com.maiconjh'
 version = '0.1.0-SNAPSHOT'
 
 java {
@@ -29,4 +29,19 @@ dependencies {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 21
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+jar {
+    manifest {
+        attributes(
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor': 'Schema-Validator'
+        )
+    }
 }
