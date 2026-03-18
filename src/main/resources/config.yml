@@ -1,0 +1,5 @@
+# Base configuration for Schema-Validator.
+# Future options:
+# - schema-auto-reload: true
+# - strict-mode: false
+schema-directory: plugins/Schema-Validator/schemas

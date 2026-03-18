@@ -1,0 +1,12 @@
+type: object
+properties:
+  id:
+    type: string
+  level:
+    type: number
+  active:
+    type: boolean
+  tags:
+    type: array
+    items:
+      type: string
