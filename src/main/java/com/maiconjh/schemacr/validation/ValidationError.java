@@ -35,11 +35,19 @@ public class ValidationError {
 
     @Override
     public String toString() {
-        return "ValidationError{" +
-                "nodePath='" + nodePath + '\'' +
-                ", expectedType='" + expectedType + '\'' +
-                ", actualType='" + actualType + '\'' +
-                ", description='" + description + '\'' +
-                '}';
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append("Validation failed at: ").append(nodePath).append("\n");
+        sb.append("Expected type: ").append(expectedType).append("\n");
+        
+        if (actualType != null && !actualType.isEmpty()) {
+            sb.append("Actual value: ").append(actualType).append("\n");
+        }
+        
+        if (description != null && !description.isEmpty()) {
+            sb.append("Details: ").append(description);
+        }
+        
+        return sb.toString();
     }
 }
