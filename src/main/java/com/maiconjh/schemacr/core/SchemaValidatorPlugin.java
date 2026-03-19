@@ -42,6 +42,7 @@ public class SchemaValidatorPlugin extends JavaPlugin {
 
         this.schemaRegistry = new SchemaRegistry(config.isCacheEnabled(), 5 * 60 * 1000);
         this.fileSchemaLoader = new FileSchemaLoader(getLogger());
+        this.fileSchemaLoader.setFailFastMode(config.isStrictMode());
 
         // Auto-load schemas if enabled
         if (config.isAutoLoad()) {

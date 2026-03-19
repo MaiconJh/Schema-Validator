@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Game Item Schema",
+  "description": "Game item with conditional validation for production use",
+  "type": "object",
+  "required": ["id", "type"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_:]+$"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["weapon", "armor", "tool", "consumable"]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "damage": {
+      "type": "number",
+      "minimum": 1
+    },
+    "defense": {
+      "type": "number",
+      "minimum": 0
+    },
+    "durability": {
+      "type": "number",
+      "minimum": 1
+    },
+    "healing": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "oneOf": [
+    {
+      "description": "Weapon must have damage",
+      "required": ["id", "type", "damage"],
+      "properties": {
+        "type": {
+          "const": "weapon"
+        },
+        "damage": {
+          "type": "number",
+          "minimum": 1
+        }
+      }
+    },
+    {
+      "description": "Armor must have defense",
+      "required": ["id", "type", "defense"],
+      "properties": {
+        "type": {
+          "const": "armor"
+        },
+        "defense": {
+          "type": "number",
+          "minimum": 1
+        }
+      }
+    },
+    {
+      "description": "Tool must have durability",
+      "required": ["id", "type", "durability"],
+      "properties": {
+        "type": {
+          "const": "tool"
+        },
+        "durability": {
+          "type": "number",
+          "minimum": 1
+        }
+      }
+    },
+    {
+      "description": "Consumable must have healing value",
+      "required": ["id", "type", "healing"],
+      "properties": {
+        "type": {
+          "const": "consumable"
+        },
+        "healing": {
+          "type": "number",
+          "minimum": 1
+        }
+      }
+    }
+  ],
+  "not": {
+    "description": "Cannot be a banned item type",
+    "properties": {
+      "id": {
+        "pattern": "^banned:.*"
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "type": {
+        "const": "weapon"
+      }
+    }
+  },
+  "then": {
+    "required": ["damage", "durability"],
+    "properties": {
+      "damage": {
+        "type": "number",
+        "minimum": 1
+      },
+      "durability": {
+        "type": "number",
+        "minimum": 10
+      }
+    }
+  }
+}

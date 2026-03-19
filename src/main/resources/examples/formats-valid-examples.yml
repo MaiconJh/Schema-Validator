@@ -1,0 +1,54 @@
+# =====================================================
+# EXEMPLOS VÁLIDOS - Data Types with Formats
+# =====================================================
+
+# Exemplo completo válido com todos os formatos
+full-valid:
+  playerId: player123
+  email: player@example.com
+  website: https://example.com/player/123
+  avatarUrl: /images/avatar.png
+  registeredAt: "2024-01-15T10:30:00Z"
+  lastLogin: "2024-06-20T15:45:30+00:00"
+  birthDate: "1995-05-10"
+  alarmTime: "08:00:00"
+  ipAddress: "192.168.1.1"
+  ipv6Address: "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+  hostname: "server.example.com"
+  timestamp: 1705312200
+  score: 50.5
+  coins: 1000
+  experience: 5000
+  discount: 0.25
+  jsonData: "/path/to/node"
+  relativePath: "#/definitions/name"
+  phoneNumber: "+5511999999999"
+  colorHex: "#FF5733"
+
+# Exemplos individuais válidos
+email-valid:
+  playerId: test001
+  email: user.name+tag@domain.co.uk
+  website: http://localhost:8080
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "10.0.0.1"
+
+ipv6-variations:
+  playerId: ipv6test
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "127.0.0.1"
+  ipv6Address: "::1"
+  ipv6AddressFull: "2001:db8::1"
+
+multipleof-variations:
+  playerId: mathguy
+  email: math@test.com
+  website: https://math.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  score: 0  # 0 é múltiplo de 0.5
+  coins: 0
+  experience: 100
+  discount: 0

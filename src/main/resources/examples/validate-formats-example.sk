@@ -1,0 +1,188 @@
+# =====================================================
+# Skript Example - Format Validation
+# Demonstrates email, uri, date-time, ipv4, ipv6, 
+# multipleOf and other format validators
+# =====================================================
+
+# Load the schema
+set {_schema} to schema "data-types-formats" from "examples/schemas"
+
+# =====================================================
+# VALID EXAMPLES
+# =====================================================
+
+# Valid player with all formats
+set {_player1} to object from json:
+"""
+{
+    "playerId": "player123",
+    "email": "player@example.com",
+    "website": "https://example.com/player/123",
+    "avatarUrl": "/images/avatar.png",
+    "registeredAt": "2024-01-15T10:30:00Z",
+    "lastLogin": "2024-06-20T15:45:30+00:00",
+    "birthDate": "1995-05-10",
+    "alarmTime": "08:00:00",
+    "ipAddress": "192.168.1.1",
+    "ipv6Address": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+    "hostname": "server.example.com",
+    "timestamp": 1705312200,
+    "score": 50.5,
+    "coins": 1000,
+    "experience": 5000,
+    "discount": 0.25,
+    "jsonData": "/path/to/node",
+    "relativePath": "#/definitions/name",
+    "phoneNumber": "+5511999999999",
+    "colorHex": "#FF5733"
+}
+"""
+
+if validate {_player1} against {_schema}:
+    broadcast "✓ All formats valid!"
+else:
+    broadcast "✗ Validation failed!"
+    loop through {last validation errors::*}:
+        broadcast "Error: %loop-value%"
+
+# =====================================================
+# INVALID EXAMPLES
+# =====================================================
+
+# Invalid email format
+set {_invalid-email} to object from json:
+"""
+{
+    "playerId": "test001",
+    "email": "not-an-email",
+    "website": "https://test.com",
+    "registeredAt": "2024-01-01T00:00:00Z",
+    "ipAddress": "1.1.1.1"
+}
+"""
+
+if validate {_invalid-email} against {_schema}:
+    broadcast "✗ Should have failed!"
+else:
+    broadcast "✓ Correctly rejected invalid email"
+
+# Invalid IP address
+set {_invalid-ip} to object from json:
+"""
+{
+    "playerId": "test002",
+    "email": "test@test.com",
+    "website": "https://test.com",
+    "registeredAt": "2024-01-01T00:00:00Z",
+    "ipAddress": "999.999.999.999"
+}
+"""
+
+if validate {_invalid-ip} against {_schema}:
+    broadcast "✗ Should have failed!"
+else:
+    broadcast "✓ Correctly rejected invalid IP"
+
+# Invalid multipleOf (score must be multiple of 0.5)
+set {_invalid-multiple} to object from json:
+"""
+{
+    "playerId": "test003",
+    "email": "test@test.com",
+    "website": "https://test.com",
+    "registeredAt": "2024-01-01T00:00:00Z",
+    "ipAddress": "1.1.1.1",
+    "score": 10.3
+}
+"""
+
+if validate {_invalid-multiple} against {_schema}:
+    broadcast "✗ Should have failed!"
+else:
+    broadcast "✓ Correctly rejected - score not multiple of 0.5"
+
+# Invalid multipleOf (coins must be multiple of 10)
+set {_invalid-coins} to object from json:
+"""
+{
+    "playerId": "test004",
+    "email": "test@test.com",
+    "website": "https://test.com",
+    "registeredAt": "2024-01-01T00:00:00Z",
+    "ipAddress": "1.1.1.1",
+    "coins": 105
+}
+"""
+
+if validate {_invalid-coins} against {_schema}:
+    broadcast "✗ Should have failed!"
+else:
+    broadcast "✓ Correctly rejected - coins not multiple of 10"
+
+# Invalid date-time format
+set {_invalid-datetime} to object from json:
+"""
+{
+    "playerId": "test005",
+    "email": "test@test.com",
+    "website": "https://test.com",
+    "registeredAt": "not-a-date-time",
+    "ipAddress": "1.1.1.1"
+}
+"""
+
+if validate {_invalid-datetime} against {_schema}:
+    broadcast "✗ Should have failed!"
+else:
+    broadcast "✓ Correctly rejected invalid date-time format"
+
+# =====================================================
+# BATCH VALIDATION EXAMPLE
+# =====================================================
+
+set {_players::1} to object from json:
+"""
+{
+    "playerId": "player1",
+    "email": "p1@test.com",
+    "website": "https://p1.com",
+    "registeredAt": "2024-01-01T00:00:00Z",
+    "ipAddress": "1.1.1.1"
+}
+"""
+
+set {_players::2} to object from json:
+"""
+{
+    "playerId": "player2",
+    "email": "p2@test.com",
+    "website": "https://p2.com",
+    "registeredAt": "2024-01-01T00:00:00Z",
+    "ipAddress": "2.2.2.2"
+}
+"""
+
+set {_players::3} to object from json:
+"""
+{
+    "playerId": "player3",
+    "email": "invalid-email",
+    "website": "https://p3.com",
+    "registeredAt": "2024-01-01T00:00:00Z",
+    "ipAddress": "3.3.3.3"
+}
+"""
+
+# Validate all players
+set {_results::*} to validate {_players::*} against {_schema}
+
+set {_passed} to 0
+set {_failed} to 0
+
+loop {_results::*}:
+    if loop-value is success:
+        add 1 to {_passed}
+    else:
+        add 1 to {_failed}
+
+broadcast "Batch validation complete: %{_passed}% passed, %{_failed}% failed"

@@ -1,0 +1,113 @@
+# =====================================================
+# EXEMPLOS VÁLIDOS - Complex Minecraft Item Schema
+# =====================================================
+
+# Weapon válido
+dragon-slayer-sword:
+  itemType: weapon
+  id: "mythic:dragon_slayer_sword"
+  name: "Dragon Slayer"
+  description: "A legendary sword forged to slay dragons"
+  rarity: legendary
+  level: 75
+  damage:
+    min: 50
+    max: 100
+    type: slashing
+    critChance: 25
+    critMultiplier: 2.5
+  durability: 500
+  abilities:
+    - name: "Fire Breath"
+      description: "Unleash fire breath dealing 200 damage"
+      cooldown: 300
+      manaCost: 50
+    - name: "Dragon Rage"
+      description: "Ultimate attack that ignores defense"
+      cooldown: 600
+      manaCost: 100
+
+# Armor válido
+dragon-scale-helmet:
+  itemType: armor
+  id: "epic:dragon_scale_helmet"
+  name: "Dragon Scale Helmet"
+  description: "Helmet made from dragon scales"
+  rarity: epic
+  level: 60
+  defense: 150
+  durability: 1000
+  slot: helmet
+  set: "Dragon Scale"
+
+# Tool válido
+diamond-pickaxe:
+  itemType: tool
+  id: "rare:diamond_pickaxe"
+  name: "Diamond Pickaxe"
+  rarity: rare
+  level: 30
+  durability: 250
+  efficiency: 50
+  harvestLevel: 4
+
+# Food válido
+golden-apple:
+  itemType: food
+  id: "uncommon:golden_apple"
+  name: "Golden Apple"
+  rarity: uncommon
+  level: 5
+  nutrition: 4
+  saturation: 9.6
+  effects:
+    - effect: "regeneration"
+      duration: 200
+      amplifier: 2
+    - effect: "absorption"
+      duration: 1200
+      amplifier: 4
+
+# Potion válido
+potion-of-strength:
+  itemType: potion
+  id: "common:potion_strength"
+  name: "Potion of Strength"
+  rarity: common
+  level: 1
+  effects:
+    - effect: "strength"
+      duration: 180
+      amplifier: 1
+  extendable: true
+
+# Epic armor com set
+void-chestplate:
+  itemType: armor
+  id: "epic:void_chestplate"
+  name: "Void Chestplate"
+  description: "Armor from the void dimension"
+  rarity: epic
+  level: 45
+  defense: 200
+  durability: 800
+  slot: chestplate
+  set: "Void Walker"
+  abilities:
+    - name: "Shadow Step"
+      description: "Teleport through walls"
+      cooldown: 60
+      manaCost: 20
+
+# Item comum (não lendário)
+iron-sword:
+  itemType: weapon
+  id: "common:iron_sword"
+  name: "Iron Sword"
+  rarity: uncommon
+  level: 10
+  damage:
+    min: 6
+    max: 10
+    type: slashing
+  durability: 100

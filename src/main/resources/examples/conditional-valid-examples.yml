@@ -1,0 +1,46 @@
+# =====================================================
+# EXEMPLOS VÁLIDOS - Conditional Validation
+# =====================================================
+
+# warrior válido (corresponde ao primeiro schema em oneOf)
+warrior-valid:
+  playerType: warrior
+  name: Conan
+  level: 50
+  stats:
+    strength: 80
+    defense: 60
+
+# mage válido (corresponde ao segundo schema em oneOf)
+mage-valid:
+  playerType: mage
+  name: Gandalf
+  level: 99
+  stats:
+    intelligence: 100
+    mana: 500
+
+# rogue válido (corresponde ao terceiro schema em oneOf)
+rogue-valid:
+  playerType: rogue
+  name: Shadow
+  level: 75
+  stats:
+    agility: 90
+    stealth: 85
+
+# merchant válido (não é combatente, else clause)
+merchant-valid:
+  playerType: merchant
+  name: Trader
+  level: 5
+  guild: MerchantsGuild
+
+# healer válido (combatente, então requer level)
+healer-valid:
+  playerType: healer
+  name: Medic
+  level: 30
+  stats:
+    intelligence: 60
+    mana: 300

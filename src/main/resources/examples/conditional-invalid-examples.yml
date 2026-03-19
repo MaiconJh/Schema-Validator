@@ -1,0 +1,64 @@
+# =====================================================
+# EXEMPLOS INVÁLIDOS - Conditional Validation
+# =====================================================
+
+# Erro 1: oneOf - não corresponde a nenhum dos schemas
+oneof-no-match:
+  playerType: warrior
+  name: Invalid
+  stats:
+    # warrior requer strength e defense, mas fornecemos wrongAttribute
+    wrongAttribute: 50
+
+# Erro 2: oneOf - corresponde a mais de um schema
+oneof-multiple-match:
+  playerType: warrior
+  name: Hybrid
+  stats:
+    strength: 50
+    defense: 30
+    intelligence: 80  # Isso também faz parte do schema mage!
+
+# Erro 3: not - o playerType é "banned"
+not-blocked:
+  playerType: banned
+  name: Cheater
+  level: 99
+  stats:
+    strength: 100
+
+# Erro 4: if/then - combatente sem level
+ifthen-missing-level:
+  playerType: warrior
+  name: NoLevel
+  # Falta o campo level!
+  stats:
+    strength: 50
+    defense: 30
+
+# Erro 5: if/then - combatente com level inválido (> 100)
+ifthen-invalid-level:
+  playerType: mage
+  name: Overpowered
+  level: 150  # Máximo é 100 para combatentes
+  stats:
+    intelligence: 50
+    mana: 100
+
+# Erro 6: else - npc com level muito alto (> 10)
+else-invalid-level:
+  playerType: quest-giver
+  name: QuestGiver
+  level: 50  # Máximo para NPCs é 10
+  guild: QuestMasters
+
+# Erro 7: type error - playerType deveria ser string
+type-error:
+  playerType: 123
+  name: Invalid
+  level: 10
+
+# Erro 8: required field missing
+missing-required:
+  # Faltam playerType, name e stats
+  level: 10

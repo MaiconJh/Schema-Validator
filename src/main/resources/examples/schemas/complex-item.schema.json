@@ -1,0 +1,337 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Complex Minecraft Item",
+  "description": "Advanced example combining oneOf, not, if/then/else with $ref and allOf",
+  "type": "object",
+  "required": ["itemType", "id", "name"],
+  "additionalProperties": false,
+  "properties": {
+    "itemType": {
+      "type": "string",
+      "enum": ["weapon", "armor", "tool", "food", "potion", "block", "material", "artifact"]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_:]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "rarity": {
+      "type": "string",
+      "enum": ["common", "uncommon", "rare", "epic", "legendary", "mythic"]
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "durability": {
+      "type": "integer"
+    },
+    "damage": {
+      "type": "object"
+    },
+    "defense": {
+      "type": "integer"
+    },
+    "effects": {
+      "type": "array"
+    },
+    "ingredients": {
+      "type": "array"
+    },
+    "craftingTime": {
+      "type": "integer"
+    },
+    "enchantments": {
+      "type": "array"
+    },
+    "set": {
+      "type": "string"
+    },
+    "abilities": {
+      "type": "array"
+    },
+    "tradeInfo": {
+      "type": "object"
+    },
+    "dropInfo": {
+      "type": "object"
+    }
+  },
+  "oneOf": [
+    {
+      "description": "Weapon item - must have damage stats",
+      "required": ["itemType", "damage"],
+      "properties": {
+        "itemType": {
+          "const": "weapon"
+        },
+        "damage": {
+          "type": "object",
+          "required": ["min", "max"],
+          "properties": {
+            "min": {
+              "type": "number",
+              "minimum": 1
+            },
+            "max": {
+              "type": "number",
+              "minimum": 1
+            },
+            "type": {
+              "type": "string",
+              "enum": ["slashing", "piercing", "blunt", "magical", "true"]
+            },
+            "critChance": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "critMultiplier": {
+              "type": "number",
+              "minimum": 1
+            }
+          }
+        },
+        "durability": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 1000
+        }
+      }
+    },
+    {
+      "description": "Armor item - must have defense stats",
+      "required": ["itemType", "defense"],
+      "properties": {
+        "itemType": {
+          "const": "armor"
+        },
+        "defense": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "durability": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 2000
+        },
+        "slot": {
+          "type": "string",
+          "enum": ["helmet", "chestplate", "leggings", "boots", "offhand"]
+        },
+        "set": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "description": "Tool item - must have durability and special properties",
+      "required": ["itemType", "durability"],
+      "properties": {
+        "itemType": {
+          "const": "tool"
+        },
+        "durability": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 500
+        },
+        "efficiency": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "harvestLevel": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      }
+    },
+    {
+      "description": "Food item - must have nutrition value",
+      "required": ["itemType"],
+      "properties": {
+        "itemType": {
+          "const": "food"
+        },
+        "nutrition": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "saturation": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 10
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["effect", "duration", "amplifier"],
+            "properties": {
+              "effect": {
+                "type": "string"
+              },
+              "duration": {
+                "type": "integer"
+              },
+              "amplifier": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "Potion item - must have effects",
+      "required": ["itemType", "effects"],
+      "properties": {
+        "itemType": {
+          "const": "potion"
+        },
+        "effects": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["effect", "duration", "amplifier"],
+            "properties": {
+              "effect": {
+                "type": "string"
+              },
+              "duration": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "amplifier": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10
+              }
+            }
+          }
+        },
+        "extendable": {
+          "type": "boolean"
+        }
+      }
+    }
+  ],
+  "not": {
+    "description": "Cannot be a banned item type",
+    "properties": {
+      "itemType": {
+        "const": "banned"
+      }
+    }
+  },
+  "if": {
+    "description": "If item is legendary or mythic rarity",
+    "properties": {
+      "rarity": {
+        "enum": ["legendary", "mythic"]
+      }
+    },
+    "required": ["rarity"]
+  },
+  "then": {
+    "description": "Legendary/mythic items must have abilities",
+    "required": ["abilities", "level"],
+    "properties": {
+      "level": {
+        "type": "integer",
+        "minimum": 50,
+        "maximum": 100
+      },
+      "abilities": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "required": ["name", "description"],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "cooldown": {
+              "type": "integer"
+            },
+            "manaCost": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  },
+  "else": {
+    "description": "Non-legendary items can have lower level",
+    "properties": {
+      "level": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50
+      }
+    }
+  },
+  "allOf": [
+    {
+      "description": "Epic items must belong to a set",
+      "if": {
+        "properties": {
+          "rarity": {
+            "const": "epic"
+          }
+        }
+      },
+      "then": {
+        "required": ["set"],
+        "properties": {
+          "set": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "Craftable items need crafting info",
+      "if": {
+        "properties": {
+          "itemType": {
+            "enum": ["weapon", "armor", "tool", "potion"]
+          }
+        },
+        "required": ["itemType"]
+      },
+      "then": {
+        "properties": {
+          "ingredients": {
+            "type": "array",
+            "minItems": 1
+          },
+          "craftingTime": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  ]
+}

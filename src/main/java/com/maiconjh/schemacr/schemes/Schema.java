@@ -34,9 +34,23 @@ public class Schema {
     private final String compatibility; // Compatibility flag (e.g., "1.21", "1.20")
     private final List<Schema> allOf; // allOf composition
     private final List<Schema> anyOf; // anyOf composition
+    private final List<Schema> oneOf; // oneOf composition
+    private final Schema notSchema; // not schema
+    private final Schema ifSchema; // if schema (conditional)
+    private final Schema thenSchema; // then schema (conditional)
+    private final Schema elseSchema; // else schema (conditional)
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, Schema itemSchema) {
         this(name, type, properties, null, itemSchema, null, true, null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
+    }
+
+    /**
+     * Creates a schema with oneOf composition.
+     */
+    public Schema(String name, SchemaType type, List<Schema> oneOf) {
+        this(name, type, null, null, null, null, true,
+             null, null, false, false, null, null, null, null, null, null,
+             null, null, null, null, null, oneOf, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
@@ -85,6 +99,19 @@ public class Schema {
                   boolean exclusiveMinimum, boolean exclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, String format, Number multipleOf,
                   List<Object> enumValues, String ref, String version, String compatibility, List<Schema> allOf, List<Schema> anyOf) {
+        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties,
+             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, format,
+             multipleOf, enumValues, ref, version, compatibility, allOf, anyOf, null, null, null, null, null);
+    }
+
+    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
+                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
+                  boolean additionalProperties, Number minimum, Number maximum, 
+                  boolean exclusiveMinimum, boolean exclusiveMaximum,
+                  Integer minLength, Integer maxLength, String pattern, String format, Number multipleOf,
+                  List<Object> enumValues, String ref, String version, String compatibility,
+                  List<Schema> allOf, List<Schema> anyOf, List<Schema> oneOf,
+                  Schema notSchema, Schema ifSchema, Schema thenSchema, Schema elseSchema) {
         this.name = name;
         this.type = type;
         this.properties = properties == null ? Collections.emptyMap() : Collections.unmodifiableMap(properties);
@@ -107,6 +134,11 @@ public class Schema {
         this.compatibility = compatibility;
         this.allOf = allOf == null ? Collections.emptyList() : Collections.unmodifiableList(allOf);
         this.anyOf = anyOf == null ? Collections.emptyList() : Collections.unmodifiableList(anyOf);
+        this.oneOf = oneOf == null ? Collections.emptyList() : Collections.unmodifiableList(oneOf);
+        this.notSchema = notSchema;
+        this.ifSchema = ifSchema;
+        this.thenSchema = thenSchema;
+        this.elseSchema = elseSchema;
     }
 
     public String getName() {
@@ -246,6 +278,14 @@ public class Schema {
     }
 
     /**
+     * Returns the oneOf schemas for composition.
+     * @return list of oneOf schemas, or empty list if not defined
+     */
+    public List<Schema> getOneOf() {
+        return oneOf;
+    }
+
+    /**
      * Checks if this schema has allOf composition.
      * @return true if allOf is defined and not empty
      */
@@ -259,5 +299,61 @@ public class Schema {
      */
     public boolean hasAnyOf() {
         return !anyOf.isEmpty();
+    }
+
+    /**
+     * Checks if this schema has oneOf composition.
+     * @return true if oneOf is defined and not empty
+     */
+    public boolean hasOneOf() {
+        return !oneOf.isEmpty();
+    }
+
+    /**
+     * Returns the not schema.
+     * @return the not schema or null
+     */
+    public Schema getNot() {
+        return notSchema;
+    }
+
+    /**
+     * Checks if this schema has a not clause.
+     * @return true if not schema is defined
+     */
+    public boolean hasNot() {
+        return notSchema != null;
+    }
+
+    /**
+     * Returns the if schema for conditional validation.
+     * @return the if schema or null
+     */
+    public Schema getIfSchema() {
+        return ifSchema;
+    }
+
+    /**
+     * Returns the then schema for conditional validation.
+     * @return the then schema or null
+     */
+    public Schema getThenSchema() {
+        return thenSchema;
+    }
+
+    /**
+     * Returns the else schema for conditional validation.
+     * @return the else schema or null
+     */
+    public Schema getElseSchema() {
+        return elseSchema;
+    }
+
+    /**
+     * Checks if this schema has conditional validation (if/then/else).
+     * @return true if if schema is defined
+     */
+    public boolean hasConditional() {
+        return ifSchema != null;
     }
 }

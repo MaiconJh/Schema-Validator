@@ -1,0 +1,155 @@
+# =====================================================
+# EXEMPLOS INVÁLIDOS - Data Types with Formats
+# =====================================================
+
+# Erro 1: email inválido
+email-invalid:
+  playerId: test001
+  email: not-an-email
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+
+# Erro 2: email sem domínio
+email-no-domain:
+  playerId: test002
+  email: user@
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+
+# Erro 3: URI inválida
+uri-invalid:
+  playerId: test003
+  email: test@test.com
+  website: not-a-uri
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+
+# Erro 4: date-time inválido
+datetime-invalid:
+  playerId: test004
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "not-a-date"
+  ipAddress: "1.1.1.1"
+
+# Erro 5: date inválido
+date-invalid:
+  playerId: test005
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  birthDate: "10-05-1995"  # Formato errado
+  ipAddress: "1.1.1.1"
+
+# Erro 6: IPv4 inválido
+ipv4-invalid:
+  playerId: test006
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "999.999.999.999"
+
+# Erro 7: IPv4 com formato errado
+ipv4-wrong-format:
+  playerId: test007
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "192.168.1"
+
+# Erro 8: IPv6 inválido
+ipv6-invalid:
+  playerId: test008
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  ipv6Address: "not-ipv6"
+
+# Erro 9: hostname inválido
+hostname-invalid:
+  playerId: test009
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  hostname: "-invalid-hostname"
+
+# Erro 10: multipleOf - não é múltiplo de 0.5
+multipleof-decimal-fail:
+  playerId: mathfail1
+  email: math@test.com
+  website: https://math.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  score: 10.3  # Não é múltiplo de 0.5
+
+# Erro 11: multipleOf - não é múltiplo de 10
+multipleof-integer-fail:
+  playerId: mathfail2
+  email: math@test.com
+  website: https://math.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  coins: 105  # Não é múltiplo de 10
+
+# Erro 12: multipleOf - não é múltiplo de 100
+multipleof-exp-fail:
+  playerId: mathfail3
+  email: math@test.com
+  website: https://math.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  experience: 550  # Não é múltiplo de 100
+
+# Erro 13: multipleOf - não é múltiplo de 0.05
+multipleof-discount-fail:
+  playerId: mathfail4
+  email: math@test.com
+  website: https://math.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  discount: 0.23  # Não é múltiplo de 0.05
+
+# Erro 14: json-pointer inválido
+jsonpointer-invalid:
+  playerId: jsonptr1
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  jsonData: "not a json pointer"
+
+# Erro 15: phone number inválido
+phone-invalid:
+  playerId: phone1
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  phoneNumber: "abc"
+
+# Erro 16: hex color inválido
+hexcolor-invalid:
+  playerId: color1
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  colorHex: "GGG"
+
+# Erro 17: required field missing
+missing-required:
+  playerId: reqfail1
+  # Faltam: email, website, registeredAt, ipAddress
+
+# Erro 18: number out of range
+score-out-of-range:
+  playerId: range1
+  email: test@test.com
+  website: https://test.com
+  registeredAt: "2024-01-01T00:00:00Z"
+  ipAddress: "1.1.1.1"
+  score: 150  # Máximo é 100

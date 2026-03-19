@@ -1,12 +1,12 @@
 package com.maiconjh.schemacr.validation;
 
-import com.maiconjh.schemacr.schemes.Schema;
-import com.maiconjh.schemacr.schemes.SchemaRefResolver;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import com.maiconjh.schemacr.schemes.Schema;
+import com.maiconjh.schemacr.schemes.SchemaRefResolver;
 
 /**
  * Validates object/map nodes.
@@ -108,6 +108,89 @@ public class ObjectValidator implements Validator {
                     "no match",
                     "Data must match at least one schema in anyOf (matched 0 of " + schema.getAnyOf().size() + ")"
                 ));
+            }
+        }
+
+        // Handle oneOf composition - exactly one schema must match
+        if (schema.hasOneOf()) {
+            List<Schema> oneOfSchemas = schema.getOneOf();
+            int validCount = 0;
+            List<ValidationError> oneOfAllErrors = new ArrayList<>();
+            
+            for (int i = 0; i < oneOfSchemas.size(); i++) {
+                Schema oneOfSchema = oneOfSchemas.get(i);
+                Validator validator = ValidatorDispatcher.forSchema(oneOfSchema);
+                List<ValidationError> schemaErrors = validator.validate(data, oneOfSchema, path, parentKey);
+                
+                if (schemaErrors.isEmpty()) {
+                    validCount++;
+                } else {
+                    for (ValidationError error : schemaErrors) {
+                        oneOfAllErrors.add(new ValidationError(
+                            error.getNodePath(),
+                            "oneOf[" + i + "]." + error.getExpectedType(),
+                            error.getActualType(),
+                            "oneOf[" + i + "]: " + error.getDescription()
+                        ));
+                    }
+                }
+            }
+            
+            if (validCount == 0) {
+                errors.addAll(oneOfAllErrors);
+                errors.add(new ValidationError(
+                    path,
+                    "oneOf",
+                    "no match",
+                    "Data must match exactly one schema in oneOf (matched 0 of " + oneOfSchemas.size() + ")"
+                ));
+            } else if (validCount > 1) {
+                errors.add(new ValidationError(
+                    path,
+                    "oneOf",
+                    "multiple matches",
+                    "Data must match exactly one schema in oneOf (matched " + validCount + " of " + oneOfSchemas.size() + ")"
+                ));
+            }
+        }
+
+        // Handle not - instance must NOT match this schema
+        if (schema.hasNot()) {
+            Schema notSchema = schema.getNot();
+            Validator validator = ValidatorDispatcher.forSchema(notSchema);
+            List<ValidationError> notErrors = validator.validate(data, notSchema, path, parentKey);
+            
+            if (notErrors.isEmpty()) {
+                // Instance matched the not schema, which is an error
+                errors.add(new ValidationError(
+                    path,
+                    "not",
+                    "matched",
+                    "Data must NOT match the schema defined in 'not'"
+                ));
+            }
+        }
+
+        // Handle if/then/else conditional validation
+        if (schema.hasConditional()) {
+            Schema ifSchema = schema.getIfSchema();
+            Schema thenSchema = schema.getThenSchema();
+            Schema elseSchema = schema.getElseSchema();
+            
+            // Evaluate if condition
+            Validator ifValidator = ValidatorDispatcher.forSchema(ifSchema);
+            List<ValidationError> ifErrors = ifValidator.validate(data, ifSchema, path, parentKey);
+            
+            boolean ifMatched = ifErrors.isEmpty();
+            
+            if (ifMatched && thenSchema != null) {
+                // If matched, validate against then schema
+                Validator thenValidator = ValidatorDispatcher.forSchema(thenSchema);
+                errors.addAll(thenValidator.validate(data, thenSchema, path, parentKey));
+            } else if (!ifMatched && elseSchema != null) {
+                // If didn't match, validate against else schema
+                Validator elseValidator = ValidatorDispatcher.forSchema(elseSchema);
+                errors.addAll(elseValidator.validate(data, elseSchema, path, parentKey));
             }
         }
 

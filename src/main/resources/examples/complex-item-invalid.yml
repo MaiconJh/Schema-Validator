@@ -1,0 +1,170 @@
+# =====================================================
+# EXEMPLOS INVÁLIDOS - Complex Minecraft Item Schema
+# =====================================================
+
+# Erro 1: oneOf - weapon sem damage
+weapon-no-damage:
+  itemType: weapon
+  id: "common:broken_sword"
+  name: "Broken Sword"
+  rarity: common
+  level: 5
+  # FALTA: damage
+
+# Erro 2: oneOf - armor sem defense
+armor-no-defense:
+  itemType: armor
+  id: "common:broken_armor"
+  name: "Broken Armor"
+  rarity: common
+  level: 5
+  # FALTA: defense
+
+# Erro 3: oneOf - tool sem durability
+tool-no-durability:
+  itemType: tool
+  id: "common:broken_tool"
+  name: "Broken Tool"
+  rarity: common
+  level: 5
+  # FALTA: durability
+
+# Erro 4: oneOf - food sem nutrition
+food-no-nutrition:
+  itemType: food
+  id: "common:strange_food"
+  name: "Strange Food"
+  rarity: common
+  level: 1
+  # FALTA: nutrition
+
+# Erro 5: oneOf - potion sem effects
+potion-no-effects:
+  itemType: potion
+  id: "common:empty_potion"
+  name: "Empty Potion"
+  rarity: common
+  level: 1
+  effects: []
+  # FALTA: effects (array vazio não é válido - minItems: 1)
+
+# Erro 6: not - item banned
+banned-item:
+  itemType: banned
+  id: "banned:cursed_item"
+  name: "Cursed Item"
+  # playerType é "banned" - BLOQUEADO pelo "not"
+
+# Erro 7: if/then - legendary sem abilities
+legendary-no-abilities:
+  itemType: weapon
+  id: "legendary:weak_legendary"
+  name: "Weak Legendary Sword"
+  rarity: legendary
+  level: 75
+  damage:
+    min: 10
+    max: 20
+  # FALTA: abilities (obrigatório para legendary)
+
+# Erro 8: if/then - mythic com level baixo
+mythic-low-level:
+  itemType: armor
+  id: "mythic:weak_mythic"
+  name: "Weak Mythic Armor"
+  rarity: mythic
+  level: 20  # Deveria ser >= 50
+  defense: 100
+  abilities:
+    - name: "Test"
+      description: "Test ability"
+  # level < 50 para mythic (deveria ser >= 50)
+
+# Erro 9: allOf - epic sem set
+epic-no-set:
+  itemType: armor
+  id: "epic:orphan_epic"
+  name: "Orphan Epic Armor"
+  rarity: epic
+  level: 40
+  defense: 80
+  # FALTA: set (obrigatório para epic)
+
+# Erro 10: allOf - weapon sem ingredients
+weapon-no-ingredients:
+  itemType: weapon
+  id: "rare:uncraftable_sword"
+  name: "Uncraftable Sword"
+  rarity: rare
+  level: 25
+  damage:
+    min: 15
+    max: 25
+  # FALTA: ingredients e craftingTime
+
+# Erro 11: weapon - damage.min maior que damage.max
+weapon-invalid-damage:
+  itemType: weapon
+  id: "common:backwards_sword"
+  name: "Backwards Sword"
+  rarity: common
+  level: 5
+  damage:
+    min: 50
+    max: 10  # Inválido: min > max
+  durability: 100
+
+# Erro 12: armor - defense negativo
+armor-negative:
+  itemType: armor
+  id: "common:negative_armor"
+  name: "Negative Armor"
+  rarity: common
+  level: 5
+  defense: -10  # Inválido: negativo
+
+# Erro 13: tool - efficiency > 100
+tool-over-efficient:
+  itemType: tool
+  id: "common:overpowered_tool"
+  name: "Overpowered Tool"
+  rarity: common
+  level: 5
+  durability: 100
+  efficiency: 150  # Inválido: > 100
+
+# Erro 14: food - saturation > 10
+food-too-satisfying:
+  itemType: food
+  id: "common:super_food"
+  name: "Super Food"
+  rarity: common
+  level: 1
+  nutrition: 5
+  saturation: 15  # Inválido: > 10
+
+# Erro 15: potion - amplifier > 10
+potion-overpowered:
+  itemType: potion
+  id: "common:op_potion"
+  name: "Overpowered Potion"
+  rarity: common
+  level: 1
+  effects:
+    - effect: "strength"
+      duration: 100
+      amplifier: 15  # Inválido: > 10
+
+# Erro 16: missing required field
+missing-required:
+  id: "common:test"
+  name: "Test Item"
+  # Faltam: itemType, id, name
+
+# Erro 17: additionalProperties - campo extra
+extra-property:
+  itemType: weapon
+  id: "common:test"
+  name: "Test"
+  unknownField: "not allowed"
+  # Campo adicional não permitido

@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.maiconjh'
-version = '0.1.0-SNAPSHOT'
+version = '0.3.1'
 
 java {
     toolchain {
@@ -24,6 +24,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.2'
     implementation 'org.yaml:snakeyaml:2.2'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -33,7 +35,10 @@ tasks.withType(JavaCompile).configureEach {
 
 java {
     withSourcesJar()
-    withJavadocJar()
+}
+
+javadoc {
+    enabled = false
 }
 
 jar {
@@ -44,4 +49,8 @@ jar {
                 'Implementation-Vendor': 'Schema-Validator'
         )
     }
+}
+
+test {
+    useJUnitPlatform()
 }

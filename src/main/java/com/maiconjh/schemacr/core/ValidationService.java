@@ -27,8 +27,7 @@ public class ValidationService {
 
     /**
      * Creates a ValidationService with a schema registry for resolving $ref references.
-     * @param registry the schema registry
-     * @param logger logger for reporting resolution errors
+     * @param refResolver the schema ref resolver for resolving $ref references
      */
     public ValidationService(SchemaRefResolver refResolver) {
         ObjectValidator objectValidator = new ObjectValidator();

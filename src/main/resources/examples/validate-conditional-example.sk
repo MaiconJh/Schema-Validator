@@ -1,0 +1,157 @@
+# =====================================================
+# Skript Example - Conditional Validation
+# Demonstrates oneOf, not, and if/then/else validation
+# =====================================================
+
+# Load the schema
+set {_schema} to schema "conditional-validation" from "examples/schemas"
+
+# =====================================================
+# VALID EXAMPLES
+# =====================================================
+
+# Valid warrior player
+set {_player1} to object from json:
+"""
+{
+    "playerType": "warrior",
+    "name": "Conan",
+    "level": 50,
+    "stats": {
+        "strength": 80,
+        "defense": 60
+    }
+}
+"""
+
+if validate {_player1} against {_schema}:
+    broadcast "✓ Warrior validation passed!"
+else:
+    broadcast "✗ Warrior validation failed!"
+    broadcast "Errors: %{last validation errors}%
+
+# Valid mage player
+set {_player2} to object from json:
+"""
+{
+    "playerType": "mage",
+    "name": "Gandalf",
+    "level": 99,
+    "stats": {
+        "intelligence": 100,
+        "mana": 500
+    }
+}
+"""
+
+if validate {_player2} against {_schema}:
+    broadcast "✓ Mage validation passed!"
+else:
+    broadcast "✗ Mage validation failed!"
+
+# Valid merchant (NPC - else clause)
+set {_player3} to object from json:
+"""
+{
+    "playerType": "merchant",
+    "name": "Trader",
+    "level": 5,
+    "guild": "MerchantsGuild"
+}
+"""
+
+if validate {_player3} against {_schema}:
+    broadcast "✓ Merchant validation passed!"
+else:
+    broadcast "✗ Merchant validation failed!"
+
+# =====================================================
+# INVALID EXAMPLES
+# =====================================================
+
+# Invalid: oneOf - no match
+set {_invalid1} to object from json:
+"""
+{
+    "playerType": "warrior",
+    "name": "Invalid",
+    "stats": {
+        "wrongAttribute": 50
+    }
+}
+"""
+
+if validate {_invalid1} against {_schema}:
+    broadcast "✗ Should have failed!"
+else:
+    broadcast "✓ Correctly rejected - no oneOf match"
+    broadcast "Errors: %{last validation errors}%
+
+# Invalid: oneOf - multiple matches
+set {_invalid2} to object from json:
+"""
+{
+    "playerType": "warrior",
+    "name": "Hybrid",
+    "stats": {
+        "strength": 50,
+        "defense": 30,
+        "intelligence": 80
+    }
+}
+"""
+
+if validate {_invalid2} against {_schema}:
+    broadcast "✗ Should have failed!"
+else:
+    broadcast "✓ Correctly rejected - multiple oneOf matches"
+
+# Invalid: not - banned player
+set {_invalid3} to object from json:
+"""
+{
+    "playerType": "banned",
+    "name": "Cheater",
+    "level": 99
+}
+"""
+
+if validate {_invalid3} against {_schema}:
+    broadcast "✗ Should have failed!"
+else:
+    broadcast "✓ Correctly rejected - banned player type"
+
+# Invalid: if/then - warrior without level
+set {_invalid4} to object from json:
+"""
+{
+    "playerType": "warrior",
+    "name": "NoLevel",
+    "stats": {
+        "strength": 50
+    }
+}
+"""
+
+if validate {_invalid4} against {_schema}:
+    broadcast "✗ Should have failed!"
+else:
+    broadcast "✓ Correctly rejected - missing level for combatant"
+
+# Invalid: if/then - level out of range for combatant
+set {_invalid5} to object from json:
+"""
+{
+    "playerType": "mage",
+    "name": "Overpowered",
+    "level": 150,
+    "stats": {
+        "intelligence": 50
+    }
+}
+"""
+
+if validate {_invalid5} against {_schema}:
+    broadcast "✗ Should have failed!"
+else:
+    broadcast "✓ Correctly rejected - level too high for combatant"

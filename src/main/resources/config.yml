@@ -15,4 +15,11 @@ cache-enabled: true
 
 # Validate schemas when they are loaded
 # When enabled, validates schema structure and reports errors
-validation-on-load: true
+# DISABLED: Example schemas contain oneOf/if/then/else that fail self-validation
+validation-on-load: false
+
+# Fail-fast mode for unsupported keywords
+# When enabled, the plugin will throw an exception when loading a schema
+# that contains unsupported keywords instead of just logging a warning
+# RECOMMENDED: Enable this in production to catch schema issues early
+strict-mode: false

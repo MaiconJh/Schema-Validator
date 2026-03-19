@@ -17,6 +17,7 @@ public class PluginConfig {
     private boolean autoLoad;
     private boolean cacheEnabled;
     private boolean validateOnLoad;
+    private boolean strictMode;
 
     public PluginConfig(SchemaValidatorPlugin plugin) {
         this.plugin = plugin;
@@ -34,12 +35,14 @@ public class PluginConfig {
         this.autoLoad = config.getBoolean("auto-load", true);
         this.cacheEnabled = config.getBoolean("cache-enabled", true);
         this.validateOnLoad = config.getBoolean("validation-on-load", true);
+        this.strictMode = config.getBoolean("strict-mode", false);
         
         plugin.getLogger().info("Configuration loaded:");
         plugin.getLogger().info("  Schema directory: " + schemaDirectory);
         plugin.getLogger().info("  Auto-load: " + autoLoad);
         plugin.getLogger().info("  Cache enabled: " + cacheEnabled);
         plugin.getLogger().info("  Validate on load: " + validateOnLoad);
+        plugin.getLogger().info("  Strict mode: " + strictMode);
     }
 
     /**
@@ -93,5 +96,15 @@ public class PluginConfig {
      */
     public String getSchemaDirectoryName() {
         return schemaDirectory;
+    }
+
+    /**
+     * Checks if strict mode is enabled.
+     * When enabled, unsupported keywords will throw exceptions.
+     * 
+     * @return true if strict mode is enabled
+     */
+    public boolean isStrictMode() {
+        return strictMode;
     }
 }

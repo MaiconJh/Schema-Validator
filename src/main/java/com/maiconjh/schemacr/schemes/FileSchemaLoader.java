@@ -24,6 +24,8 @@ import java.util.logging.Logger;
  *     <li>items for arrays</li>
  * </ul>
  * <p>Add new fields here to expand the schema language.</p>
+ *
+ * <p>Unsupported keyword detection is performed using {@link SupportedKeywordsRegistry}.</p>
  */
 public class FileSchemaLoader {
 
@@ -31,9 +33,38 @@ public class FileSchemaLoader {
     private final ObjectMapper jsonMapper = new ObjectMapper();
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     private final Map<String, Schema> definitions = new HashMap<>();
+    private final SupportedKeywordsRegistry keywordsRegistry;
+    private boolean failFastMode = false;
 
     public FileSchemaLoader(Logger logger) {
+        this(logger, new SupportedKeywordsRegistry(logger));
+    }
+
+    /**
+     * Creates a FileSchemaLoader with a custom keywords registry.
+     * @param logger the logger to use
+     * @param keywordsRegistry the supported keywords registry
+     */
+    public FileSchemaLoader(Logger logger, SupportedKeywordsRegistry keywordsRegistry) {
         this.logger = logger;
+        this.keywordsRegistry = keywordsRegistry;
+    }
+
+    /**
+     * Enables or disables fail-fast mode.
+     * When enabled, unsupported keywords will throw exceptions instead of warnings.
+     * @param failFastMode true to enable fail-fast mode
+     */
+    public void setFailFastMode(boolean failFastMode) {
+        this.failFastMode = failFastMode;
+    }
+
+    /**
+     * Checks if fail-fast mode is enabled.
+     * @return true if fail-fast mode is enabled
+     */
+    public boolean isFailFastMode() {
+        return failFastMode;
     }
 
     public Schema load(Path path, String schemaName) throws IOException {
@@ -52,6 +83,9 @@ public class FileSchemaLoader {
         }
 
         Map<String, Object> raw = mapper.readValue(path.toFile(), Map.class);
+        
+        // Detect unsupported keywords
+        detectUnsupportedKeywords(raw, schemaName);
         
         // First pass: extract definitions
         definitions.clear();
@@ -78,6 +112,9 @@ public class FileSchemaLoader {
      * @return parsed Schema
      */
     public Schema parseSchema(String schemaName, Map<String, Object> raw) {
+        // Detect unsupported keywords
+        detectUnsupportedKeywords(raw, schemaName);
+        
         // First pass: extract definitions
         definitions.clear();
         if (raw.containsKey("definitions") && raw.get("definitions") instanceof Map<?, ?> defs) {
@@ -214,6 +251,36 @@ public class FileSchemaLoader {
             }
         }
 
+        // Parse oneOf composition
+        List<Schema> oneOfSchemas = new ArrayList<>();
+        if (raw.containsKey("oneOf") && raw.get("oneOf") instanceof List<?> oneOfRaw) {
+            for (Object item : oneOfRaw) {
+                if (item instanceof Map<?, ?> oneOfMap) {
+                    oneOfSchemas.add(toSchema(name + "_oneOf_" + oneOfSchemas.size(), castMap(oneOfMap)));
+                }
+            }
+        }
+
+        // Parse not schema
+        Schema notSchema = null;
+        if (raw.containsKey("not") && raw.get("not") instanceof Map<?, ?> notMap) {
+            notSchema = toSchema(name + "_not", castMap(notMap));
+        }
+
+        // Parse if/then/else schemas
+        Schema ifSchema = null;
+        Schema thenSchema = null;
+        Schema elseSchema = null;
+        if (raw.containsKey("if") && raw.get("if") instanceof Map<?, ?> ifMap) {
+            ifSchema = toSchema(name + "_if", castMap(ifMap));
+        }
+        if (raw.containsKey("then") && raw.get("then") instanceof Map<?, ?> thenMap) {
+            thenSchema = toSchema(name + "_then", castMap(thenMap));
+        }
+        if (raw.containsKey("else") && raw.get("else") instanceof Map<?, ?> elseMap) {
+            elseSchema = toSchema(name + "_else", castMap(elseMap));
+        }
+
         // Parse patternProperties
         if (type == SchemaType.OBJECT && raw.containsKey("patternProperties")) {
             Object pp = raw.get("patternProperties");
@@ -245,12 +312,67 @@ public class FileSchemaLoader {
 
         return new Schema(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProps,
                          minimum, maximum, exclusiveMinimum, exclusiveMaximum,
-                         minLength, maxLength, pattern, format, multipleOf, enumValues, ref, version, compatibility, allOfSchemas, anyOfSchemas);
+                         minLength, maxLength, pattern, format, multipleOf, enumValues, ref, version, compatibility,
+                         allOfSchemas, anyOfSchemas, oneOfSchemas, notSchema, ifSchema, thenSchema, elseSchema);
     }
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> castMap(Map<?, ?> source) {
         return (Map<String, Object>) source;
+    }
+
+    /**
+     * Detects and logs unsupported keywords in the raw schema map.
+     * This method scans all keys in the schema and warns about any that are not supported.
+     * In fail-fast mode, throws an exception for unsupported keywords.
+     * 
+     * @param raw the raw schema map
+     * @param path path context for logging
+     * @throws IllegalArgumentException if fail-fast mode is enabled and unsupported keyword is found
+     */
+    private void detectUnsupportedKeywords(Map<String, Object> raw, String path) {
+        if (raw == null || keywordsRegistry == null) {
+            return;
+        }
+        
+        for (String key : raw.keySet()) {
+            // Skip internal/structural keys
+            if (key.startsWith("$")) {
+                continue;
+            }
+            
+            if (!keywordsRegistry.isKeywordSupported(key)) {
+                String message = "[" + path + "] Unsupported keyword detected: '" + key + 
+                            "'. This keyword will be ignored during validation.";
+                
+                if (failFastMode) {
+                    throw new IllegalArgumentException("FAIL-FAST: " + message + " Set strict-mode: false in config to allow.");
+                } else {
+                    logger.warning(message);
+                }
+            }
+        }
+        
+        // Recursively check nested schemas
+        for (Object value : raw.values()) {
+            if (value instanceof Map<?, ?> nestedMap) {
+                detectUnsupportedKeywords((Map<String, Object>) nestedMap, path + ".nested");
+            } else if (value instanceof List<?> list) {
+                for (Object item : list) {
+                    if (item instanceof Map<?, ?> itemMap) {
+                        detectUnsupportedKeywords((Map<String, Object>) itemMap, path + ".item");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets the supported keywords registry.
+     * @return the keywords registry
+     */
+    public SupportedKeywordsRegistry getKeywordsRegistry() {
+        return keywordsRegistry;
     }
 
     private SchemaType parseType(String input) {

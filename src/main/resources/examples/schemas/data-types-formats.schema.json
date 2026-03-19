@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Data Types with Formats",
+  "description": "Demonstrates format validation (email, uri, date-time, ipv4, ipv6, etc.) and multipleOf",
+  "type": "object",
+  "required": ["playerId", "email", "website", "registeredAt", "ipAddress"],
+  "additionalProperties": false,
+  "properties": {
+    "playerId": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]{4,16}$",
+      "description": "Alphanumeric ID between 4-16 characters"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Valid email address"
+    },
+    "website": {
+      "type": "string",
+      "format": "uri",
+      "description": "Valid URI"
+    },
+    "avatarUrl": {
+      "type": "string",
+      "format": "uri-reference",
+      "description": "URI reference (relative or absolute)"
+    },
+    "registeredAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 date-time"
+    },
+    "lastLogin": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 date-time"
+    },
+    "birthDate": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date (YYYY-MM-DD)"
+    },
+    "alarmTime": {
+      "type": "string",
+      "format": "time",
+      "description": "ISO 8601 time (HH:MM:SS)"
+    },
+    "ipAddress": {
+      "type": "string",
+      "format": "ipv4",
+      "description": "IPv4 address"
+    },
+    "ipv6Address": {
+      "type": "string",
+      "format": "ipv6",
+      "description": "IPv6 address"
+    },
+    "hostname": {
+      "type": "string",
+      "format": "hostname",
+      "description": "Hostname"
+    },
+    "timestamp": {
+      "type": "integer",
+      "format": "unix-time",
+      "description": "Unix timestamp (seconds since epoch)"
+    },
+    "score": {
+      "type": "number",
+      "multipleOf": 0.5,
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Score must be multiple of 0.5"
+    },
+    "coins": {
+      "type": "integer",
+      "multipleOf": 10,
+      "minimum": 0,
+      "description": "Coins must be multiple of 10"
+    },
+    "experience": {
+      "type": "number",
+      "multipleOf": 100,
+      "minimum": 0,
+      "description": "Experience points, multiple of 100"
+    },
+    "discount": {
+      "type": "number",
+      "multipleOf": 0.05,
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Discount as decimal, multiple of 0.05 (5%)"
+    },
+    "jsonData": {
+      "type": "string",
+      "format": "json-pointer",
+      "description": "JSON Pointer"
+    },
+    "relativePath": {
+      "type": "string",
+      "format": "relative-json-pointer",
+      "description": "Relative JSON Pointer"
+    },
+    "phoneNumber": {
+      "type": "string",
+      "pattern": "^\\+?[0-9]{10,15}$",
+      "description": "Phone number with 10-15 digits"
+    },
+    "colorHex": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "description": "Hex color code"
+    }
+  }
+}
