@@ -27,6 +27,10 @@ A Minecraft (Paper/Spigot) plugin that allows validating YAML/JSON data using sc
 - 🎯 Validation of objects, arrays, strings, numbers, and booleans
 - 📊 Detailed error system
 - 🔄 Schema reference support (`$ref`)
+- 🏷️ **Format validation** (email, uri, date-time, ipv4, ipv6, uuid, etc.)
+- 🔢 **Numeric constraints** (multipleOf, minimum, maximum)
+- 📏 **String constraints** (minLength, maxLength, pattern, format)
+- 🔀 **Schema composition** (allOf, anyOf)
 
 ---
 
@@ -190,12 +194,15 @@ function validatePlayerData(player: player) :: boolean:
   "type": "object",
   "properties": {
     "name": { "type": "string" },
-    "age": { "type": "number", "minimum": 0 },
-    "email": { "type": "string", "pattern": "^[^@]+@[^@]+$" }
+    "age": { "type": "number", "minimum": 0, "maximum": 120 },
+    "email": { "type": "string", "format": "email" },
+    "website": { "type": "string", "format": "uri" },
+    "score": { "type": "integer", "multipleOf": 10 },
+    "tags": { "type": "array", "items": { "type": "string" } }
   },
-  "required": ["name", "email"],
-  "additionalProperties": false
+  "required": ["name", "email"]
 }
+```
 ```
 
 ### Validation Properties
@@ -208,10 +215,15 @@ function validatePlayerData(player: player) :: boolean:
 | `items` | Array item schema |
 | `required` | Required fields |
 | `minimum` / `maximum` | Numeric limits |
-| `minLength` / `maxLength` | String limits |
-| `pattern` | String regex |
+| `exclusiveMinimum` / `exclusiveMaximum` | Exclusive numeric limits |
+| `multipleOf` | Numeric multiple constraint |
+| `minLength` / `maxLength` | String length limits |
+| `pattern` | String regex pattern |
+| `format` | String format (email, uri, date-time, ipv4, ipv6, uuid, etc.) |
 | `enum` | Allowed values |
 | `additionalProperties` | Allow extra properties |
+| `allOf` | Must validate all schemas |
+| `anyOf` | Must validate at least one schema |
 
 ### Complex Schema Example
 
