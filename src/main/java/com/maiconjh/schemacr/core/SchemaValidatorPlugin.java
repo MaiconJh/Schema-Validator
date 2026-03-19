@@ -5,12 +5,19 @@ import com.maiconjh.schemacr.integration.SkriptSyntaxRegistration;
 import com.maiconjh.schemacr.schemes.FileSchemaLoader;
 import com.maiconjh.schemacr.schemes.Schema;
 import com.maiconjh.schemacr.schemes.SchemaRegistry;
+import com.maiconjh.schemacr.schemes.SchemaType;
+import com.maiconjh.schemacr.validation.ValidationError;
+import com.maiconjh.schemacr.validation.ValidationResult;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -92,7 +99,66 @@ public class SchemaValidatorPlugin extends JavaPlugin {
         loadedCount += loadSchemasFromDirectory(schemaDir, ".yml");
         loadedCount += loadSchemasFromDirectory(schemaDir, ".yaml");
 
+        // Validate loaded schemas if enabled
+        if (config.isValidateOnLoad() && loadedCount > 0) {
+            validateLoadedSchemas();
+        }
+
         getLogger().info("Auto-load complete: " + loadedCount + " schemas loaded, " + failedCount + " failed.");
+    }
+
+    /**
+     * Validates all registered schemas against themselves to ensure structural correctness.
+     */
+    private void validateLoadedSchemas() {
+        getLogger().info("Validating loaded schemas...");
+        com.maiconjh.schemacr.core.ValidationService validationService = new com.maiconjh.schemacr.core.ValidationService();
+        int validCount = 0;
+        int invalidCount = 0;
+
+        for (String schemaName : schemaRegistry.getAllSchemaNames()) {
+            Schema schema = schemaRegistry.getSchema(schemaName).orElse(null);
+            if (schema != null) {
+                // Create a minimal valid data to test schema structure
+                Object testData = createMinimalTestData(schema);
+                ValidationResult result = validationService.validate(testData, schema);
+
+                if (result.isSuccess()) {
+                    validCount++;
+                } else {
+                    invalidCount++;
+                    getLogger().warning("Schema '" + schemaName + "' failed validation:");
+                    for (ValidationError error : result.getErrors()) {
+                        getLogger().warning("  - " + error.getNodePath() + ": " + error.getDescription());
+                    }
+                }
+            }
+        }
+
+        getLogger().info("Schema validation complete: " + validCount + " valid, " + invalidCount + " invalid.");
+    }
+
+    /**
+     * Creates minimal test data for schema validation testing.
+     */
+    private Object createMinimalTestData(Schema schema) {
+        return switch (schema.getType()) {
+            case OBJECT -> {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                for (String required : schema.getRequiredFields()) {
+                    map.put(required, createMinimalTestData(
+                        schema.getProperties().getOrDefault(required, 
+                            new Schema("temp", SchemaType.STRING, null, null))));
+                }
+                yield map;
+            }
+            case ARRAY -> java.util.List.of();
+            case STRING -> "";
+            case NUMBER -> 0;
+            case BOOLEAN -> false;
+            case NULL -> null;
+            case ANY -> "test";
+        };
     }
 
     /**

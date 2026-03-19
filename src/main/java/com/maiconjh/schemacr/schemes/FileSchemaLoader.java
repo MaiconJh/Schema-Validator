@@ -132,6 +132,16 @@ public class FileSchemaLoader {
             ref = refValue;
         }
 
+        // Parse version and compatibility
+        String version = null;
+        String compatibility = null;
+        if (raw.containsKey("version") && raw.get("version") instanceof String v) {
+            version = v;
+        }
+        if (raw.containsKey("compatibility") && raw.get("compatibility") instanceof String c) {
+            compatibility = c;
+        }
+
         // Parse patternProperties
         if (type == SchemaType.OBJECT && raw.containsKey("patternProperties")) {
             Object pp = raw.get("patternProperties");
@@ -163,7 +173,7 @@ public class FileSchemaLoader {
 
         return new Schema(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProps,
                          minimum, maximum, exclusiveMinimum, exclusiveMaximum,
-                         minLength, maxLength, pattern, enumValues, ref);
+                         minLength, maxLength, pattern, enumValues, ref, version, compatibility);
     }
 
     @SuppressWarnings("unchecked")

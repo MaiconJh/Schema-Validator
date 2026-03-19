@@ -16,6 +16,13 @@ public class ObjectValidator implements Validator {
     public List<ValidationError> validate(Object data, Schema schema, String path, String parentKey) {
         List<ValidationError> errors = new ArrayList<>();
 
+        // Handle schema references ($ref)
+        if (schema.isRef()) {
+            // For now, skip validation of ref schemas
+            // The SchemaRefResolver should be used to resolve the actual schema
+            return errors;
+        }
+
         if (!(data instanceof Map<?, ?> map)) {
             errors.add(new ValidationError(path, "object", ValidationUtils.typeName(data), "Expected an object/map node."));
             return errors;

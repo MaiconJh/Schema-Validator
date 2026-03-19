@@ -6,6 +6,7 @@ import com.maiconjh.schemacr.validation.ValidationError;
 import com.maiconjh.schemacr.validation.ValidationResult;
 import com.maiconjh.schemacr.validation.Validator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,5 +25,56 @@ public class ValidationService {
     public ValidationResult validate(Object data, Schema schema) {
         List<ValidationError> errors = rootValidator.validate(data, schema, "$", null);
         return ValidationResult.from(errors);
+    }
+
+    /**
+     * Validates multiple data objects against the same schema.
+     * 
+     * @param dataList list of data objects to validate
+     * @param schema schema to validate against
+     * @return list of validation results, one for each data object
+     */
+    public List<ValidationResult> validateBatch(List<Object> dataList, Schema schema) {
+        List<ValidationResult> results = new ArrayList<>();
+        for (Object data : dataList) {
+            results.add(validate(data, schema));
+        }
+        return results;
+    }
+
+    /**
+     * Validates multiple data objects against the same schema and returns
+     * a summary of all validation results.
+     * 
+     * @param dataList list of data objects to validate
+     * @param schema schema to validate against
+     * @return true if all validations passed, false otherwise
+     */
+    public boolean validateAll(List<Object> dataList, Schema schema) {
+        for (Object data : dataList) {
+            ValidationResult result = validate(data, schema);
+            if (!result.isSuccess()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Gets the count of failed validations in a batch.
+     * 
+     * @param dataList list of data objects to validate
+     * @param schema schema to validate against
+     * @return number of failed validations
+     */
+    public int getFailedCount(List<Object> dataList, Schema schema) {
+        int count = 0;
+        for (Object data : dataList) {
+            ValidationResult result = validate(data, schema);
+            if (!result.isSuccess()) {
+                count++;
+            }
+        }
+        return count;
     }
 }

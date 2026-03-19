@@ -80,4 +80,12 @@ public class SchemaRegistry {
     public boolean isCacheEnabled() {
         return cacheEnabled;
     }
+
+    /**
+     * Returns all registered schema names.
+     * @return set of schema names
+     */
+    public java.util.Set<String> getAllSchemaNames() {
+        return schemasByName.keySet();
+    }
 }

@@ -28,20 +28,22 @@ public class Schema {
     private final String pattern;
     private final List<Object> enumValues;
     private final String ref; // $ref for schema references
+    private final String version; // Schema version for compatibility
+    private final String compatibility; // Compatibility flag (e.g., "1.21", "1.20")
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, Schema itemSchema) {
-        this(name, type, properties, null, itemSchema, null);
+        this(name, type, properties, null, itemSchema, null, true, null, null, false, false, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Schema itemSchema, List<String> requiredFields) {
-        this(name, type, properties, null, itemSchema, requiredFields, true);
+        this(name, type, properties, null, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Schema itemSchema, List<String> requiredFields, boolean additionalProperties) {
         this(name, type, properties, null, itemSchema, requiredFields, additionalProperties, 
-             null, null, false, false, null, null, null, null, null);
+             null, null, false, false, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
@@ -49,19 +51,19 @@ public class Schema {
                   Number minimum, Number maximum, boolean exclusiveMinimum, boolean exclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, List<Object> enumValues) {
         this(name, type, properties, null, itemSchema, requiredFields, additionalProperties, 
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, enumValues, null);
+             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, enumValues, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, true);
+        this(name, type, properties, patternProperties, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
                   boolean additionalProperties) {
         this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties, 
-             null, null, false, false, null, null, null, null, null);
+             null, null, false, false, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
@@ -69,6 +71,16 @@ public class Schema {
                   boolean additionalProperties, Number minimum, Number maximum, 
                   boolean exclusiveMinimum, boolean exclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, List<Object> enumValues, String ref) {
+        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties, 
+             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, enumValues, ref, null, null);
+    }
+
+    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
+                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
+                  boolean additionalProperties, Number minimum, Number maximum, 
+                  boolean exclusiveMinimum, boolean exclusiveMaximum,
+                  Integer minLength, Integer maxLength, String pattern, List<Object> enumValues, 
+                  String ref, String version, String compatibility) {
         this.name = name;
         this.type = type;
         this.properties = properties == null ? Collections.emptyMap() : Collections.unmodifiableMap(properties);
@@ -85,6 +97,8 @@ public class Schema {
         this.pattern = pattern;
         this.enumValues = enumValues == null ? Collections.emptyList() : Collections.unmodifiableList(enumValues);
         this.ref = ref;
+        this.version = version;
+        this.compatibility = compatibility;
     }
 
     public String getName() {
@@ -165,5 +179,21 @@ public class Schema {
      */
     public boolean isRef() {
         return ref != null && !ref.isEmpty();
+    }
+
+    /**
+     * Returns the schema version.
+     * @return the version string or null
+     */
+    public String getVersion() {
+        return version;
+    }
+
+    /**
+     * Returns the compatibility flag (e.g., "1.21", "1.20").
+     * @return the compatibility string or null
+     */
+    public String getCompatibility() {
+        return compatibility;
     }
 }
