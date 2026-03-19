@@ -1,0 +1,46 @@
+# ============================================
+# EXEMPLO SIMPLES DE VALIDAÇÃO (FUNCIONA!)
+# ============================================
+
+# Usa o schema simplificado: simple-block-schema.json
+
+# ============================================
+# Validação básica - funciona!
+# ============================================
+
+command /testarvalidacao:
+    trigger:
+        # Validar arquivo YAML usando o schema SIMPLES
+        validate yaml "examples/simple-block-example.yml" using schema "examples/schemas/simple-block-schema.json"
+        
+        # Obter erros de validação
+        set {_errors::*} to last schema validation errors
+        
+        # Verificar resultado
+        if size of {_errors::*} is 0:
+            broadcast "✓ Dados validos!"
+            broadcast "O bloco foi validado com sucesso!"
+        else:
+            broadcast "✗ Dados invalidos!"
+            broadcast "Erros encontrados:"
+            loop {_errors::*}:
+                broadcast "- %loop-value%"
+
+# ============================================
+# Testar com dados invalidos propositalmente
+# ============================================
+
+command /testar invalido:
+    trigger:
+        # Criar dados invalidos na hora (precisa de um arquivo)
+        # Por agora, vamos testar apenas o fluxo
+        
+        validate yaml "examples/schemas/player-profile.schema.json" using schema "examples/schemas/player-profile.schema.json"
+        set {_errors::*} to last schema validation errors
+        
+        if size of {_errors::*} is 0:
+            send "✓ Schema valido!" to player
+        else:
+            send "✗ Schema tem erros:" to player
+            loop {_errors::*}:
+                send "  - %loop-value%" to player

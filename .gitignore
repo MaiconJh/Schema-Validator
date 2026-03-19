@@ -231,11 +231,11 @@ settings.gradle
 settings.gradle.kts
 
 # O diretório src deve ser versionado
-src/
+!src/
 
 # O diretório resources deve ser versionado
-resources/
+!resources/
 
 # Documentação do projeto
-README.md
-LICENSE
+!README.md
+!LICENSE

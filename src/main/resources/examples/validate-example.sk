@@ -1,0 +1,102 @@
+# ============================================
+# EXEMPLO DE VALIDAÇÃO USANDO SKRIPT
+# ============================================
+
+# A sintaxe do plugin é:
+# - validate yaml <arquivo> using schema <arquivo>
+# - validate json <arquivo> using schema <arquivo>
+# - last schema validation errors (retorna uma lista de erros)
+
+# ============================================
+# EXEMPLO 1: Validação básica de arquivo YAML
+# ============================================
+
+command /validaryaml:
+    trigger:
+        # Validar arquivo YAML usando o schema
+        validate yaml "examples/custom-block-example.yml" using schema "examples/schemas/custom-block-schema.json"
+        
+        # Obter erros de validação (CORRETO: usar set em vez de loop)
+        set {_errors::*} to last schema validation errors
+        
+        # Verificar se há erros
+        if size of {_errors::*} is 0:
+            broadcast "✓ Dados validos!"
+        else:
+            broadcast "✗ Dados invalidos!"
+            broadcast "Erros:"
+            loop {_errors::*}:
+                broadcast "- %loop-value%"
+
+# ============================================
+# EXEMPLO 2: Verificar tamanho da lista de erros
+# ============================================
+
+on script load:
+    # Validar ao iniciar (apenas para carregar o schema)
+    validate yaml "examples/custom-block-example.yml" using schema "examples/schemas/custom-block-schema.json"
+    set {_errors::*} to last schema validation errors
+    
+    if size of {_errors::*} is 0:
+        broadcast "✓ Schema carregado com sucesso!"
+    else:
+        broadcast "✗ Erro ao carregar schema"
+        loop {_errors::*}:
+            broadcast "  - %loop-value%"
+
+# ============================================
+# EXEMPLO 3: Validação de arquivo JSON
+# ============================================
+
+command /validarjson:
+    trigger:
+        validate json "examples/schemas/player-profile.schema.json" using schema "examples/schemas/player-profile.schema.json"
+        set {_errors::*} to last schema validation errors
+        
+        if size of {_errors::*} is 0:
+            send "&a✓ JSON valido!" to player
+        else:
+            send "&c✗ JSON invalido!" to player
+            loop {_errors::*}:
+                send "&c- %loop-value%" to player
+
+# ============================================
+# EXEMPLO 4: Verificar dados de bloco quebrado
+# ============================================
+
+# Nota: Requer Skript ou addons que suportem "on player break"
+# Se não tiver, use um comando simples para testar
+
+command /testarbloco:
+    trigger:
+        # Testar validação de configuração de bloco
+        validate yaml "examples/custom-block-example.yml" using schema "examples/schemas/custom-block-schema.json"
+        set {_errors::*} to last schema validation errors
+        
+        if size of {_errors::*} is 0:
+            send "✓ Bloco configurado corretamente!" to player
+        else:
+            send "✗ Configuracao do bloco invalida!" to player
+            send "Erros:" to player
+            loop {_errors::*}:
+                send "  - %loop-value%" to player
+
+# ============================================
+# NOTA IMPORTANTE:
+# ============================================
+# O schema "custom-block-schema.json" usa "patternProperties"
+# que ainda não é suportado pelo validador当前的.
+# O validador atual só suporta propriedades fixas em "properties".
+# 
+# Para funcionar, você precisa de um schema como este:
+# {
+#   "type": "object",
+#   "properties": {
+#     "block-id": { "type": "string" },
+#     "info": { "type": "object" },
+#     ...
+#   },
+#   "additionalProperties": true
+# }
+#
+# Ou espere uma atualização futura do plugin.

@@ -1,0 +1,73 @@
+{
+  "type": "object",
+  "required": ["name", "address"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50
+    },
+    "email": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+    },
+    "age": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 150
+    },
+    "role": {
+      "type": "string",
+      "enum": ["admin", "user", "guest"]
+    },
+    "address": {
+      "$ref": "#/definitions/Address"
+    },
+    "friends": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Person"
+      }
+    }
+  },
+  "definitions": {
+    "Address": {
+      "type": "object",
+      "required": ["street", "city"],
+      "additionalProperties": false,
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zipCode": {
+          "type": "string",
+          "pattern": "^[0-9]{5}-?[0-9]{3}$"
+        },
+        "country": {
+          "type": "string",
+          "default": "Brazil"
+        }
+      }
+    },
+    "Person": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "nickname": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,331 @@
+# ============================================
+# EXEMPLO COMPLETO DE ARQUIVO YAML
+# Schema: custom-block-schema.json
+# ============================================
+
+# A chave do bloco deve corresponder ao pattern: ^[a-zA-Z0-9_-]+$
+diamond_ore_custom:
+  block-id: "diamond_ore_custom"
+  
+  info:
+    name: "&bDiamante&f Puro"
+    description:
+      - "Um diamante muito valioso encontrado nas profundezas"
+      - "Brilha com intensidade excepcional"
+    category: "ores"
+    class: "rare"
+    rarity: "legendary"
+  
+  verification:
+    block-type: "tagged:diamond_ore"
+    worlds:
+      - "world"
+      - "world_nether"
+    y-range:
+      min: 0
+      max: 16
+    y-min: 0
+    y-max: 16
+    regions:
+      - "mining_zone"
+      - "VIP_area"
+    permissions:
+      mine: "mine.diamond"
+      view-info: "view.block.info"
+  
+  hardness:
+    base: 15
+    change:
+      tool-usage:
+        pickaxes:
+          type: "amount"
+          value: 1
+          tool-properties:
+            wooden: 2
+            stone: 1
+            iron: 0.5
+            diamond: 0.25
+            netherite: 0.2
+        axes:
+          type: "percentage"
+          value: 150
+        shovels:
+          type: "expression"
+          value: "tool_level * 2"
+      on_water:
+        type: "percentage"
+        value: 50
+      on_lava:
+        type: "percentage"
+        value: 200
+      on_ground:
+        type: "percentage"
+        value: 100
+      on_air:
+        type: "percentage"
+        value: 75
+    modifiers:
+      environment:
+        on_water: 0.5
+        on_lava: 2.0
+        on_ground: 1.0
+        on_air: 1.0
+      tools:
+        pickaxes: 0.8
+        axes: 1.5
+        shovels: 2.0
+        hands: 3.0
+        other: 2.5
+      enchantments:
+        efficiency-1: 0.9
+        efficiency-2: 0.8
+        efficiency-3: 0.7
+        efficiency-4: 0.6
+        efficiency-5: 0.5
+  
+  drops:
+    primary:
+      type: "item"
+      value: "diamond"
+      amount:
+        chance: 100
+        base: 1
+        fortune_base: 1
+        fortune-multiplier: 0
+        random-bonus: 0
+      required-tool: "pickaxes"
+      min-tool-level: 2
+      origin: "diamantes"
+      conditions:
+        - "player has permission 'mining.diamond'"
+      experience:
+        mining: 5
+        total: 5
+      evaluate:
+        - "send message 'Você minerou um diamante!'"
+    
+    rare:
+      type: "item"
+      value: "diamond_block"
+      amount:
+        chance: 5
+        base: 1
+        fortune_base: 0
+        fortune-multiplier: 1
+        random-bonus: 1
+      required-tools:
+        - "pickaxes"
+        - "axes"
+      min-tool-level: 3
+      origin: "diamantes_raros"
+      message: "WOW! Você encontrou um bloco de diamante!"
+      experience:
+        mining: 15
+        total: 15
+      evaluate:
+        - "send message 'Drop raro: Bloco de Diamante!'"
+        - "play sound 'entity.ender_eye.death' to player"
+    
+    drop_principal:
+      type: "variable"
+      value: "{player::mining::diamonds}"
+      amount:
+        chance: 100
+        base: 1
+    
+    my_custom_drop:
+      type: "command"
+      value: "give %player% diamond 1"
+      amount:
+        chance: 10
+        base: 1
+  
+  sounds:
+    cracking:
+      sound: "block.diamond_ore.hit"
+      seed: 12345
+      volume: 1.0
+      pitch:
+        type: "random"
+        value: 0.9
+    break:
+      sound: "block.diamond_ore.break"
+      volume: 1.0
+      pitch: 1.0
+    mining:
+      sound: "block.diamond_ore.hit"
+      volume: 0.5
+      pitch:
+        type: "increase"
+        value: 1.2
+      interval: 10
+    rare-drop:
+      sound: "entity.ender_eye.death"
+      volume: 1.0
+      pitch: 1.5
+  
+  effects:
+    mining:
+      particles: "block dust"
+      count: 20
+      spread: 0.5
+      speed: 0.5
+    break:
+      particles: "block dust"
+      count: 30
+      spread: 1.0
+      speed: 0.3
+    rare-drop:
+      particles: "happy villager"
+      count: 50
+      spread: 2.0
+      speed: 1.0
+  
+  stages:
+    stage_1:
+      id: "diamond_ore"
+      chance: 80
+      timeout: 200
+    stage_2:
+      id: "diamond_ore_depleted"
+      chance: 20
+      timeout: 400
+    my_custom_stage:
+      id: "diamond_ore_enhanced"
+      chance: 5
+      timeout: 100
+  
+  after_respawn:
+    block: "cobblestone"
+    time: 200
+    evaluate:
+      - 'send message "Bloco esgotado!"'
+  
+  before_respawn:
+    evaluate:
+      - 'send message "Regenerando..."'
+  
+  respawn:
+    enabled: true
+    time: 200
+    temporary-block: "air"
+    notify-nearby: true
+    notify-radius: 10
+    conditions:
+      - 'player has permission "respawn.blocks"'
+  
+  visual_effect: true
+  verify-block-break-flag: true
+  
+  integrations:
+    worldguard:
+      respect-flags: true
+      required-flags:
+        - "allow-mine"
+
+# ============================================
+# Segundo exemplo de bloco: Ferro
+# ============================================
+
+iron_ore_custom:
+  block-id: "iron_ore_custom"
+  
+  info:
+    name: "&7Ferro&f Puro"
+    description:
+      - "Minério de ferro de alta qualidade"
+    category: "ores"
+    class: "normal"
+    rarity: "common"
+  
+  verification:
+    block-type: "tagged:iron_ore"
+    worlds:
+      - "world"
+    y-range:
+      min: 0
+      max: 64
+  
+  hardness:
+    base: 8
+  
+  drops:
+    primary:
+      type: "item"
+      value: "iron_ingot"
+      amount:
+        chance: 100
+        base: 1
+  
+  visual_effect: false
+
+# ============================================
+# Terceiro exemplo: Bloco especial
+# ============================================
+
+special_crystal_block:
+  block-id: "special_crystal_block"
+  
+  info:
+    name: "&dCristal&5 Mágico&r"
+    description:
+      - "Um cristal raro com propriedades mágicas"
+      - "Brilha no escuro"
+    category: "crystals"
+    class: "mythic"
+    rarity: "epic"
+  
+  verification:
+    block-type: "minecraft:beacon"
+    worlds:
+      - "world"
+      - "world_the_end"
+    regions:
+      - "magic_zone"
+  
+  hardness:
+    base: 30
+    modifiers:
+      tools:
+        pickaxes: 0.5
+        axes: 1.0
+        hands: 5.0
+  
+  drops:
+    magic_crystal:
+      type: "item"
+      value: "ender_pearl"
+      amount:
+        chance: 50
+        base: 2
+        fortune_base: 1
+    rare_crystal:
+      type: "item"
+      value: "experience_bottle"
+      amount:
+        chance: 1
+        base: 1
+  
+  sounds:
+    break:
+      sound: "block.glass.break"
+      volume: 1.5
+      pitch: 1.2
+  
+  effects:
+    break:
+      particles: "portal"
+      count: 50
+      spread: 1.5
+      speed: 0.8
+  
+  respawn:
+    enabled: true
+    time: 600
+    notify-nearby: true
+  
+  visual_effect: true
+  
+  integrations:
+    worldguard:
+      respect-flags: true

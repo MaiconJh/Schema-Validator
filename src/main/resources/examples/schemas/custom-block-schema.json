@@ -1,0 +1,553 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "patternProperties": {
+    "^[a-zA-Z0-9_-]+$": {
+      "type": "object",
+      "properties": {
+        "block-id": {
+          "type": "string",
+          "description": "ID único do bloco usado internamente"
+        },
+        "info": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Nome amigável do bloco com suporte a cores (&)"
+            },
+            "description": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Lista de linhas de descrição do bloco"
+            },
+            "category": {
+              "type": "string",
+              "enum": ["blocks", "ores", "metals", "crystals", "special", "logs"],
+              "description": "Categoria do bloco para organização"
+            },
+            "class": {
+              "type": "string",
+              "enum": ["normal", "rare", "epic", "legendary", "mythic", "special", "boss"],
+              "description": "Classe do bloco"
+            },
+            "rarity": {
+              "type": "string",
+              "enum": ["common", "uncommon", "rare", "epic", "legendary"],
+              "description": "Raridade do bloco"
+            }
+          },
+          "required": ["name", "category", "class", "rarity"]
+        },
+        "verification": {
+          "type": "object",
+          "properties": {
+            "block-type": {
+              "type": "string",
+              "description": "Tipo do bloco no Minecraft (pode usar 'tagged:')"
+            },
+            "worlds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Lista de mundos onde o bloco está ativo"
+            },
+            "y-range": {
+              "type": "object",
+              "properties": {
+                "min": {
+                  "type": "integer",
+                  "minimum": -64
+                },
+                "max": {
+                  "type": "integer",
+                  "maximum": 320
+                }
+              },
+              "description": "Altura onde o bloco pode ser encontrado"
+            },
+            "y-min": {
+              "type": "integer",
+              "description": "Altura mínima (formato alternativo)"
+            },
+            "y-max": {
+              "type": "integer",
+              "description": "Altura máxima (formato alternativo)"
+            },
+            "regions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Regiões do WorldGuard onde o bloco está ativo"
+            },
+            "permissions": {
+              "type": "object",
+              "properties": {
+                "mine": {
+                  "type": "string",
+                  "description": "Permissão para minerar o bloco"
+                },
+                "view-info": {
+                  "type": "string",
+                  "description": "Permissão para ver informações do bloco"
+                }
+              }
+            }
+          },
+          "required": ["block-type", "worlds"]
+        },
+        "hardness": {
+          "type": "object",
+          "properties": {
+            "base": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Dureza base em ticks"
+            },
+            "change": {
+              "type": "object",
+              "properties": {
+                "tool-usage": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^(pickaxes|axes|shovels|hoes|nothing|other|hands)$": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": ["amount", "expression", "percentage"]
+                        },
+                        "value": {
+                          "oneOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "string",
+                              "description": "Expressão matemática"
+                            }
+                          ]
+                        },
+                        "tool-properties": {
+                          "type": "object",
+                          "properties": {
+                            "wooden": { "type": "number" },
+                            "stone": { "type": "number" },
+                            "golden": { "type": "number" },
+                            "iron": { "type": "number" },
+                            "diamond": { "type": "number" },
+                            "netherite": { "type": "number" }
+                          }
+                        }
+                      },
+                      "required": ["type", "value"]
+                    }
+                  }
+                },
+                "on_water": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string", "enum": ["percentage"] },
+                    "value": { "type": "number" }
+                  }
+                },
+                "on_lava": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string", "enum": ["percentage"] },
+                    "value": { "type": "number" }
+                  }
+                },
+                "on_ground": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string", "enum": ["percentage"] },
+                    "value": { "type": "number" }
+                  }
+                },
+                "on_air": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string", "enum": ["percentage"] },
+                    "value": { "type": "number" }
+                  }
+                }
+              }
+            },
+            "modifiers": {
+              "type": "object",
+              "properties": {
+                "environment": {
+                  "type": "object",
+                  "properties": {
+                    "on_water": { "type": "number" },
+                    "on_lava": { "type": "number" },
+                    "on_ground": { "type": "number" },
+                    "on_air": { "type": "number" }
+                  }
+                },
+                "tools": {
+                  "type": "object",
+                  "properties": {
+                    "pickaxes": { "type": "number" },
+                    "axes": { "type": "number" },
+                    "shovels": { "type": "number" },
+                    "hands": { "type": "number" },
+                    "other": { "type": "number" }
+                  }
+                },
+                "enchantments": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^efficiency-[1-5]$": { "type": "number" }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["base"]
+        },
+        "drops": {
+          "type": "object",
+          "patternProperties": {
+            "^(primary|rare|drop_principal|drop_raro|[a-zA-Z0-9_-]+)$": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["item", "variable", "command"],
+                  "description": "Tipo do drop"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Valor do drop (item, variável ou comando)"
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "chance": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100,
+                      "description": "Chance de dropar (0-100)"
+                    },
+                    "base": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Quantidade base"
+                    },
+                    "fortune_base": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Multiplicador de fortuna"
+                    },
+                    "fortune-multiplier": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Multiplicador de fortuna (formato alternativo)"
+                    },
+                    "random-bonus": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Bônus aleatório"
+                    }
+                  },
+                  "required": ["chance", "base"]
+                },
+                "required-tool": {
+                  "type": "string",
+                  "enum": ["pickaxes", "axes", "shovels", "hoes", "nothing", "hands"],
+                  "description": "Ferramenta necessária"
+                },
+                "required-tools": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["pickaxes", "axes", "shovels", "hoes", "hands"]
+                  },
+                  "description": "Lista de ferramentas necessárias"
+                },
+                "min-tool-level": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6,
+                  "description": "Nível mínimo da ferramenta (0-6)"
+                },
+                "origin": {
+                  "type": "string",
+                  "description": "Origem do drop para coleções"
+                },
+                "conditions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Condições especiais para o drop"
+                },
+                "nbt": {
+                  "type": "object",
+                  "description": "Tags NBT personalizadas"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Mensagem especial ao dropar"
+                },
+                "experience": {
+                  "type": "object",
+                  "properties": {
+                    "mining": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "evaluate": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Código Skript executado ao dropar"
+                }
+              },
+              "required": ["type", "value", "amount"]
+            }
+          }
+        },
+        "sounds": {
+          "type": "object",
+          "properties": {
+            "cracking": {
+              "type": "object",
+              "properties": {
+                "sound": { "type": "string" },
+                "seed": { "type": "integer", "minimum": 0 },
+                "volume": {
+                  "oneOf": [
+                    { "type": "number" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "type": "string", "enum": ["increase", "decrease", "static"] },
+                        "value": { "type": "number" }
+                      }
+                    }
+                  ]
+                },
+                "pitch": {
+                  "oneOf": [
+                    { "type": "number" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "type": "string", "enum": ["increase", "decrease", "fixed", "random"] },
+                        "value": { "type": "number" }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "break": {
+              "type": "object",
+              "properties": {
+                "sound": { "type": "string" },
+                "volume": { "type": "number" },
+                "pitch": { "type": "number" }
+              }
+            },
+            "mining": {
+              "type": "object",
+              "properties": {
+                "sound": { "type": "string" },
+                "volume": { "type": "number" },
+                "pitch": {
+                  "oneOf": [
+                    { "type": "number" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "type": "string", "enum": ["increase", "decrease", "fixed", "random"] },
+                        "value": { "type": "number" }
+                      }
+                    }
+                  ]
+                },
+                "interval": { "type": "integer", "minimum": 1 }
+              }
+            },
+            "rare-drop": {
+              "type": "object",
+              "properties": {
+                "sound": { "type": "string" },
+                "volume": { "type": "number" },
+                "pitch": { "type": "number" }
+              }
+            }
+          }
+        },
+        "effects": {
+          "type": "object",
+          "properties": {
+            "mining": {
+              "type": "object",
+              "properties": {
+                "particles": { "type": "string" },
+                "count": { "type": "integer", "minimum": 0 },
+                "spread": { "type": "number", "minimum": 0 },
+                "speed": { "type": "number", "minimum": 0 }
+              }
+            },
+            "break": {
+              "type": "object",
+              "properties": {
+                "particles": { "type": "string" },
+                "count": { "type": "integer", "minimum": 0 },
+                "spread": { "type": "number", "minimum": 0 },
+                "speed": { "type": "number", "minimum": 0 }
+              }
+            },
+            "rare-drop": {
+              "type": "object",
+              "properties": {
+                "particles": { "type": "string" },
+                "count": { "type": "integer", "minimum": 0 },
+                "spread": { "type": "number", "minimum": 0 },
+                "speed": { "type": "number", "minimum": 0 }
+              }
+            }
+          }
+        },
+        "stages": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z0-9_-]+$": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "chance": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "timeout": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Tempo em ticks até respawnar"
+                }
+              },
+              "required": ["id", "chance", "timeout"]
+            }
+          }
+        },
+        "after_respawn": {
+          "type": "object",
+          "properties": {
+            "block": { "type": "string" },
+            "time": { "type": "integer", "minimum": 0 },
+            "evaluate": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "before_respawn": {
+          "type": "object",
+          "properties": {
+            "evaluate": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "respawn": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "time": { "type": "integer", "minimum": 0 },
+            "temporary-block": { "type": "string" },
+            "notify-nearby": { "type": "boolean" },
+            "notify-radius": { "type": "integer", "minimum": 0 },
+            "conditions": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "visual_effect": {
+          "type": "boolean",
+          "description": "Mostrar efeitos visuais de quebra?"
+        },
+        "verify-block-break-flag": {
+          "type": "boolean",
+          "description": "Verificar flag do WorldGuard antes de quebrar?"
+        },
+        "integrations": {
+          "type": "object",
+          "properties": {
+            "worldguard": {
+              "type": "object",
+              "properties": {
+                "respect-flags": { "type": "boolean" },
+                "required-flags": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "blacklist-regions": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            },
+            "auraskills": {
+              "type": "object",
+              "properties": {
+                "skill": { "type": "string" },
+                "xp-amount": { "type": "integer", "minimum": 0 },
+                "requirements": {
+                  "type": "object",
+                  "properties": {
+                    "min-level": { "type": "integer", "minimum": 0 },
+                    "max-level": { "type": "integer", "minimum": 0 }
+                  }
+                }
+              }
+            },
+            "collections": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "collection-id": { "type": "string" },
+                "amount-per-break": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        },
+        "advanced": {
+          "type": "object",
+          "properties": {
+            "cache-duration": { "type": "integer", "minimum": 0 },
+            "batch-processing": { "type": "boolean" },
+            "batch-size": { "type": "integer", "minimum": 1 },
+            "validate-on-load": { "type": "boolean" },
+            "version": { "type": "string" },
+            "compatibility": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["info", "verification", "hardness", "drops"],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

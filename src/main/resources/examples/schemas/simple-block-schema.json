@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "properties": {
+    "block-id": {
+      "type": "string",
+      "description": "ID único do bloco"
+    },
+    "info": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["blocks", "ores", "metals", "crystals", "special", "logs"]
+        },
+        "class": {
+          "type": "string",
+          "enum": ["normal", "rare", "epic", "legendary", "mythic", "special", "boss"]
+        },
+        "rarity": {
+          "type": "string",
+          "enum": ["common", "uncommon", "rare", "epic", "legendary"]
+        }
+      },
+      "required": ["name", "category", "class", "rarity"]
+    },
+    "verification": {
+      "type": "object",
+      "properties": {
+        "block-type": {
+          "type": "string"
+        },
+        "worlds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["block-type", "worlds"]
+    },
+    "hardness": {
+      "type": "object",
+      "properties": {
+        "base": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["base"]
+    },
+    "visual_effect": {
+      "type": "boolean"
+    }
+  },
+  "required": ["block-id", "info", "verification", "hardness"],
+  "additionalProperties": true
+}

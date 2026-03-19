@@ -1,0 +1,20 @@
+# Exemplo simples de configuração de bloco (funciona com simple-block-schema.json)
+
+block-id: "diamond_ore_custom"
+
+info:
+  name: "&bDiamante&f Puro"
+  category: "ores"
+  class: "rare"
+  rarity: "legendary"
+
+verification:
+  block-type: "diamond_ore"
+  worlds:
+    - "world"
+    - "world_nether"
+
+hardness:
+  base: 15
+
+visual_effect: true
