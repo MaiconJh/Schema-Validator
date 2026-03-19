@@ -30,20 +30,22 @@ public class Schema {
     private final String ref; // $ref for schema references
     private final String version; // Schema version for compatibility
     private final String compatibility; // Compatibility flag (e.g., "1.21", "1.20")
+    private final List<Schema> allOf; // allOf composition
+    private final List<Schema> anyOf; // anyOf composition
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, Schema itemSchema) {
-        this(name, type, properties, null, itemSchema, null, true, null, null, false, false, null, null, null, null, null, null, null);
+        this(name, type, properties, null, itemSchema, null, true, null, null, false, false, null, null, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Schema itemSchema, List<String> requiredFields) {
-        this(name, type, properties, null, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null);
+        this(name, type, properties, null, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Schema itemSchema, List<String> requiredFields, boolean additionalProperties) {
         this(name, type, properties, null, itemSchema, requiredFields, additionalProperties, 
-             null, null, false, false, null, null, null, null, null, null, null);
+             null, null, false, false, null, null, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
@@ -51,19 +53,19 @@ public class Schema {
                   Number minimum, Number maximum, boolean exclusiveMinimum, boolean exclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, List<Object> enumValues) {
         this(name, type, properties, null, itemSchema, requiredFields, additionalProperties, 
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, enumValues, null, null, null);
+             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, enumValues, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null);
+        this(name, type, properties, patternProperties, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
                   boolean additionalProperties) {
         this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties, 
-             null, null, false, false, null, null, null, null, null, null, null);
+             null, null, false, false, null, null, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
@@ -72,7 +74,7 @@ public class Schema {
                   boolean exclusiveMinimum, boolean exclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, List<Object> enumValues, String ref) {
         this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties, 
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, enumValues, ref, null, null);
+             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, enumValues, ref, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
@@ -80,7 +82,7 @@ public class Schema {
                   boolean additionalProperties, Number minimum, Number maximum, 
                   boolean exclusiveMinimum, boolean exclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, List<Object> enumValues, 
-                  String ref, String version, String compatibility) {
+                  String ref, String version, String compatibility, List<Schema> allOf, List<Schema> anyOf) {
         this.name = name;
         this.type = type;
         this.properties = properties == null ? Collections.emptyMap() : Collections.unmodifiableMap(properties);
@@ -99,6 +101,8 @@ public class Schema {
         this.ref = ref;
         this.version = version;
         this.compatibility = compatibility;
+        this.allOf = allOf == null ? Collections.emptyList() : Collections.unmodifiableList(allOf);
+        this.anyOf = anyOf == null ? Collections.emptyList() : Collections.unmodifiableList(anyOf);
     }
 
     public String getName() {
@@ -195,5 +199,37 @@ public class Schema {
      */
     public String getCompatibility() {
         return compatibility;
+    }
+
+    /**
+     * Returns the allOf schemas for composition.
+     * @return list of allOf schemas, or empty list if not defined
+     */
+    public List<Schema> getAllOf() {
+        return allOf;
+    }
+
+    /**
+     * Returns the anyOf schemas for composition.
+     * @return list of anyOf schemas, or empty list if not defined
+     */
+    public List<Schema> getAnyOf() {
+        return anyOf;
+    }
+
+    /**
+     * Checks if this schema has allOf composition.
+     * @return true if allOf is defined and not empty
+     */
+    public boolean hasAllOf() {
+        return !allOf.isEmpty();
+    }
+
+    /**
+     * Checks if this schema has anyOf composition.
+     * @return true if anyOf is defined and not empty
+     */
+    public boolean hasAnyOf() {
+        return !anyOf.isEmpty();
     }
 }

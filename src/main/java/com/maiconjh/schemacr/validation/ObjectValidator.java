@@ -45,9 +45,70 @@ public class ObjectValidator implements Validator {
             }
         }
 
+        // Verify data is a Map before proceeding with object validation
         if (!(data instanceof Map<?, ?> map)) {
             errors.add(new ValidationError(path, "object", ValidationUtils.typeName(data), "Expected an object/map node."));
             return errors;
+        }
+
+        // Handle allOf composition - data must validate against ALL schemas
+        if (schema.hasAllOf()) {
+            for (int i = 0; i < schema.getAllOf().size(); i++) {
+                Schema allOfSchema = schema.getAllOf().get(i);
+                Validator validator = ValidatorDispatcher.forSchema(allOfSchema);
+                List<ValidationError> allOfErrors = validator.validate(data, allOfSchema, path, parentKey);
+                if (!allOfErrors.isEmpty()) {
+                    // Add prefix to identify which allOf failed
+                    for (ValidationError error : allOfErrors) {
+                        errors.add(new ValidationError(
+                            error.getNodePath(),
+                            "allOf[" + i + "]." + error.getExpectedType(),
+                            error.getActualType(),
+                            "allOf[" + i + "]: " + error.getDescription()
+                        ));
+                    }
+                }
+            }
+            // If there are allOf errors, we still continue to validate other constraints
+            // but the final result will include these errors
+        }
+
+        // Handle anyOf composition - data must validate against AT LEAST ONE schema
+        if (schema.hasAnyOf()) {
+            boolean anyOfMatched = false;
+            List<ValidationError> anyOfErrors = new ArrayList<>();
+            
+            for (int i = 0; i < schema.getAnyOf().size(); i++) {
+                Schema anyOfSchema = schema.getAnyOf().get(i);
+                Validator validator = ValidatorDispatcher.forSchema(anyOfSchema);
+                List<ValidationError> schemaErrors = validator.validate(data, anyOfSchema, path, parentKey);
+                
+                if (schemaErrors.isEmpty()) {
+                    anyOfMatched = true;
+                    break;
+                } else {
+                    // Collect errors for reporting if no schema matches
+                    for (ValidationError error : schemaErrors) {
+                        anyOfErrors.add(new ValidationError(
+                            error.getNodePath(),
+                            "anyOf[" + i + "]." + error.getExpectedType(),
+                            error.getActualType(),
+                            "anyOf[" + i + "]: " + error.getDescription()
+                        ));
+                    }
+                }
+            }
+            
+            if (!anyOfMatched) {
+                errors.addAll(anyOfErrors);
+                // Add a summary error for anyOf
+                errors.add(new ValidationError(
+                    path,
+                    "anyOf",
+                    "no match",
+                    "Data must match at least one schema in anyOf (matched 0 of " + schema.getAnyOf().size() + ")"
+                ));
+            }
         }
 
         // Validate required fields

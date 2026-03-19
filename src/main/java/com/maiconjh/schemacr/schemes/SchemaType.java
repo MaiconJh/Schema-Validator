@@ -8,6 +8,7 @@ public enum SchemaType {
     ARRAY,
     STRING,
     NUMBER,
+    INTEGER,
     BOOLEAN,
     NULL,
     ANY

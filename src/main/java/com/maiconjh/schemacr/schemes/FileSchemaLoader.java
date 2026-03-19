@@ -186,6 +186,26 @@ public class FileSchemaLoader {
             compatibility = c;
         }
 
+        // Parse allOf composition
+        List<Schema> allOfSchemas = new ArrayList<>();
+        if (raw.containsKey("allOf") && raw.get("allOf") instanceof List<?> allOfRaw) {
+            for (Object item : allOfRaw) {
+                if (item instanceof Map<?, ?> allOfMap) {
+                    allOfSchemas.add(toSchema(name + "_allOf_" + allOfSchemas.size(), castMap(allOfMap)));
+                }
+            }
+        }
+
+        // Parse anyOf composition
+        List<Schema> anyOfSchemas = new ArrayList<>();
+        if (raw.containsKey("anyOf") && raw.get("anyOf") instanceof List<?> anyOfRaw) {
+            for (Object item : anyOfRaw) {
+                if (item instanceof Map<?, ?> anyOfMap) {
+                    anyOfSchemas.add(toSchema(name + "_anyOf_" + anyOfSchemas.size(), castMap(anyOfMap)));
+                }
+            }
+        }
+
         // Parse patternProperties
         if (type == SchemaType.OBJECT && raw.containsKey("patternProperties")) {
             Object pp = raw.get("patternProperties");
@@ -217,7 +237,7 @@ public class FileSchemaLoader {
 
         return new Schema(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProps,
                          minimum, maximum, exclusiveMinimum, exclusiveMaximum,
-                         minLength, maxLength, pattern, enumValues, ref, version, compatibility);
+                         minLength, maxLength, pattern, enumValues, ref, version, compatibility, allOfSchemas, anyOfSchemas);
     }
 
     @SuppressWarnings("unchecked")
@@ -230,7 +250,8 @@ public class FileSchemaLoader {
             case "object" -> SchemaType.OBJECT;
             case "array" -> SchemaType.ARRAY;
             case "string" -> SchemaType.STRING;
-            case "number", "integer" -> SchemaType.NUMBER;
+            case "integer" -> SchemaType.INTEGER;
+            case "number" -> SchemaType.NUMBER;
             case "boolean" -> SchemaType.BOOLEAN;
             case "null" -> SchemaType.NULL;
             default -> SchemaType.ANY;

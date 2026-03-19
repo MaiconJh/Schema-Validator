@@ -23,7 +23,10 @@ public class PrimitiveValidator implements Validator {
 
         boolean valid = switch (type) {
             case STRING -> data instanceof String;
-            case NUMBER -> data instanceof Number;
+            // NUMBER excludes Integer per JSON Schema spec (number = decimal only)
+            case NUMBER -> data instanceof Number && !(data instanceof Integer);
+            // INTEGER accepts any valid integer (Long, Integer, Short, Byte, or decimal with no fractional part)
+            case INTEGER -> data instanceof Number && isValidInteger((Number) data);
             case BOOLEAN -> data instanceof Boolean;
             case NULL -> data == null;
             default -> true;
@@ -53,7 +56,7 @@ public class PrimitiveValidator implements Validator {
         }
 
         // Validate numeric constraints (min/max)
-        if (type == SchemaType.NUMBER && data instanceof Number number) {
+        if ((type == SchemaType.NUMBER || type == SchemaType.INTEGER) && data instanceof Number number) {
             if (schema.getMinimum() != null) {
                 boolean minValid = schema.isExclusiveMinimum()
                         ? number.doubleValue() > schema.getMinimum().doubleValue()
@@ -116,5 +119,30 @@ public class PrimitiveValidator implements Validator {
         }
 
         return errors;
+    }
+    
+    /**
+     * Checks if a number is a valid integer (no decimal part).
+     * In JSON Schema, integers are numbers that have no fractional or decimal part.
+     * 
+     * @param number the number to check
+     * @return true if the number is a valid integer
+     */
+    private boolean isValidInteger(Number number) {
+        if (number instanceof Integer) {
+            return true;
+        }
+        if (number instanceof Long) {
+            return true;
+        }
+        if (number instanceof Short) {
+            return true;
+        }
+        if (number instanceof Byte) {
+            return true;
+        }
+        // For BigDecimal, BigInteger, Float, Double - check if has no decimal part
+        double value = number.doubleValue();
+        return value == Math.floor(value) && !Double.isInfinite(value);
     }
 }

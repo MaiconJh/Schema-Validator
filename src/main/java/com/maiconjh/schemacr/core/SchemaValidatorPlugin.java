@@ -159,7 +159,7 @@ public class SchemaValidatorPlugin extends JavaPlugin {
             }
             case ARRAY -> java.util.List.of();
             case STRING -> "";
-            case NUMBER -> 0;
+            case NUMBER, INTEGER -> 0;
             case BOOLEAN -> false;
             case NULL -> null;
             case ANY -> "test";
