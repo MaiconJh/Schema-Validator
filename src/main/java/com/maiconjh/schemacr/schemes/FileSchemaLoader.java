@@ -70,6 +70,28 @@ public class FileSchemaLoader {
     }
 
     /**
+     * Parses a raw JSON/YAML map into a Schema.
+     * Can be used for external schema loading.
+     * 
+     * @param schemaName name for the schema
+     * @param raw raw JSON/YAML map
+     * @return parsed Schema
+     */
+    public Schema parseSchema(String schemaName, Map<String, Object> raw) {
+        // First pass: extract definitions
+        definitions.clear();
+        if (raw.containsKey("definitions") && raw.get("definitions") instanceof Map<?, ?> defs) {
+            for (Map.Entry<?, ?> entry : defs.entrySet()) {
+                if (entry.getValue() instanceof Map<?, ?> defMap) {
+                    String defName = String.valueOf(entry.getKey());
+                    definitions.put(defName, toSchema(defName, castMap(defMap)));
+                }
+            }
+        }
+        return toSchema(schemaName, raw);
+    }
+
+    /**
      * Gets a definition by name.
      * @param name the definition name
      * @return the Schema definition or null
