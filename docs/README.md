@@ -16,17 +16,22 @@ Schema Validator plugin documentation for Minecraft with YAML/JSON validation an
 - [Configuration](configuration.md) - config.yml options
 - [FAQ](faq.md) - Frequently asked questions
 
-### Tutorials
+### Core Documentation
 
-- [Player Data](tutorials/player-data-validation.md) - Complete player data system
-- [Custom Blocks](tutorials/custom-blocks.md) - Using patternProperties
-- [Inventory](tutorials/inventory-validation.md) - Inventory system
+- [Architecture](architecture.md) - Internal validation flow
+- [API Reference](api-reference.md) - Complete API documentation
+- [Schema Construction](construction.md) - How to build valid schemas
+
+### Guides
+
+- [Integration Guide](guides/integration.md) - Integrate into your projects
 
 ### Reference
 
 - [Skript Syntax](reference/skript-syntax.md) - Commands and expressions
 - [JSON Schema](reference/json-schema.md) - Supported keywords
 - [Data Types](reference/data-types.md) - Primitive and compound types
+- [Schema Composition](reference/schema-composition.md) - allOf and anyOf
 
 ---
 

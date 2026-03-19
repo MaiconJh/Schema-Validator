@@ -238,6 +238,8 @@ Supported formats:
 
 ### allOf
 
+The data must validate against ALL schemas (AND logic).
+
 ```json
 {
   "allOf": [
@@ -246,6 +248,11 @@ Supported formats:
   ]
 }
 ```
+
+**Key points:**
+- All schemas must pass validation
+- Use when you need multiple constraints on the same data
+- Errors include `allOf[index]` prefix for identification
 
 ### oneOf
 
@@ -260,6 +267,8 @@ Supported formats:
 
 ### anyOf
 
+The data must validate against AT LEAST ONE schema (OR logic).
+
 ```json
 {
   "anyOf": [
@@ -269,6 +278,12 @@ Supported formats:
 }
 ```
 
+**Key points:**
+- At least one schema must pass validation
+- Use when you accept multiple valid formats
+- If no schema matches, collects errors from all schemas
+- Includes summary error with count of matched schemas
+
 ### not
 
 ```json
@@ -276,6 +291,8 @@ Supported formats:
   "not": { "type": "null" }
 }
 ```
+
+> **Note:** For detailed composition examples, see [Schema Composition](schema-composition.md)
 
 ---
 
