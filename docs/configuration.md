@@ -1,86 +1,62 @@
 # Configuration
 
-Learn how to configure Schema Validator for your needs.
+> Normative config contract is defined in [`CONTRACT.md`](CONTRACT.md).
 
-## config.yml
+Plugin config file location:
 
-The configuration file is automatically generated at `plugins/Schema-Validator/config.yml`:
+`plugins/Schema-Validator/config.yml`
+
+## Supported keys
 
 ```yaml
-# Schema Validator Settings
-settings:
-  # Enable cache for loaded schemas
-  cache-enabled: true
-  
-  # Cache expiry time in milliseconds (default: 1 hour)
-  cache-expiry: 3600000
-  
-  # Default folder for schemas
-  schemas-folder: "schemas"
-  
-  # Default folder for examples
-  examples-folder: "examples"
+schema-directory: "schemas"
+auto-load: true
+cache-enabled: true
+validation-on-load: true
 ```
 
-## Detailed Settings
+## Key details
 
-### cache-enabled
+### `schema-directory`
 
-| Value | Behavior |
-|-------|----------|
-| `true` (default) | Schemas are cached for better performance |
-| `false` | Schemas are reloaded on every validation |
+- Type: `string`
+- Default: `"schemas"`
+- Behavior: directory for schema files (`.json`, `.yml`, `.yaml`).
 
-### cache-expiry
+### `auto-load`
 
-Time a schema stays in cache before being invalidated.
+- Type: `boolean`
+- Default: `true`
+- Behavior: if enabled, plugin loads schemas from `schema-directory` at startup.
 
-| Value | Time |
-|-------|------|
-| `3600000` | 1 hour |
-| `1800000` | 30 minutes |
-| `60000` | 1 minute |
+### `cache-enabled`
 
-## Folder Structure
+- Type: `boolean`
+- Default: `true`
+- Behavior: enables schema cache in `SchemaRegistry`.
 
-```
+### `validation-on-load`
+
+- Type: `boolean`
+- Default: `true`
+- Behavior: validates loaded schemas with minimal generated sample data.
+
+## Not supported keys
+
+These keys are not read by runtime code:
+
+- `settings.cache-expiry`
+- `settings.schemas-folder`
+- `settings.examples-folder`
+- any nested `settings.*` contract
+
+## Example folder layout
+
+```text
 plugins/
 └── Schema-Validator/
-    ├── config.yml           # Plugin configuration
-    ├── schemas/             # Your schemas
-    │   ├── player.schema.json
-    │   └── custom-block.schema.json
-    └── examples/            # Examples
-        ├── player-example.yml
-        └── custom-block-example.yml
+    ├── config.yml
+    └── schemas/
+        ├── player-profile.schema.json
+        └── custom-block-schema.json
 ```
-
-## Creating Schemas
-
-### Location
-
-Place your schemas in `plugins/Schema-Validator/schemas/`.
-
-### Supported Extensions
-
-- `.json` - JSON Schema
-- `.yml` / `.yaml` - YAML Schema
-
-### Example: Player Schema
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "name": { "type": "string" },
-    "level": { "type": "integer", "minimum": 1 },
-    "class": { "type": "string", "enum": ["warrior", "mage"] }
-  },
-  "required": ["name", "level"],
-  "additionalProperties": false
-}
-```
-
----
-
-[← Back](README.md) | [Previous: Quick Start](quickstart.md) | [Next: FAQ →](faq.md)

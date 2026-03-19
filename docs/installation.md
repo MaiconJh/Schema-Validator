@@ -1,5 +1,7 @@
 # Installation
 
+> Canonical behavior contract: [CONTRACT.md](CONTRACT.md).
+
 Learn how to install the Schema Validator plugin on your Minecraft server.
 
 ## Requirements
@@ -8,7 +10,7 @@ Learn how to install the Schema Validator plugin on your Minecraft server.
 |-------------|---------|
 | Minecraft Server | Paper 1.21+ or Spigot 1.21+ |
 | Skript | 2.9+ |
-| Java | 17 or higher |
+| Java | 21 or higher |
 
 ## Installation Steps
 
@@ -43,7 +45,7 @@ Place it in `plugins/` and restart.
 Run this command:
 
 ```
-/pl SchemaValidator
+/pl Schema-Validator
 ```
 
 You should see the plugin in the list.
@@ -58,10 +60,8 @@ After installation, the plugin creates:
 plugins/
 └── Schema-Validator/
     ├── config.yml           # Plugin configuration
-    ├── schemas/             # Your JSON schemas
-    │   └── (empty by default)
-    └── examples/            # Example files
-        └── schemas/         # Example schemas
+    └── schemas/             # Your schema files
+        └── (created automatically if missing)
 ```
 
 ---

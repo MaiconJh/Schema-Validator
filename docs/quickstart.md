@@ -1,5 +1,7 @@
 # Quick Start
 
+> Canonical behavior contract: [CONTRACT.md](CONTRACT.md).
+
 Learn to use Schema Validator in 5 minutes!
 
 ## What you'll learn
