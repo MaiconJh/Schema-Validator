@@ -1,361 +1,54 @@
 # Schema Validator
 
-> ⚠️ **Important Notice**: This addon and repository were created with **Artificial Intelligence assistance**. While efforts have been made to ensure quality, there may be **bugs, inconsistencies, or errors** in the code. The project may not be perfect. Please use with caution and report any issues you find.
+Schema Validator is a Minecraft (Paper/Spigot) plugin with Skript syntax for validating YAML/JSON data against schema files.
 
-<div align="center">
+## Documentation policy
 
-![Java](https://img.shields.io/badge/Java-21-blue?style=for-the-badge&logo=java)
-![Minecraft](https://img.shields.io/badge/Minecraft-1.21-green?style=for-the-badge&logo=minecraft)
-![Skript](https://img.shields.io/badge/Skript-2.14-orange?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
+- Canonical behavior contract: [`docs/CONTRACT.md`](docs/CONTRACT.md)
+- Docs index and structure: [`docs/README.md`](docs/README.md)
 
-A Minecraft (Paper/Spigot) plugin that allows validating YAML/JSON data using schemas, integrated with Skript.
+If this README conflicts with the contract, `docs/CONTRACT.md` is authoritative.
 
-</div>
+## Implemented core capabilities
 
----
+- Validate YAML/JSON files from Skript using:
+  - `validate yaml %string% using schema %string%`
+  - `validate json %string% using schema %string%`
+- Retrieve latest validation errors using:
+  - `last schema validation errors`
+- Schema keyword subset including:
+  - object keywords (`properties`, `required`, `additionalProperties`, `patternProperties`)
+  - array `items`
+  - string/number constraints (`minLength`, `maxLength`, `pattern`, `format`, `minimum`, `maximum`, `multipleOf`, etc.)
+  - `enum`, `allOf`, `anyOf`
 
-## 📋 Description
+## Important limitations
 
-**Schema Validator** is a Skript addon that provides powerful data validation using JSON Schema-like schemas. It allows you to define complex data structures and validate YAML or JSON configuration files against them.
+- Default validation entrypoint expects object-like root data.
+- `$ref` exists but is only active when validation uses resolver wiring (`ValidationService(refResolver)`).
+- `minItems`, `maxItems`, and `uniqueItems` are not currently enforced.
 
-### ✨ Features
+## Installation
 
-- 📄 Support for **YAML** and **JSON**
-- 🔍 Complex schema validation with **patternProperties**
-- ⚡ Native **Skript** integration
-- 🎯 Validation of objects, arrays, strings, numbers, and booleans
-- 📊 Detailed error system
-- 🔄 Schema reference support (`$ref`)
-- 🏷️ **Format validation** (email, uri, date-time, ipv4, ipv6, uuid, etc.)
-- 🔢 **Numeric constraints** (multipleOf, minimum, maximum)
-- 📏 **String constraints** (minLength, maxLength, pattern, format)
-- 🔀 **Schema composition** (allOf, anyOf)
-
----
-
-## 🚀 Installation
-
-### Prerequisites
-
-- [Paper](https://papermc.io/) or [Spigot](https://www.spigotmc.org/) 1.21+
-- [Skript](https://github.com/SkriptLang/Skript) 2.14+
-- Java 21
-
-### Installation Steps
-
-1. **Download the plugin**
-   - Build the project: `gradlew build`
-   - Or download the latest version from [Releases](../../releases)
-
-2. **Install on server**
-   ```
-   /plugins/
-   ├── Schema-Validator-0.1.0-SNAPSHOT.jar
-   ├── Skript.jar
-   └── [other plugins]
-   ```
-
-3. **Configure**
-   - Create a `schemas/` folder in `plugins/Schema-Validator/`
-   - Place your schema files (.json/.yml) in the folder
-
-4. **Restart the server**
-
----
-
-## ⚙️ Configuration
-
-### Folder Structure
-
-```
-plugins/
-├── Schema-Validator/
-│   ├── schemas/
-│   │   ├── player-profile.schema.json
-│   │   ├── custom-block.schema.json
-│   │   └── ...
-│   ├── examples/
-│   │   └── ...
-│   └── config.yml
-└── [your Skript scripts]
-```
-
-### config.yml
-
-```yaml
-# Schema Validator Settings
-settings:
-  # Cache loaded schemas
-  cache-enabled: true
-  # Cache expiry time (in milliseconds)
-  cache-expiry: 3600000
-```
-
----
-
-## 📖 Usage
-
-### Skript Syntax
-
-#### Validate YAML
-
-```skript
-validate yaml <path> using schema <path>
-```
-
-#### Validate JSON
-
-```skript
-validate json <path> using schema <path>
-```
-
-#### Get Validation Errors
-
-```skript
-set {_errors::*} to last schema validation errors
-```
-
-### Examples
-
-#### Example 1: Basic Validation
-
-```skript
-command /validate:
-    trigger:
-        validate yaml "examples/player.yml" using schema "schemas/player-profile.schema.json"
-        
-        set {_errors::*} to last schema validation errors
-        
-        if size of {_errors::*} is 0:
-            broadcast "✓ Valid data!"
-        else:
-            broadcast "✗ Errors found:"
-            loop {_errors::*}:
-                broadcast "- %loop-value%"
-```
-
-#### Example 2: Custom Blocks System
-
-```skript
-on script load:
-    # Load schemas on startup
-    validate yaml "schemas/custom-blocks.yml" using schema "schemas/custom-block.schema.json"
-
-on player break diamond ore:
-    # Validate block configuration
-    set {_block-id} to "diamond_ore_custom"
-    validate yaml "blocks/%{_block-id}%.yml" using schema "schemas/custom-block.schema.json"
-    
-    if size of {validation::errors::*} is 0:
-        # Proceed with custom logic
-        broadcast "Valid block! Processing drops..."
-    else:
-        broadcast "Invalid block configuration!"
-```
-
-#### Example 3: Player Data Validation
-
-```skript
-function validatePlayerData(player: player) :: boolean:
-    set {_file} to "playerdata/%uuid of {_player}%.yml"
-    validate yaml {_file} using schema "schemas/player-profile.schema.json"
-    
-    set {_errors::*} to last schema validation errors
-    if size of {_errors::*} is 0:
-        return true
-    else:
-        loop {_errors::*}:
-            send "&cError: %loop-value%" to {_player}
-        return false
-```
-
----
-
-## 📝 Schema Reference
-
-### Supported Types
-
-| Type | Description | Example |
-|------|-------------|---------|
-| `string` | Text | `"hello"` |
-| `number` | Number | `42`, `3.14` |
-| `integer` | Integer | `42` |
-| `boolean` | Boolean | `true`, `false` |
-| `object` | Object | `{ "key": "value" }` |
-| `array` | List | `[1, 2, 3]` |
-| `null` | Null | `null` |
-| `any` | Any type | any value |
-
-### Schema Properties
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "name": { "type": "string" },
-    "age": { "type": "number", "minimum": 0, "maximum": 120 },
-    "email": { "type": "string", "format": "email" },
-    "website": { "type": "string", "format": "uri" },
-    "score": { "type": "integer", "multipleOf": 10 },
-    "tags": { "type": "array", "items": { "type": "string" } }
-  },
-  "required": ["name", "email"]
-}
-```
-```
-
-### Validation Properties
-
-| Property | Description |
-|----------|-------------|
-| `type` | Data type |
-| `properties` | Object properties |
-| `patternProperties` | Regex properties |
-| `items` | Array item schema |
-| `required` | Required fields |
-| `minimum` / `maximum` | Numeric limits |
-| `exclusiveMinimum` / `exclusiveMaximum` | Exclusive numeric limits |
-| `multipleOf` | Numeric multiple constraint |
-| `minLength` / `maxLength` | String length limits |
-| `pattern` | String regex pattern |
-| `format` | String format (email, uri, date-time, ipv4, ipv6, uuid, etc.) |
-| `enum` | Allowed values |
-| `additionalProperties` | Allow extra properties |
-| `allOf` | Must validate all schemas |
-| `anyOf` | Must validate at least one schema |
-
-### Complex Schema Example
-
-```json
-{
-  "type": "object",
-  "patternProperties": {
-    "^[a-zA-Z0-9_-]+$": {
-      "type": "object",
-      "properties": {
-        "block-id": { "type": "string" },
-        "info": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "category": {
-              "type": "string",
-              "enum": ["blocks", "ores", "metals", "crystals"]
-            }
-          },
-          "required": ["name", "category"]
-        },
-        "hardness": {
-          "type": "object",
-          "properties": {
-            "base": { "type": "number", "minimum": 0 }
-          },
-          "required": ["base"]
-        }
-      },
-      "required": ["block-id", "info"]
-    }
-  }
-}
-```
-
----
-
-## 📁 Project Structure
-
-```
-Schema-Validator/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/maiconjh/schemacr/
-│   │   │       ├── config/          # Plugin configuration
-│   │   │       ├── core/            # Core logic
-│   │   │       ├── integration/    # Skript integration
-│   │   │       ├── schemes/        # Schema loading
-│   │   │       └── validation/     # Validators
-│   │   └── resources/
-│   │       ├── examples/            # Usage examples
-│   │       └── schemas/             # Example schemas
-│   └── test/
-├── docs/                            # Documentation
-├── build.gradle
-└── settings.gradle
-```
-
----
-
-## 🛠️ Building
-
-### Build the Plugin
+1. Build with Gradle:
 
 ```bash
-# Build with Gradle
-gradlew build
-
-# Clean previous build
-gradlew clean build
-
-# Generate JAR with dependencies
-gradlew shadowJar
+./gradlew build
 ```
 
-### Output
+2. Copy generated JAR to your server `plugins/` directory.
+3. Ensure Skript is installed.
+4. Start/restart the server.
 
-The compiled JAR will be at:
-```
-build/libs/Schema-Validator-0.1.0-SNAPSHOT.jar
-```
+## Runtime config
 
----
+`plugins/Schema-Validator/config.yml` supports:
 
-## 🤝 Contribution Guidelines
-
-### How to Contribute
-
-1. **Fork** the repository
-2. Create a **branch** for your feature (`git checkout -b feature/MyFeature`)
-3. **Commit** your changes (`git commit -m 'Add new feature'`)
-4. **Push** to the branch (`git push origin feature/MyFeature`)
-5. Open a **Pull Request**
-
-### Code Standards
-
-- Use **Java 21**
-- Follow existing code style
-- Add **JavaDoc** for new classes/methods
-- Use **descriptive names** for variables and methods
-
-### Commit Structure
-
-```
-feat:    New feature
-fix:     Bug fix
-docs:    Documentation
-refactor: Code refactoring
-test:    Add tests
-chore:   Maintenance tasks
+```yaml
+schema-directory: "schemas"
+auto-load: true
+cache-enabled: true
+validation-on-load: true
 ```
 
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- [Skript](https://github.com/SkriptLang/Skript) - For creating an amazing language
-- [Paper](https://papermc.io/) - For the modern API
-- [Jackson](https://github.com/FasterXML/jackson) - For the JSON/YAML parsing library
-
----
-
-<div align="center">
-
-Made with ❤️ by [MaiconJH](https://github.com/MaiconJH)
-
-</div>
+See [`docs/configuration.md`](docs/configuration.md) for details.

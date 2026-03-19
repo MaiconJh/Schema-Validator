@@ -1,5 +1,7 @@
 # Schema Composition
 
+> Canonical behavior contract: [../CONTRACT.md](../CONTRACT.md).
+
 Guide to JSON Schema composition keywords: allOf and anyOf.
 
 ---
