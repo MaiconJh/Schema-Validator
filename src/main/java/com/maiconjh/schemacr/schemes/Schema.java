@@ -8,7 +8,7 @@ import java.util.Map;
  * Schema model used by validators.
  *
  * <p>Extends the basic model with constraints like required fields, 
- * min/max values, patterns, enums, etc.</p>
+ * min/max values, patterns, enums, format, multipleOf, etc.</p>
  */
 public class Schema {
 
@@ -26,6 +26,8 @@ public class Schema {
     private final Integer minLength;
     private final Integer maxLength;
     private final String pattern;
+    private final String format; // JSON Schema format (date, email, uri, etc.)
+    private final Number multipleOf; // MultipleOf constraint for numbers
     private final List<Object> enumValues;
     private final String ref; // $ref for schema references
     private final String version; // Schema version for compatibility
@@ -34,18 +36,18 @@ public class Schema {
     private final List<Schema> anyOf; // anyOf composition
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, Schema itemSchema) {
-        this(name, type, properties, null, itemSchema, null, true, null, null, false, false, null, null, null, null, null, null, null, null, null);
+        this(name, type, properties, null, itemSchema, null, true, null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Schema itemSchema, List<String> requiredFields) {
-        this(name, type, properties, null, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null, null, null);
+        this(name, type, properties, null, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Schema itemSchema, List<String> requiredFields, boolean additionalProperties) {
         this(name, type, properties, null, itemSchema, requiredFields, additionalProperties, 
-             null, null, false, false, null, null, null, null, null, null, null, null, null);
+             null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
@@ -53,19 +55,19 @@ public class Schema {
                   Number minimum, Number maximum, boolean exclusiveMinimum, boolean exclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, List<Object> enumValues) {
         this(name, type, properties, null, itemSchema, requiredFields, additionalProperties, 
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, enumValues, null, null, null, null, null);
+             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, null, null, enumValues, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null, null, null);
+        this(name, type, properties, patternProperties, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
                   boolean additionalProperties) {
         this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties, 
-             null, null, false, false, null, null, null, null, null, null, null, null, null);
+             null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
@@ -74,15 +76,15 @@ public class Schema {
                   boolean exclusiveMinimum, boolean exclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, List<Object> enumValues, String ref) {
         this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties, 
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, enumValues, ref, null, null, null, null);
+             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, null, null, enumValues, ref, null, null, null, null);
     }
 
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
                   boolean additionalProperties, Number minimum, Number maximum, 
                   boolean exclusiveMinimum, boolean exclusiveMaximum,
-                  Integer minLength, Integer maxLength, String pattern, List<Object> enumValues, 
-                  String ref, String version, String compatibility, List<Schema> allOf, List<Schema> anyOf) {
+                  Integer minLength, Integer maxLength, String pattern, String format, Number multipleOf,
+                  List<Object> enumValues, String ref, String version, String compatibility, List<Schema> allOf, List<Schema> anyOf) {
         this.name = name;
         this.type = type;
         this.properties = properties == null ? Collections.emptyMap() : Collections.unmodifiableMap(properties);
@@ -97,6 +99,8 @@ public class Schema {
         this.minLength = minLength;
         this.maxLength = maxLength;
         this.pattern = pattern;
+        this.format = format;
+        this.multipleOf = multipleOf;
         this.enumValues = enumValues == null ? Collections.emptyList() : Collections.unmodifiableList(enumValues);
         this.ref = ref;
         this.version = version;
@@ -159,6 +163,30 @@ public class Schema {
 
     public String getPattern() {
         return pattern;
+    }
+
+    /**
+     * Returns the format constraint (e.g., "email", "uri", "date-time").
+     * @return the format string or null
+     */
+    public String getFormat() {
+        return format;
+    }
+
+    /**
+     * Returns the multipleOf constraint for numeric types.
+     * @return the multipleOf value or null
+     */
+    public Number getMultipleOf() {
+        return multipleOf;
+    }
+
+    /**
+     * Checks if this schema has a format constraint.
+     * @return true if format is defined
+     */
+    public boolean hasFormat() {
+        return format != null && !format.isEmpty();
     }
 
     public List<Object> getEnumValues() {

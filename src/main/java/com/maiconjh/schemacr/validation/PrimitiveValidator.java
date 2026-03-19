@@ -85,6 +85,21 @@ public class PrimitiveValidator implements Validator {
                     ));
                 }
             }
+            // Validate multipleOf
+            if (schema.getMultipleOf() != null) {
+                double divisor = schema.getMultipleOf().doubleValue();
+                if (divisor != 0) {
+                    double result = number.doubleValue() / divisor;
+                    if (result != Math.floor(result)) {
+                        errors.add(new ValidationError(
+                                path,
+                                "multipleOf",
+                                String.valueOf(number),
+                                "Value must be a multiple of " + schema.getMultipleOf()
+                        ));
+                    }
+                }
+            }
         }
 
         // Validate string constraints (minLength, maxLength, pattern)
@@ -115,6 +130,15 @@ public class PrimitiveValidator implements Validator {
                             "String must match pattern: " + schema.getPattern()
                     ));
                 }
+            }
+            // Validate format
+            if (schema.hasFormat() && !FormatValidator.isValid(schema.getFormat(), str)) {
+                errors.add(new ValidationError(
+                        path,
+                        "format",
+                        str,
+                        FormatValidator.getErrorMessage(schema.getFormat())
+                ));
             }
         }
 

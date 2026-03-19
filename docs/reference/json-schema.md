@@ -51,6 +51,8 @@ Defines the value type.
 
 ### format
 
+Valida que a string corresponde a um formato predefinido (RFC 3339 / RFC 3986).
+
 ```json
 {
   "type": "string",
@@ -58,15 +60,76 @@ Defines the value type.
 }
 ```
 
-Supported formats:
-- `date-time` - ISO 8601 date and time
-- `date` - ISO 8601 date
-- `time` - ISO 8601 time
-- `email` - Email
-- `uri` - URI
-- `hostname` - Hostname
-- `ipv4` - IPv4 address
-- `ipv6` - IPv6 address
+**Supported formats:**
+
+| Format | Description | Example |
+|--------|-------------|---------|
+| `date-time` | ISO 8601 date and time (RFC 3339) | `2024-01-15T14:30:00Z` |
+| `date` | ISO 8601 full-date | `2024-01-15` |
+| `time` | ISO 8601 full-time | `14:30:00Z` |
+| `email` | RFC 5322 email address | `user@example.com` |
+| `idn-email` | Internationalized email | ` usuário@exemplo.com` |
+| `hostname` | RFC 1123 hostname | `server.example.com` |
+| `idn-hostname` | Internationalized hostname | `servidor.exemplo.com` |
+| `ipv4` | IPv4 address (RFC 2673) | `192.168.1.1` |
+| `ipv6` | IPv6 address (RFC 4291) | `2001:0db8:85a3::8a2e:0370:7334` |
+| `uri` | URI (RFC 3986) | `https://example.com/path` |
+| `uri-reference` | URI or relative reference | `/path/to/resource` |
+| `uuid` | Universally Unique Identifier | `550e8400-e29b-41d4-a716-446655440000` |
+| `regex` | ECMA 262 regular expression | `^[a-z]+# JSON Schema Reference
+
+Complete guide to all JSON Schema Keywords supported by Schema Validator.
+
+---
+
+## Data Types (Type)
+
+Defines the value type.
+
+```json
+{ "type": "string" }
+{ "type": "integer" }
+{ "type": "number" }
+{ "type": "boolean" }
+{ "type": "array" }
+{ "type": "object" }
+```
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `string` | Text | `"hello"` |
+| `integer` | Integer number | `42` |
+| `number` | Decimal number | `3.14` |
+| `boolean` | True/False | `true` / `false` |
+| `array` | List | `[1, 2, 3]` |
+| `object` | Object | `{"key": "value"}` |
+
+---
+
+## String
+
+### minLength / maxLength
+
+```json
+{
+  "type": "string",
+  "minLength": 3,
+  "maxLength": 16
+}
+```
+
+### pattern (Regex)
+
+```json
+{
+  "type": "string",
+  "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+}
+```
+
+ |
+
+> **Note:** Format validation is informational. Invalid formats will produce warnings but not fail validation (configurable).
 
 ### enum
 
@@ -103,12 +166,19 @@ Supported formats:
 
 ### multipleOf
 
+Valida que o número é múltiplo do valor especificado.
+
 ```json
 {
   "type": "integer",
   "multipleOf": 5
 }
 ```
+
+**Exemplos:**
+- `multipleOf: 10` → válido: 10, 20, 30, 100 | inválido: 15, 25
+- `multipleOf: 0.5` → válido: 0.5, 1.0, 1.5, 2.0 | inválido: 1.2
+- `multipleOf: 3` → válido para integers e numbers decimais onde a divisão não tem resto
 
 ---
 

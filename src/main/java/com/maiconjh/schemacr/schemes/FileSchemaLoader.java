@@ -127,6 +127,7 @@ public class FileSchemaLoader {
         // Parse numeric constraints
         Number minimum = null;
         Number maximum = null;
+        Number multipleOf = null;
         boolean exclusiveMinimum = false;
         boolean exclusiveMaximum = false;
         
@@ -135,6 +136,9 @@ public class FileSchemaLoader {
         }
         if (raw.containsKey("maximum") && raw.get("maximum") instanceof Number max) {
             maximum = max;
+        }
+        if (raw.containsKey("multipleOf") && raw.get("multipleOf") instanceof Number mult) {
+            multipleOf = mult;
         }
         if (raw.containsKey("exclusiveMinimum") && raw.get("exclusiveMinimum") instanceof Boolean exclMin) {
             exclusiveMinimum = exclMin;
@@ -147,6 +151,7 @@ public class FileSchemaLoader {
         Integer minLength = null;
         Integer maxLength = null;
         String pattern = null;
+        String format = null;
         
         if (raw.containsKey("minLength") && raw.get("minLength") instanceof Number minLen) {
             minLength = minLen.intValue();
@@ -162,6 +167,9 @@ public class FileSchemaLoader {
             } catch (PatternSyntaxException e) {
                 logger.warning("Invalid regex pattern in schema '" + name + "': " + pat);
             }
+        }
+        if (raw.containsKey("format") && raw.get("format") instanceof String fmt) {
+            format = fmt;
         }
 
         // Parse enum values
@@ -237,7 +245,7 @@ public class FileSchemaLoader {
 
         return new Schema(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProps,
                          minimum, maximum, exclusiveMinimum, exclusiveMaximum,
-                         minLength, maxLength, pattern, enumValues, ref, version, compatibility, allOfSchemas, anyOfSchemas);
+                         minLength, maxLength, pattern, format, multipleOf, enumValues, ref, version, compatibility, allOfSchemas, anyOfSchemas);
     }
 
     @SuppressWarnings("unchecked")
