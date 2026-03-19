@@ -1,254 +1,323 @@
-# Deep System Audit & Safe Implementation Plan (2026-03-19)
+# Deep System Audit → Executable Implementation Strategy (2026-03-19)
 
-## 🧾 SYSTEM OVERVIEW
+## 🧾 SYSTEM STATE SUMMARY
 
-The project already has a solid baseline for validating object-centered JSON/YAML structures with Skript integration: core schema parsing, object/array/primitive validators, and composition support for `allOf`/`anyOf` are present. However, the documentation advertises a broader JSON Schema contract than the implementation enforces. The largest risk is **silent under-validation**: schema authors can use documented keywords that are parsed or documented but not actually validated at runtime.
+Schema-Validator has a stable core for object-focused validation (`properties`, `required`, `items`, `enum`, numeric/string bounds, `allOf`, `anyOf`) but suffers from **contract drift** between `/docs` and runtime behavior. The immediate production risks are correctness defects (root dispatch), silent under-validation (documented but unsupported keywords), and integration mismatch (Skript error object contract).
 
-The current runtime path is:
-1. `FileSchemaLoader` parses schema files into the `Schema` model.
-2. `ValidationService` runs validation using `ObjectValidator` as root validator.
-3. Skript effect `validate yaml/json ...` loads data + schema and stores the result in a static bridge.
-4. Skript expression returns stringified errors only.
-
----
-
-## 🔍 FEATURE GAP TABLE
-
-| Feature | Status | Severity | Notes |
-|--------|--------|--------|------|
-| `type` (object/array/string/integer/number/boolean/null/any) | ⚠️ Partially implemented | 🔴 CRITICAL | Works when root schema is object; `ValidationService` always starts at `ObjectValidator`, so non-object root schemas fail before dispatch. |
-| `properties` | ✅ Fully implemented | 🟠 MEDIUM | Implemented for object schemas via recursive property validation. |
-| `required` | ✅ Fully implemented | 🟠 MEDIUM | Required keys are checked against map presence. |
-| `additionalProperties` | ✅ Fully implemented | 🟠 MEDIUM | Enforced for keys not in `properties` and not matching `patternProperties`. |
-| `patternProperties` | ✅ Fully implemented | 🟠 MEDIUM | Regex-based matching and child validation is present. |
-| `items` | ✅ Fully implemented | 🟠 MEDIUM | Array item schema is recursively validated. |
-| `minimum` / `maximum` | ✅ Fully implemented | 🟠 MEDIUM | Enforced in primitive numeric validation. |
-| `exclusiveMinimum` / `exclusiveMaximum` | ✅ Fully implemented | 🟠 MEDIUM | Boolean-style exclusivity is implemented. |
-| `minLength` / `maxLength` | ✅ Fully implemented | 🟠 MEDIUM | Enforced for strings. |
-| `pattern` | ✅ Fully implemented | 🟠 MEDIUM | Regex compiled and enforced for strings. |
-| `enum` | ✅ Fully implemented | 🟠 MEDIUM | Exact-value membership check exists. |
-| `$ref` | ⚠️ Partially implemented | 🔴 CRITICAL | Resolver exists, but validation root path and local pointer navigation are incomplete for `definitions`. |
-| `definitions` | ⚠️ Partially implemented | 🟠 MEDIUM | Loader parses definitions map, but `Schema` model does not expose it for local `#/definitions/...` navigation. |
-| `allOf` | ✅ Fully implemented | 🟠 MEDIUM | Implemented in object validator with prefixed errors. |
-| `anyOf` | ✅ Fully implemented | 🟠 MEDIUM | Implemented in object validator with summary error. |
-| `oneOf` | ❌ Not implemented | 🔴 CRITICAL | Documented in JSON reference, but neither parser nor validator has support. |
-| `not` | ❌ Not implemented | 🟠 MEDIUM | Documented but not parsed/validated. |
-| `format` | ❌ Not implemented | 🟠 MEDIUM | Documented supported formats are not validated. |
-| `multipleOf` | ❌ Not implemented | 🟠 MEDIUM | Documented but not validated. |
-| `minItems` / `maxItems` | ❌ Not implemented | 🟠 MEDIUM | Documented in references and API page, absent in array validator/schema model. |
-| `uniqueItems` | ❌ Not implemented | 🟠 MEDIUM | Documented in references and API page, absent in array validator/schema model. |
-| `minProperties` / `maxProperties` | ❌ Not implemented | 🟠 MEDIUM | Documented object keywords not implemented. |
-| `dependencies` | ❌ Not implemented | 🟠 MEDIUM | Documented object keyword not implemented. |
-| Multiple types (`"type": [ ... ]`) | ❌ Not implemented | 🟠 MEDIUM | Docs claim support; parser only accepts string type token. |
-| Skript error objects (`ValidationError`) | ❌ Not implemented as documented | 🔴 CRITICAL | Expression returns `String[]`, not typed error objects/properties. |
-| Config structure `settings.*` | ❌ Not implemented as documented | 🟠 MEDIUM | Runtime expects top-level keys (`schema-directory`, `auto-load`, etc.). |
-| Schema/data file resolution via plugin folders | ⚠️ Partially implemented | 🟠 MEDIUM | Auto-load uses configured directory, but Skript validate effect uses raw `Path.of(...)` arguments. |
+Current maturity by area:
+- **Core validation engine:** usable but object-centric and tightly coupled.
+- **Schema language support:** partial subset of documented JSON Schema.
+- **Skript integration:** functional for basic usage, inconsistent with documented structured errors.
+- **Operational contract (docs/config/API):** inconsistent; needs authoritative contract versioning.
 
 ---
 
-## ❌ CONTRACT VIOLATIONS
+## ❌ ISSUE BREAKDOWN (DETAILED)
 
-1. **Documented JSON Schema coverage exceeds runtime enforcement**
-   - **Expected (docs):** keywords like `oneOf`, `not`, `format`, `multipleOf`, `minItems`, `uniqueItems`, `dependencies` are available.
-   - **Actual (code):** parser/validators enforce only a subset (type/properties/required/additionalProperties/patternProperties/items/min-max/minLength-maxLength/pattern/enum/allOf/anyOf).
-   - **Impact:** users write schemas believing constraints are active, causing false-positive validation success and data integrity risk.
+Issue:
+- **Name:** Root validator bypasses schema-type dispatch
+- **Category:** Runtime Bug
+- **Severity:** CRITICAL
+- **Root cause:** `ValidationService` always delegates to `ObjectValidator` at root instead of selecting validator by root schema type.
+- **Surface impact:** Root array/primitive schemas fail with object-type errors.
+- **Hidden risk:** Future feature work appears broken/non-deterministic because validation entrypoint is semantically wrong.
 
-2. **Skript error contract mismatch**
-   - **Expected (docs):** `last schema validation errors` returns objects with `nodePath`, `expectedType`, etc.
-   - **Actual (code):** expression returns stringified errors (`String[]`).
-   - **Impact:** documented Skript snippets break; users cannot introspect structured error fields.
+Issue:
+- **Name:** Silent under-validation for documented keywords
+- **Category:** Contract Violation
+- **Severity:** CRITICAL
+- **Root cause:** Docs advertise keywords (`oneOf`, `not`, `format`, `multipleOf`, `minItems`, `uniqueItems`, etc.) that parser/validators do not enforce.
+- **Surface impact:** Invalid data can pass validation while users believe constraints are active.
+- **Hidden risk:** Data integrity defects and loss of trust in validation guarantees.
 
-3. **Configuration shape mismatch**
-   - **Expected (docs):** nested `settings.cache-enabled`, `settings.cache-expiry`, `settings.schemas-folder`.
-   - **Actual (code/resources):** top-level keys `schema-directory`, `auto-load`, `cache-enabled`, `validation-on-load`; `cache-expiry` is not read from config for registry creation.
-   - **Impact:** admins may configure documented keys that have no effect.
+Issue:
+- **Name:** Skript error model mismatch
+- **Category:** Contract Violation
+- **Severity:** CRITICAL
+- **Root cause:** Expression returns `String[]` while docs promise structured `ValidationError` objects.
+- **Surface impact:** Documented scripts using error property access fail.
+- **Hidden risk:** Ecosystem scripts encode unstable assumptions; migration becomes costly later.
 
-4. **API reference signatures mismatch**
-   - **Expected (docs):** methods like `loadSchema(...)`, directory bulk loaders, and constructor examples not matching current signatures.
-   - **Actual (code):** `FileSchemaLoader.load(Path, String)` / `parseSchema(...)`; no documented overload set as written.
-   - **Impact:** Java integrators get compile-time failures following docs.
+Issue:
+- **Name:** `$ref` and `definitions` support is incomplete relative to claims
+- **Category:** Feature Gap
+- **Severity:** CRITICAL
+- **Root cause:** Resolver and loader partially support references, but pointer navigation model is incomplete for full definitions/pointer behavior.
+- **Surface impact:** Referenced schemas may resolve unpredictably, especially local pointers.
+- **Hidden risk:** Recursive/composed schemas become brittle as schema library grows.
 
-5. **Root validation dispatch mismatch**
-   - **Expected (docs):** dispatcher chooses validator by schema type.
-   - **Actual (code):** `ValidationService` always invokes `ObjectValidator` as root, bypassing root-type dispatch.
-   - **Impact:** primitive/array root schemas fail incorrectly (`Expected an object/map node`).
+Issue:
+- **Name:** Config contract mismatch (`settings.*` vs root keys)
+- **Category:** Contract Violation
+- **Severity:** MEDIUM
+- **Root cause:** Documentation format diverges from actual `config.yml` and code lookup keys.
+- **Surface impact:** Operator config changes are ignored or misapplied.
+- **Hidden risk:** Production environments become hard to support due to inconsistent setup states.
 
-6. **`$ref`/`definitions` behavior inconsistency**
-   - **Expected (docs and comments):** local and external `$ref` support including definitions pointers.
-   - **Actual (code):** definitions are extracted in loader but not navigable via schema tree for local pointers; resolver navigation handles `properties`/`items` only.
-   - **Impact:** documented reference patterns can resolve unpredictably or fail.
+Issue:
+- **Name:** API reference signature drift
+- **Category:** Contract Violation
+- **Severity:** MEDIUM
+- **Root cause:** Docs list methods/overloads not present in implementation.
+- **Surface impact:** Integration attempts fail at compile time.
+- **Hidden risk:** Maintainers lose confidence in docs as source of truth.
 
----
+Issue:
+- **Name:** Path resolution split-brain (autoload vs effect-time validation)
+- **Category:** Architecture
+- **Severity:** MEDIUM
+- **Root cause:** Auto-load uses configured schema directory while Skript effect uses raw `Path.of` inputs.
+- **Surface impact:** Same schema path works in one flow and fails in another.
+- **Hidden risk:** Environment-specific failures and difficult reproduction.
 
-## 🚨 CRITICAL ISSUES
+Issue:
+- **Name:** Composition logic is object-validator bound
+- **Category:** Architecture
+- **Severity:** MEDIUM
+- **Root cause:** `allOf`/`anyOf` execution lives in `ObjectValidator` instead of shared composition layer.
+- **Surface impact:** Non-object composition support is constrained.
+- **Hidden risk:** `oneOf`/`not` implementation complexity and duplicated logic.
 
-1. **Silent under-validation from unsupported-but-documented keywords** (`oneOf`, `format`, `multipleOf`, etc.).
-2. **Root-type validation bug in `ValidationService`** prevents correct validation for non-object roots.
-3. **Skript error type mismatch** breaks error-handling examples and automation.
-4. **`$ref` expectations exceed effective local-pointer implementation**, especially with `definitions`.
-
----
-
-## ⚠️ MEDIUM ISSUES
-
-1. Config docs do not match runtime keys/defaults.
-2. API reference has outdated signatures and capabilities.
-3. Skript file path resolution behavior is under-documented and inconsistent with plugin folder examples.
-4. Cache expiry is documented but not wired from config into registry constructor.
-5. Parser/validator architecture is object-centric and makes expansion costly without intermediate abstractions.
-
----
-
-## 🟢 LOW ISSUES
-
-1. Minor wording inconsistencies around NUMBER semantics in docs can confuse users.
-2. Some docs mix conceptual future features with current behavior without status labels.
-3. Existing practical audit is useful but not integrated as an authoritative compatibility matrix.
-
----
-
-## 🧠 ARCHITECTURE ANALYSIS
-
-### Stress points and fragility
-
-1. **Validator entrypoint is tightly coupled to object validation**
-   - `ValidationService` chooses `ObjectValidator` directly, not dispatcher-by-root type.
-   - This violates open/closed expectations and creates correctness bugs for non-object roots.
-
-2. **Composition and reference logic embedded in `ObjectValidator`**
-   - `allOf`, `anyOf`, and `$ref` handling are object-validator concerns today.
-   - This blocks composition/ref usage for non-object schemas and reduces reuse.
-
-3. **Schema model lacks explicit keyword modules**
-   - Every new keyword requires touching `Schema`, loader, and one or more validators.
-   - No pluggable keyword-rule registry exists, so growth increases coupling.
-
-4. **Skript bridge exposes global mutable last result**
-   - Static shared `lastResult` is simple but not contextualized by player/event/script.
-   - Concurrent validations can overwrite each other in multiplayer/script-heavy environments.
-
-5. **Path resolution split-brain**
-   - Plugin has configured schema directory for auto-load, but effect uses direct OS paths.
-   - Operational behavior depends on runtime working directory assumptions.
-
-6. **Reference resolver over-promises relative to schema graph model**
-   - Advanced resolver features exist, but traversal model (`properties`/`items`) is too narrow for full JSON Pointer semantics.
+Issue:
+- **Name:** Global mutable last-result bridge in Skript integration
+- **Category:** Architecture
+- **Severity:** LOW
+- **Root cause:** static shared `lastResult` has no scope partitioning.
+- **Surface impact:** Concurrent scripts can overwrite each other’s results.
+- **Hidden risk:** Race-condition-like observability bugs under load.
 
 ---
 
-## 🛠️ SAFE IMPLEMENTATION PLAN
+## 🔗 DEPENDENCY GRAPH
 
-### Phase 1 — Stabilization (No breaking changes)
+### Core dependency chain (must be sequential)
+1. **Contract baseline** (supported keyword matrix, docs corrections)
+2. **Runtime correctness fix** (root dispatch)
+3. **Shared validation context abstraction** (path/state/error aggregation)
+4. **Low-risk keyword additions** (`minItems`, `maxItems`, `uniqueItems`, `minProperties`, `maxProperties`, `multipleOf`)
+5. **Composition engine extraction** (type-agnostic `allOf`/`anyOf` infrastructure)
+6. **High-complexity features** (`oneOf`, `not`, robust `$ref`/pointer semantics)
 
-1. **Publish a compatibility truth table** in docs:
-   - Mark every keyword as `Implemented / Parsed-only / Unsupported`.
-   - Clearly mark `oneOf`, `format`, `multipleOf`, etc. as unsupported.
-2. **Fix docs/runtime mismatches immediately**:
-   - Skript errors documented as string list (until typed contract exists).
-   - Config page updated to top-level keys and actual defaults.
-   - API reference updated to current method signatures.
-3. **Add warning logs for ignored keywords** in schema loader:
-   - If schema contains known unsupported documented keys, log explicit warnings.
-4. **Add one verified end-to-end example** matching real runtime behavior.
+### Feature dependency map
+- **`oneOf` depends on:**
+  - root dispatch correctness
+  - composition engine (type-agnostic)
+  - deterministic error aggregation model
+- **`not` depends on:**
+  - composition engine
+  - unified validation context
+- **`multipleOf` depends on:**
+  - numeric utility abstraction (precision-safe arithmetic)
+- **`minItems/maxItems/uniqueItems` depend on:**
+  - schema model extension
+  - array validator extension
+- **`minProperties/maxProperties` depend on:**
+  - schema model extension
+  - object validator extension
+- **`$ref` hardening depends on:**
+  - explicit reference contract
+  - schema graph/pointer navigation improvements
+  - recursion/cycle guard in context
+- **Structured Skript errors depend on:**
+  - stable canonical error DTO contract
+  - adapter layer for backward compatibility
 
-**Risk:** LOW. Purely additive/documentation + non-breaking warnings.
+### Parallelization opportunities
+Can run in parallel after Phase A contract stabilization:
+- Config/API/docs fixes
+- Low-risk keyword implementation streams (array cardinality vs object cardinality)
+- Contract/regression test scaffolding
 
-### Phase 2 — Contract Alignment
-
-1. **Define canonical contract document (`CONTRACT.md`)** covering:
-   - Supported schema keywords and precise semantics.
-   - Validation error model (core API vs Skript API).
-   - File resolution rules (auto-load vs validate effect paths).
-   - `$ref` support scope and explicit non-goals.
-2. **Decide authority direction per area**:
-   - For mature behavior (current implemented subset), docs must follow code.
-   - For strategic features (`oneOf`, typed Skript errors), code should evolve to docs via feature flags.
-3. **Introduce semantic versioning for contract changes**:
-   - e.g., Contract v1.0 (current subset), v1.1 (safe additions), v2.0 (if any breaking changes).
-
-**Risk:** LOW-MEDIUM. Governance/documentation work; no runtime break.
-
-### Phase 3 — Feature Implementation (Incremental)
-
-1. **Fix root validator dispatch (highest priority)**
-   - Strategy: `ValidationService.validate` should call `ValidatorDispatcher.forSchema(schema)` at root.
-   - Dependency: none.
-   - Risk: MEDIUM (may expose previously hidden schema issues).
-
-2. **Implement array/object cardinality keywords** (`minItems/maxItems/uniqueItems`, `minProperties/maxProperties`)
-   - Strategy: extend `Schema` + loader parse + validators.
-   - Dependency: root dispatch fix + regression tests.
-   - Risk: MEDIUM.
-
-3. **Implement numeric `multipleOf`**
-   - Strategy: decimal-safe modulo check (BigDecimal preferred).
-   - Dependency: numeric utility abstraction.
-   - Risk: MEDIUM.
-
-4. **Implement `oneOf` and `not` composition**
-   - Strategy: create shared `CompositeConstraintEvaluator` used independent of schema type.
-   - Dependency: decouple composition from object validator.
-   - Risk: HIGH (error semantics, performance, recursion).
-
-5. **Implement `format` as opt-in validators**
-   - Strategy: pluggable `FormatValidatorRegistry` (`email`, `date-time`, etc.).
-   - Dependency: keyword-rule modularization.
-   - Risk: MEDIUM-HIGH (spec nuance).
-
-6. **Complete `$ref`/`definitions` support scope**
-   - Strategy: preserve parsed raw schema tree or richer pointer-addressable model; align resolver to JSON Pointer rules.
-   - Dependency: schema parser/model refactor.
-   - Risk: HIGH.
-
-7. **Skript structured error API (non-breaking)**
-   - Strategy: keep existing string expression, add new expression returning structured wrapper/accessors.
-   - Dependency: Skript integration design review.
-   - Risk: MEDIUM.
-
-### Phase 4 — Architecture Refactor
-
-1. **Modular validator engine**
-   - Introduce keyword-rule pipeline (`Rule` interface + registry per schema type/global).
-2. **Separate parsing from semantic compilation**
-   - Parse raw schema AST first, compile to runtime schema model with capability checks.
-3. **Isolate composition/reference into independent layers**
-   - Composition should work for any schema type.
-4. **Create Skript adapter boundary**
-   - `ValidationFacade` produces canonical result DTO; Skript layer translates output types.
-5. **Introduce validation context object**
-   - Path stack, recursion guard, reference resolution state, and diagnostics in one context.
-
-**Risk:** MEDIUM-HIGH. Must be staged behind compatibility tests and feature toggles.
-
-### Phase 5 — Validation & Safety
-
-1. **Regression suite by keyword**
-   - Matrix: supported keyword × data type × pass/fail fixtures.
-2. **Contract tests: docs examples must execute**
-   - Every docs sample gets machine-validated expected result.
-3. **Feature flags for new validators**
-   - e.g., `validation.experimental.oneOf=true` before default-on.
-4. **Backward compatibility strategy**
-   - Keep legacy Skript string errors until next major version.
-5. **Performance + recursion safety tests**
-   - Deep nesting, circular refs, many-anyOf branches.
-6. **Operational safety checks**
-   - Deterministic logs for unsupported keywords and ref resolution failures.
+Blocked by architecture:
+- `oneOf`, `not`, deep `$ref` behaviors should wait for shared composition + context layers.
 
 ---
 
-## 🧱 PRIORITY ROADMAP
+## 🛠️ IMPLEMENTATION UNITS
 
-1. **Stabilize contract communication now** (docs truth table, config/API/Skript corrections, unsupported-keyword warnings).
-2. **Repair correctness-critical runtime behavior** (root dispatch, ref scope clarification, path semantics).
-3. **Add low-risk keywords first** (min/max items/properties, uniqueItems, multipleOf).
-4. **Implement high-complexity composition/ref features incrementally** (`oneOf`, `not`, robust JSON Pointer).
-5. **Refactor architecture once behavior is protected by tests and flags.**
+### Unit 1
+- **Feature/Issue:** Root validator dispatch bug
+- **Strategy:** Use `ValidatorDispatcher.forSchema(schema)` at validation entrypoint.
+- **Files/components affected:** `ValidationService`, validator tests.
+- **Required refactor:** Minimal (entrypoint selection only).
+- **Backward compatibility plan:** Preserve error model and existing API signatures.
+- **Risk level:** MEDIUM.
+- **Rollback strategy:** Feature toggle (`validation.root-dispatch-v2`) or quick revert commit.
+
+### Unit 2
+- **Feature/Issue:** Unsupported documented keywords causing silent under-validation
+- **Strategy:** Add unsupported-keyword detection in schema loader + warnings + optional fail-fast mode.
+- **Files/components affected:** `FileSchemaLoader`, config docs/runtime flags, logging.
+- **Required refactor:** Add keyword scan utility.
+- **Backward compatibility plan:** Default behavior remains permissive; warnings only unless fail-fast enabled.
+- **Risk level:** LOW-MEDIUM.
+- **Rollback strategy:** Disable warnings/fail-fast via config flag.
+
+### Unit 3
+- **Feature/Issue:** Config and API contract drift
+- **Strategy:** Align docs to runtime now; optionally introduce alias reader for legacy doc keys.
+- **Files/components affected:** `/docs/configuration.md`, `/docs/api-reference.md`, `PluginConfig` (if aliasing added).
+- **Required refactor:** None or very small key alias handling.
+- **Backward compatibility plan:** Support both old/new keys for one deprecation cycle if aliases added.
+- **Risk level:** LOW.
+- **Rollback strategy:** Remove aliases; retain current keys only.
+
+### Unit 4
+- **Feature/Issue:** Skript structured error mismatch
+- **Strategy:** Keep current string expression; add new structured expression/effect accessors.
+- **Files/components affected:** Skript integration classes + docs.
+- **Required refactor:** Adapter DTO layer from internal `ValidationError`.
+- **Backward compatibility plan:** Existing scripts continue using string list unchanged.
+- **Risk level:** MEDIUM.
+- **Rollback strategy:** Keep legacy path; disable new syntax registration.
+
+### Unit 5
+- **Feature/Issue:** Low-risk keyword expansion (array/object cardinality + multipleOf)
+- **Strategy:** Extend `Schema` model and parser; implement validators with deterministic errors.
+- **Files/components affected:** `Schema`, `FileSchemaLoader`, `ArrayValidator`, `ObjectValidator`, `PrimitiveValidator`, tests.
+- **Required refactor:** Constraint fields + parser/validator wiring.
+- **Backward compatibility plan:** New constraints are opt-in via schema keyword usage.
+- **Risk level:** MEDIUM.
+- **Rollback strategy:** Guard by per-keyword feature flags; disable on regressions.
+
+### Unit 6
+- **Feature/Issue:** Composition extraction for `oneOf`/`not`
+- **Strategy:** Build `CompositeValidator` layer reusable across all schema types.
+- **Files/components affected:** validator package, dispatcher, schema composition parsing, tests.
+- **Required refactor:** Move composition logic out of `ObjectValidator`.
+- **Backward compatibility plan:** Keep existing `allOf`/`anyOf` behavior parity via conformance tests.
+- **Risk level:** HIGH.
+- **Rollback strategy:** Keep legacy composition path behind fallback toggle.
+
+### Unit 7
+- **Feature/Issue:** `$ref`/pointer robustness
+- **Strategy:** Define explicit pointer support scope; implement resolver against richer schema node model.
+- **Files/components affected:** `SchemaRefResolver`, schema model/parser, registry interactions, tests.
+- **Required refactor:** Potential schema AST/pointer navigation utilities.
+- **Backward compatibility plan:** Keep current simple ref behavior as fallback mode.
+- **Risk level:** HIGH.
+- **Rollback strategy:** fallback to current resolver path by config toggle.
+
+### Unit 8
+- **Feature/Issue:** Path resolution consistency
+- **Strategy:** Standardize resolution rules for validate effect (absolute, plugin-relative, configured schema dir).
+- **Files/components affected:** `EffValidateData`, docs, integration tests.
+- **Required refactor:** centralized path resolver utility.
+- **Backward compatibility plan:** Continue accepting raw paths; add deterministic resolution order.
+- **Risk level:** MEDIUM.
+- **Rollback strategy:** revert to raw path mode via config toggle.
 
 ---
 
-## 🧠 FINAL VERDICT
+## 🧱 EXECUTION PHASES
 
-- **Is the system scalable?** Yes, but only after contract hardening and validator modularization.
-- **Can it safely evolve?** Yes, if changes follow staged rollout with compatibility matrix, feature flags, and regression tests.
-- **Biggest technical risk:** **Contract drift causing silent under-validation**—users trusting documented constraints that are not enforced.
+### Phase A — Contract Stabilization
+- **Scope:** Align docs with current behavior; add unsupported-keyword warnings; freeze misleading examples.
+- **Entry conditions:** Audit accepted; docs owners and maintainers aligned.
+- **Exit validation criteria:**
+  - Published supported-feature matrix.
+  - Config/API/Skript docs match runtime.
+  - Unsupported-keyword warnings observable in logs.
+- **Risk level:** LOW.
+
+### Phase B — Runtime Corrections
+- **Scope:** Fix correctness bugs (root dispatch, path semantics baseline).
+- **Entry conditions:** Phase A complete; regression harness for current behavior exists.
+- **Exit validation criteria:**
+  - Root primitive/array schema tests pass.
+  - No regressions in object-schema flows.
+  - Path resolution behavior documented and tested.
+- **Risk level:** MEDIUM.
+
+### Phase C — Feature Expansion (Low Risk First)
+- **Scope:** Implement low-complexity constraints (`minItems`, `maxItems`, `uniqueItems`, `minProperties`, `maxProperties`, `multipleOf`).
+- **Entry conditions:** Phase B stable across CI.
+- **Exit validation criteria:**
+  - Contract tests (valid/invalid fixtures) per new keyword.
+  - Feature flags available for each new keyword family.
+- **Risk level:** MEDIUM.
+
+### Phase D — High Complexity Features
+- **Scope:** `oneOf`, `not`, and `$ref` scope improvements.
+- **Entry conditions:** Shared composition/context infrastructure available.
+- **Exit validation criteria:**
+  - Deterministic error aggregation for composed schemas.
+  - Cycle-safe reference tests pass.
+  - Performance baseline unchanged within agreed threshold.
+- **Risk level:** HIGH.
+
+### Phase E — Architecture Refactor
+- **Scope:** Modular validator engine, pluggable keyword handlers, validation context, adapter isolation.
+- **Entry conditions:** Phase D feature behavior stabilized and covered by contract/regression suites.
+- **Exit validation criteria:**
+  - New keyword can be added without touching core dispatcher logic.
+  - Legacy behavior preserved under compatibility tests.
+  - Operational observability dashboards/log counters in place.
+- **Risk level:** HIGH.
+
+---
+
+## 🧪 VALIDATION STRATEGY
+
+### 1) Contract Tests (per documented feature)
+For each supported keyword:
+- `valid/<keyword>/*.json|yml` fixtures that must pass.
+- `invalid/<keyword>/*.json|yml` fixtures that must fail with expected error code/path.
+- Golden assertions for error shape and message invariants.
+
+### 2) Regression Tests
+- Preserve legacy behavior for existing schemas and Skript flows.
+- Snapshot tests for error-path formatting (`$`, `$.a.b`, `$.arr[0]`).
+- Compatibility tests for prior examples before/after each phase.
+
+### 3) Docs Execution Tests
+- Parse runnable snippets from docs and execute in test harness.
+- Docs CI gate fails if examples reference unsupported keywords without disclaimer.
+- Ensure quickstart path and config examples pass as-is.
+
+### 4) Safety Checks
+- Runtime detection for ignored/unknown keywords.
+- Fail-fast optional mode for strict environments.
+- CI check that documented “supported” matrix equals implemented keyword registry.
+
+---
+
+## 🚨 RISK CONTROL PLAN
+
+### Risk: Silent under-validation (CRITICAL)
+- **Detection method:** loader logs + test that unsupported keyword usage emits warning/error.
+- **Prevention strategy:** supported-keyword registry, strict mode, docs matrix CI gate.
+- **Monitoring/logging:** warning counter metric (`unsupported_keyword_count`) and per-keyword frequency.
+
+### Risk: Root-dispatch correctness failure (CRITICAL)
+- **Detection method:** dedicated tests for root primitive/array/object schemas.
+- **Prevention strategy:** centralize entry dispatch and enforce via architectural unit test.
+- **Monitoring/logging:** startup self-check validates sample schemas for each root type.
+
+### Risk: Skript error contract breakage (CRITICAL)
+- **Detection method:** integration tests for both legacy string expression and new structured API.
+- **Prevention strategy:** additive rollout; never repurpose existing expression semantics.
+- **Monitoring/logging:** deprecation warnings when legacy path is used (after structured API matures).
+
+### Risk: `$ref` recursion/pointer instability (CRITICAL)
+- **Detection method:** cycle, deep-pointer, and mixed local/external reference test suites.
+- **Prevention strategy:** validation context with recursion guard + pointer scope contract.
+- **Monitoring/logging:** resolver diagnostics (cache hit/miss, unresolved refs, cycle detections).
+
+---
+
+## 🧠 FINAL STRATEGY
+
+### What should be done FIRST
+1. Stabilize contract truth: docs matrix + warning system for unsupported keywords.
+2. Fix root dispatch correctness defect.
+3. Establish contract/regression/docs execution tests as release gates.
+
+### What must NEVER be rushed
+- `oneOf`/`not` and deep `$ref` semantics. These require composition/context architecture first.
+- Structured Skript error migration without additive compatibility path.
+
+### Where the system is most fragile
+- Contract drift between docs and runtime (creates user-facing false confidence).
+- Object-centric validator coupling (slows safe feature growth).
+- Reference/composition complexity without unified validation context.
