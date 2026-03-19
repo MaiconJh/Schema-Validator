@@ -7,60 +7,60 @@
 ![Skript](https://img.shields.io/badge/Skript-2.14-orange?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
-Um plugin Minecraft (Paper/Spigot) que permite validar dados YAML/JSON usando schemas, integrado com Skript.
+A Minecraft (Paper/Spigot) plugin that allows validating YAML/JSON data using schemas, integrated with Skript.
 
 </div>
 
 ---
 
-## 📋 Descrição
+## 📋 Description
 
-O **Schema Validator** é um addon para Skript que fornece validação de dados poderosa usando schemas JSON Schema-like. Permite que você defina estruturas de dados complexas e valide arquivos de configuração YAML ou JSON contra elas.
+**Schema Validator** is a Skript addon that provides powerful data validation using JSON Schema-like schemas. It allows you to define complex data structures and validate YAML or JSON configuration files against them.
 
-### ✨ Características
+### ✨ Features
 
-- 📄 Suporte a **YAML** e **JSON**
-- 🔍 Validação de esquemas complexos com **patternProperties**
-- ⚡ Integração nativa com **Skript**
-- 🎯 Validação de objetos, arrays, strings, números e booleanos
-- 📊 Sistema de erros detalhado
-- 🔄 Suporte a referências de schema (`$ref`)
+- 📄 Support for **YAML** and **JSON**
+- 🔍 Complex schema validation with **patternProperties**
+- ⚡ Native **Skript** integration
+- 🎯 Validation of objects, arrays, strings, numbers, and booleans
+- 📊 Detailed error system
+- 🔄 Schema reference support (`$ref`)
 
 ---
 
-## 🚀 Instalação
+## 🚀 Installation
 
-### Pré-requisitos
+### Prerequisites
 
-- [Paper](https://papermc.io/) ou [Spigot](https://www.spigotmc.org/) 1.21+
+- [Paper](https://papermc.io/) or [Spigot](https://www.spigotmc.org/) 1.21+
 - [Skript](https://github.com/SkriptLang/Skript) 2.14+
 - Java 21
 
-### Passos de Instalação
+### Installation Steps
 
-1. **Baixe o plugin**
-   - Compilou o projeto: `gradlew build`
-   - Ou baixe a versão mais recente em [Releases](../../releases)
+1. **Download the plugin**
+   - Build the project: `gradlew build`
+   - Or download the latest version from [Releases](../../releases)
 
-2. **Instale no servidor**
+2. **Install on server**
    ```
    /plugins/
    ├── Schema-Validator-0.1.0-SNAPSHOT.jar
    ├── Skript.jar
-   └── [outros plugins]
+   └── [other plugins]
    ```
 
 3. **Configure**
-   - Crie uma pasta `schemas/` em `plugins/Schema-Validator/`
-   - Coloque seus arquivos de schema (.json/.yml) na pasta
+   - Create a `schemas/` folder in `plugins/Schema-Validator/`
+   - Place your schema files (.json/.yml) in the folder
 
-4. **Reinicie o servidor**
+4. **Restart the server**
 
 ---
 
-## ⚙️ Configuração
+## ⚙️ Configuration
 
-### Estrutura de Pastas
+### Folder Structure
 
 ```
 plugins/
@@ -72,83 +72,83 @@ plugins/
 │   ├── examples/
 │   │   └── ...
 │   └── config.yml
-└── [seus scripts Skript]
+└── [your Skript scripts]
 ```
 
 ### config.yml
 
 ```yaml
-# Configurações do Schema Validator
+# Schema Validator Settings
 settings:
-  # Cache de schemas carregados
+  # Cache loaded schemas
   cache-enabled: true
-  # Tempo de expiração do cache (em milissegundos)
+  # Cache expiry time (in milliseconds)
   cache-expiry: 3600000
 ```
 
 ---
 
-## 📖 Uso
+## 📖 Usage
 
-### Sintaxe Skript
+### Skript Syntax
 
-#### Validar YAML
-
-```skript
-validate yaml <caminho> using schema <caminho>
-```
-
-#### Validar JSON
+#### Validate YAML
 
 ```skript
-validate json <caminho> using schema <caminho>
+validate yaml <path> using schema <path>
 ```
 
-#### Obter Erros de Validação
+#### Validate JSON
+
+```skript
+validate json <path> using schema <path>
+```
+
+#### Get Validation Errors
 
 ```skript
 set {_errors::*} to last schema validation errors
 ```
 
-### Exemplos
+### Examples
 
-#### Exemplo 1: Validação Básica
+#### Example 1: Basic Validation
 
 ```skript
-command /validar:
+command /validate:
     trigger:
         validate yaml "examples/player.yml" using schema "schemas/player-profile.schema.json"
         
         set {_errors::*} to last schema validation errors
         
         if size of {_errors::*} is 0:
-            broadcast "✓ Dados válidos!"
+            broadcast "✓ Valid data!"
         else:
-            broadcast "✗ Erros encontrados:"
+            broadcast "✗ Errors found:"
             loop {_errors::*}:
                 broadcast "- %loop-value%"
 ```
 
-#### Exemplo 2: Sistema de Blocos Customizados
+#### Example 2: Custom Blocks System
 
 ```skript
 on script load:
-    # Carregar schemas na inicialização
+    # Load schemas on startup
     validate yaml "schemas/custom-blocks.yml" using schema "schemas/custom-block.schema.json"
 
 on player break diamond ore:
-    # Validar configuração do bloco
+    # Validate block configuration
     set {_block-id} to "diamond_ore_custom"
     validate yaml "blocks/%{_block-id}%.yml" using schema "schemas/custom-block.schema.json"
     
     if size of {validation::errors::*} is 0:
-        # Prosseguir com lógica customizada
-        broadcast "Bloco válido! Processando drops..."
+        # Proceed with custom logic
+        broadcast "Valid block! Processing drops..."
     else:
-        broadcast "Configuração inválida do bloco!"
+        broadcast "Invalid block configuration!"
 ```
 
-#### Exemplo 3: Validação de Dados do Jogador
+#### Example 3: Player Data Validation
 
 ```skript
 function validatePlayerData(player: player) :: boolean:
@@ -160,28 +160,28 @@ function validatePlayerData(player: player) :: boolean:
         return true
     else:
         loop {_errors::*}:
-            send "&cErro: %loop-value%" to {_player}
+            send "&cError: %loop-value%" to {_player}
         return false
 ```
 
 ---
 
-## 📝 Referência de Schema
+## 📝 Schema Reference
 
-### Tipos Suportados
+### Supported Types
 
-| Tipo | Descrição | Exemplo |
-|------|------------|---------|
-| `string` | Texto | `"hello"` |
-| `number` | Número | `42`, `3.14` |
-| `integer` | Inteiro | `42` |
-| `boolean` | Booleano | `true`, `false` |
-| `object` | Objeto | `{ "key": "value" }` |
-| `array` | Lista | `[1, 2, 3]` |
-| `null` | Nulo | `null` |
-| `any` | Qualquer tipo | qualquer valor |
+| Type | Description | Example |
+|------|-------------|---------|
+| `string` | Text | `"hello"` |
+| `number` | Number | `42`, `3.14` |
+| `integer` | Integer | `42` |
+| `boolean` | Boolean | `true`, `false` |
+| `object` | Object | `{ "key": "value" }` |
+| `array` | List | `[1, 2, 3]` |
+| `null` | Null | `null` |
+| `any` | Any type | any value |
 
-### Propriedades de Schema
+### Schema Properties
 
 ```json
 {
@@ -196,22 +196,22 @@ function validatePlayerData(player: player) :: boolean:
 }
 ```
 
-### Propriedades de Validação
+### Validation Properties
 
-| Propriedade | Descrição |
-|-------------|------------|
-| `type` | Tipo do dado |
-| `properties` | Propriedades de um objeto |
-| `patternProperties` | Propriedades com regex |
-| `items` | Schema para itens de array |
-| `required` | Campos obrigatórios |
-| `minimum` / `maximum` | Limites numéricos |
-| `minLength` / `maxLength` | Limites de string |
-| `pattern` | Regex para string |
-| `enum` | Valores permitidos |
-| `additionalProperties` | Permitir propriedades extras |
+| Property | Description |
+|----------|-------------|
+| `type` | Data type |
+| `properties` | Object properties |
+| `patternProperties` | Regex properties |
+| `items` | Array item schema |
+| `required` | Required fields |
+| `minimum` / `maximum` | Numeric limits |
+| `minLength` / `maxLength` | String limits |
+| `pattern` | String regex |
+| `enum` | Allowed values |
+| `additionalProperties` | Allow extra properties |
 
-### Exemplo de Schema Complexo
+### Complex Schema Example
 
 ```json
 {
@@ -248,7 +248,7 @@ function validatePlayerData(player: player) :: boolean:
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📁 Project Structure
 
 ```
 Schema-Validator/
@@ -256,40 +256,40 @@ Schema-Validator/
 │   ├── main/
 │   │   ├── java/
 │   │   │   └── com/maiconjh/schemacr/
-│   │   │       ├── config/          # Configuração do plugin
-│   │   │       ├── core/            # Lógica principal
-│   │   │       ├── integration/    # Integração Skript
-│   │   │       ├── schemes/        # Carregamento de schemas
-│   │   │       └── validation/     # Validadores
+│   │   │       ├── config/          # Plugin configuration
+│   │   │       ├── core/            # Core logic
+│   │   │       ├── integration/    # Skript integration
+│   │   │       ├── schemes/        # Schema loading
+│   │   │       └── validation/     # Validators
 │   │   └── resources/
-│   │       ├── examples/            # Exemplos de uso
-│   │       └── schemas/             # Schemas de exemplo
+│   │       ├── examples/            # Usage examples
+│   │       └── schemas/             # Example schemas
 │   └── test/
-├── docs/                            # Documentação
+├── docs/                            # Documentation
 ├── build.gradle
 └── settings.gradle
 ```
 
 ---
 
-## 🛠️ Compilação
+## 🛠️ Building
 
-### Compilar o Plugin
+### Build the Plugin
 
 ```bash
-# Compilar com Gradle
+# Build with Gradle
 gradlew build
 
-# Limpar build anterior
+# Clean previous build
 gradlew clean build
 
-# Gerar JAR com dependências
+# Generate JAR with dependencies
 gradlew shadowJar
 ```
 
-### Saída
+### Output
 
-O JAR compilado estará em:
+The compiled JAR will be at:
 ```
 build/libs/Schema-Validator-0.1.0-SNAPSHOT.jar
 ```
@@ -298,50 +298,50 @@ build/libs/Schema-Validator-0.1.0-SNAPSHOT.jar
 
 ## 🤝 Contribution Guidelines
 
-### Como Contribuir
+### How to Contribute
 
-1. **Fork** o repositório
-2. Crie uma **branch** para sua feature (`git checkout -b feature/MinhaFeature`)
-3. **Commit** suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. **Push** para a branch (`git push origin feature/MinhaFeature`)
-5. Abra um **Pull Request**
+1. **Fork** the repository
+2. Create a **branch** for your feature (`git checkout -b feature/MyFeature`)
+3. **Commit** your changes (`git commit -m 'Add new feature'`)
+4. **Push** to the branch (`git push origin feature/MyFeature`)
+5. Open a **Pull Request**
 
-### Padrões de Código
+### Code Standards
 
 - Use **Java 21**
-- Sigua o estilo de código existente
-- Adicione **JavaDoc** para novas classes/métodos
-- Use **nomes descritivos** para variáveis e métodos
+- Follow existing code style
+- Add **JavaDoc** for new classes/methods
+- Use **descriptive names** for variables and methods
 
-### Estrutura de Commits
+### Commit Structure
 
 ```
-feat:    Nova funcionalidade
-fix:     Correção de bug
-docs:    Documentação
-refactor: Refatoração de código
-test:    Adição de testes
-chore:   Tarefas de manutenção
+feat:    New feature
+fix:     Bug fix
+docs:    Documentation
+refactor: Code refactoring
+test:    Add tests
+chore:   Maintenance tasks
 ```
 
 ---
 
-## 📄 Licença
+## 📄 License
 
-Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](LICENSE) para detalhes.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Agradecimentos
+## 🙏 Acknowledgments
 
-- [Skript](https://github.com/SkriptLang/Skript) - Por criar uma linguagem amazing
-- [Paper](https://papermc.io/) - Pela API moderna
-- [Jackson](https://github.com/FasterXML/jackson) - Pela biblioteca de parsing JSON/YAML
+- [Skript](https://github.com/SkriptLang/Skript) - For creating an amazing language
+- [Paper](https://papermc.io/) - For the modern API
+- [Jackson](https://github.com/FasterXML/jackson) - For the JSON/YAML parsing library
 
 ---
 
 <div align="center">
 
-Feito com ❤️ por [MaiconJH](https://github.com/MaiconJH)
+Made with ❤️ by [MaiconJH](https://github.com/MaiconJH)
 
 </div>
