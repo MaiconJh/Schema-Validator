@@ -32,7 +32,7 @@ This audit reviews the current GitHub Wiki surface and aligns it to the reposito
 
 ## New wiki structure
 
-1. `Home` (Overview / Concepts)
+1. `README` (Overview / Concepts)
 2. `Quickstart-and-Setup`
 3. `Schema-and-Validator-Reference`
 4. `Skript-Integration`
@@ -51,4 +51,4 @@ This audit reviews the current GitHub Wiki surface and aligns it to the reposito
 
 ## Follow-up recommendation
 
-Mirror this `wiki/` directory into the GitHub Wiki repository on release, or replace remote wiki content with links to these pages to preserve one-way authority from `/docs`.
+Mirror this `wiki/` directory into the GitHub Wiki repository on release, or replace remote wiki content with links to these pages to preserve one-way authority from `/docs`. See `wiki/PUBLISHING.md` for the operational publishing sequence.

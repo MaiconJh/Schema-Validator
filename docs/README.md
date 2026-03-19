@@ -37,7 +37,7 @@ These pages provide workflows and examples. They must not redefine behavior alre
 
 ## Wiki mirror (operational index)
 
-- [`../wiki/Home.md`](../wiki/Home.md)
+- [`../wiki/README.md`](../wiki/README.md)
 - [`../wiki/Audit-Summary-2026-03-19.md`](../wiki/Audit-Summary-2026-03-19.md)
 
 The wiki mirror is non-normative and should always defer to `CONTRACT.md`.

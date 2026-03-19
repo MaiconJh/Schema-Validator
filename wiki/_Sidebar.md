@@ -1,6 +1,6 @@
 ### Wiki Navigation
 
-- [Home](Home)
+- [README](README)
 - [Audit Summary (2026-03-19)](Audit-Summary-2026-03-19)
 - [Quickstart and Setup](Quickstart-and-Setup)
 - [Schema and Validator Reference](Schema-and-Validator-Reference)
