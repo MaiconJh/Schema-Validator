@@ -1,6 +1,7 @@
 package com.maiconjh.schemacr.core;
 
 import com.maiconjh.schemacr.schemes.Schema;
+import com.maiconjh.schemacr.schemes.SchemaRefResolver;
 import com.maiconjh.schemacr.validation.ObjectValidator;
 import com.maiconjh.schemacr.validation.ValidationError;
 import com.maiconjh.schemacr.validation.ValidationResult;
@@ -17,9 +18,23 @@ import java.util.List;
 public class ValidationService {
 
     private final Validator rootValidator;
+    private final SchemaRefResolver refResolver;
 
     public ValidationService() {
         this.rootValidator = new ObjectValidator();
+        this.refResolver = null;
+    }
+
+    /**
+     * Creates a ValidationService with a schema registry for resolving $ref references.
+     * @param registry the schema registry
+     * @param logger logger for reporting resolution errors
+     */
+    public ValidationService(SchemaRefResolver refResolver) {
+        ObjectValidator objectValidator = new ObjectValidator();
+        objectValidator.setRefResolver(refResolver);
+        this.rootValidator = objectValidator;
+        this.refResolver = refResolver;
     }
 
     public ValidationResult validate(Object data, Schema schema) {

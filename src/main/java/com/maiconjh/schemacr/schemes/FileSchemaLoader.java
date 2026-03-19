@@ -30,6 +30,7 @@ public class FileSchemaLoader {
     private final Logger logger;
     private final ObjectMapper jsonMapper = new ObjectMapper();
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+    private final Map<String, Schema> definitions = new HashMap<>();
 
     public FileSchemaLoader(Logger logger) {
         this.logger = logger;
@@ -51,9 +52,30 @@ public class FileSchemaLoader {
         }
 
         Map<String, Object> raw = mapper.readValue(path.toFile(), Map.class);
+        
+        // First pass: extract definitions
+        definitions.clear();
+        if (raw.containsKey("definitions") && raw.get("definitions") instanceof Map<?, ?> defs) {
+            for (Map.Entry<?, ?> entry : defs.entrySet()) {
+                if (entry.getValue() instanceof Map<?, ?> defMap) {
+                    String defName = String.valueOf(entry.getKey());
+                    definitions.put(defName, toSchema(defName, castMap(defMap)));
+                }
+            }
+        }
+        
         Schema schema = toSchema(schemaName, raw);
         logger.info("Loaded schema '" + schemaName + "' from " + path);
         return schema;
+    }
+
+    /**
+     * Gets a definition by name.
+     * @param name the definition name
+     * @return the Schema definition or null
+     */
+    public Schema getDefinition(String name) {
+        return definitions.get(name);
     }
 
     private Schema toSchema(String name, Map<String, Object> raw) {

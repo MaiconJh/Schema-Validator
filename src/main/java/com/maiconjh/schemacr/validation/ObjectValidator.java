@@ -1,6 +1,7 @@
 package com.maiconjh.schemacr.validation;
 
 import com.maiconjh.schemacr.schemes.Schema;
+import com.maiconjh.schemacr.schemes.SchemaRefResolver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,15 +13,36 @@ import java.util.regex.Pattern;
  */
 public class ObjectValidator implements Validator {
 
+    private SchemaRefResolver refResolver;
+
+    public ObjectValidator() {
+    }
+
+    public ObjectValidator(SchemaRefResolver refResolver) {
+        this.refResolver = refResolver;
+    }
+
+    /**
+     * Sets the schema reference resolver.
+     */
+    public void setRefResolver(SchemaRefResolver refResolver) {
+        this.refResolver = refResolver;
+    }
+
     @Override
     public List<ValidationError> validate(Object data, Schema schema, String path, String parentKey) {
         List<ValidationError> errors = new ArrayList<>();
 
         // Handle schema references ($ref)
-        if (schema.isRef()) {
-            // For now, skip validation of ref schemas
-            // The SchemaRefResolver should be used to resolve the actual schema
-            return errors;
+        if (schema.isRef() && refResolver != null) {
+            Schema resolvedSchema = refResolver.resolveRef(schema.getRef(), schema.getName());
+            if (resolvedSchema != null) {
+                return validate(data, resolvedSchema, path, parentKey);
+            } else {
+                errors.add(new ValidationError(path, "$ref", schema.getRef(), 
+                    "Could not resolve reference: " + schema.getRef()));
+                return errors;
+            }
         }
 
         if (!(data instanceof Map<?, ?> map)) {

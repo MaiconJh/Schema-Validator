@@ -4,6 +4,7 @@ import com.maiconjh.schemacr.config.PluginConfig;
 import com.maiconjh.schemacr.integration.SkriptSyntaxRegistration;
 import com.maiconjh.schemacr.schemes.FileSchemaLoader;
 import com.maiconjh.schemacr.schemes.Schema;
+import com.maiconjh.schemacr.schemes.SchemaRefResolver;
 import com.maiconjh.schemacr.schemes.SchemaRegistry;
 import com.maiconjh.schemacr.schemes.SchemaType;
 import com.maiconjh.schemacr.validation.ValidationError;
@@ -112,7 +113,11 @@ public class SchemaValidatorPlugin extends JavaPlugin {
      */
     private void validateLoadedSchemas() {
         getLogger().info("Validating loaded schemas...");
-        com.maiconjh.schemacr.core.ValidationService validationService = new com.maiconjh.schemacr.core.ValidationService();
+        
+        // Create SchemaRefResolver with the registry for $ref resolution
+        SchemaRefResolver refResolver = new SchemaRefResolver(schemaRegistry, getLogger());
+        ValidationService validationService = new ValidationService(refResolver);
+        
         int validCount = 0;
         int invalidCount = 0;
 
