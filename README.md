@@ -1,5 +1,7 @@
 # Schema Validator
 
+> ⚠️ **Important Notice**: This addon and repository were created with **Artificial Intelligence assistance**. While efforts have been made to ensure quality, there may be **bugs, inconsistencies, or errors** in the code. The project may not be perfect. Please use with caution and report any issues you find.
+
 <div align="center">
 
 ![Java](https://img.shields.io/badge/Java-21-blue?style=for-the-badge&logo=java)
