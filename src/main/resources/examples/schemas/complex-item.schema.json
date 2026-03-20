@@ -12,6 +12,7 @@
     },
     "id": {
       "type": "string",
+      "format": "minecraft-item",
       "pattern": "^[a-z0-9_:]+$"
     },
     "name": {
