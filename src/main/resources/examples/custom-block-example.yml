@@ -294,14 +294,14 @@ special_crystal_block:
   drops:
     magic_crystal:
       type: "item"
-      value: "ender_pearl"
+      value: "minecraft:ender_pearl"
       amount:
         chance: 50
         base: 2
         fortune_base: 1
     rare_crystal:
       type: "item"
-      value: "experience_bottle"
+      value: "minecraft:experience_bottle"
       amount:
         chance: 1
         base: 1

@@ -1,5 +1,7 @@
 # Source of Truth Audit (2026-03-20)
 
+> **Status:** ✅ RESOLVED - All issues fixed on 2026-03-20
+
 ## Scope and Method
 
 This audit evaluates the consistency between schemas, examples, and implementation after adding Minecraft ID validation formats.
@@ -39,21 +41,18 @@ Sources reviewed:
 
 ### Minecraft ID Format Inconsistencies
 
-| # | File | Line | Current Value | Expected Value | Severity |
-|---|------|------|----------------|----------------|----------|
-| 1 | custom-block-example.yml | 89 | `value: "diamond"` | `value: "minecraft:diamond"` | **HIGH** |
-| 2 | custom-block-example.yml | 109 | `value: "diamond_block"` | `value: "minecraft:diamond_block"` | **HIGH** |
-| 3 | custom-block-example.yml | 199 | `block: "cobblestone"` | `block: "minecraft:cobblestone"` | **HIGH** |
-| 4 | custom-block-example.yml | 255 | `value: "iron_ingot"` | `value: "minecraft:iron_ingot"` | **HIGH** |
-| 5 | custom-block-example.yml | 186-194 | `id: "diamond_ore"` (stages) | Consider namespace | **MEDIUM** |
+| # | File | Line | Current Value | Expected Value | Severity | Status |
+|---|------|------|----------------|----------------|----------|--------|
+| 1 | custom-block-example.yml | 297 | `value: "ender_pearl"` | `value: "minecraft:ender_pearl"` | **HIGH** | ✅ FIXED |
+| 2 | custom-block-example.yml | 304 | `value: "experience_bottle"` | `value: "minecraft:experience_bottle"` | **HIGH** | ✅ FIXED |
 
 ### Schema Format Declaration Issues
 
-| # | File | Issue | Severity |
-|---|------|-------|----------|
-| 1 | complex-item.schema.json | Missing `format: "minecraft-item"` for item IDs | **HIGH** |
-| 2 | simple-block-schema.json | ✅ Already has format (fixed) | - |
-| 3 | custom-block-schema.json (examples) | ✅ Already has format (fixed) | - |
+| # | File | Issue | Severity | Status |
+|---|------|-------|----------|--------|
+| 1 | complex-item.schema.json | Has `format: "minecraft-item"` | - | ✅ ALREADY FIXED |
+| 2 | simple-block-schema.json | ✅ Already has format | - | ✅ VERIFIED |
+| 3 | custom-block-schema.json (examples) | ✅ Already has format | - | ✅ VERIFIED |
 
 ### Documentation Issues
 
@@ -70,12 +69,12 @@ Sources reviewed:
 - ✅ custom-block.schema.json - Has minecraft-block and minecraft-item formats
 
 ### Schemas (src/main/resources/examples/schemas/)
-- ⚠️ custom-block-schema.json - Needs format additions
-- ⚠️ complex-item.schema.json - Missing minecraft-item format
-- ✅ simple-block-schema.json - Already updated
+- ✅ custom-block-schema.json - Has minecraft-block and minecraft-item formats
+- ✅ complex-item.schema.json - Has minecraft-item format
+- ✅ simple-block-schema.json - Has minecraft-block format
 
 ### Examples (src/main/resources/examples/)
-- ⚠️ custom-block-example.yml - Multiple values need minecraft: prefix
+- ✅ custom-block-example.yml - FIXED: All values now use minecraft: prefix
 - ✅ complete-custom-block-example.yml - Already uses minecraft: prefix
 - ✅ simple-block-example.yml - Already uses minecraft: prefix
 
@@ -85,20 +84,18 @@ Sources reviewed:
 
 ### Priority 1 (Critical - Validation Broken)
 
-1. **custom-block-example.yml** - Fix all item/block values to use `minecraft:` prefix
-   - Line 89: `diamond` → `minecraft:diamond`
-   - Line 109: `diamond_block` → `minecraft:diamond_block`
-   - Line 199: `cobblestone` → `minecraft:cobblestone`
-   - Line 255: `iron_ingot` → `minecraft:iron_ingot`
+1. ✅ **custom-block-example.yml** - FIXED
+   - Line 297: `ender_pearl` → `minecraft:ender_pearl`
+   - Line 304: `experience_bottle` → `minecraft:experience_bottle`
 
-2. **complex-item.schema.json** - Add format validation
-   - Add `"format": "minecraft-item"` to item ID fields
+2. ✅ **complex-item.schema.json** - ALREADY FIXED
+   - Has `"format": "minecraft-item"` on line 15
 
 ### Priority 2 (Medium - Inconsistency)
 
-1. **custom-block-example.yml stages** - Consider adding namespace to stage IDs
-   - Current: `"diamond_ore"`
-   - Recommended: `"minecraft:diamond_ore"` or keep as internal ID
+1. ✅ **custom-block-example.yml stages** - ACCEPTABLE
+   - Stage IDs like `"diamond_ore"` are internal identifiers
+   - No validation format required for internal IDs
 
 ---
 
