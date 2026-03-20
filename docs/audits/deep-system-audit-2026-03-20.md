@@ -86,7 +86,7 @@ Schema-Validator has significantly evolved since the last audit. The system now 
 | **Number** | `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf` | ✅ Full |
 | **Composition** | `allOf`, `anyOf`, `oneOf`, `not` | ✅ Full |
 | **Conditional** | `if`, `then`, `else` | ✅ Full |
-| **Reference** | `$ref`, `definitions`, `$schema`, `$id` | ⚠️ Partial |
+| **Reference** | `$ref`, `definitions`, `$defs`, `$schema`, `$id` | ⚠️ Partial (definitions/$defs parsing added, full resolution needs arch change) |
 | **Constraint** | `enum`, `const` | ✅ Full |
 | **Metadata** | `title`, `description`, `default`, `examples`, `readOnly`, `writeOnly`, `deprecated`, `comment` | ✅ Full |
 
