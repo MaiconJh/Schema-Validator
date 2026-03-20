@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -322,6 +321,16 @@ public class SchemaRefResolver {
         
         if ("items".equals(part) && current.getItemSchema() != null) {
             return current.getItemSchema();
+        }
+        
+        // Support definitions (JSON Schema Draft-07 and earlier)
+        if ("definitions".equals(part)) {
+            return current;
+        }
+        
+        // Support $defs (JSON Schema 2019-09 and later)
+        if ("$defs".equals(part)) {
+            return current;
         }
         
         return null;

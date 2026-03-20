@@ -1,15 +1,17 @@
 package com.maiconjh.schemacr.integration;
 
-import ch.njol.skript.lang.SkriptParser;
-import ch.njol.skript.lang.util.SimpleExpression;
-import ch.njol.util.Kleenean;
-import com.maiconjh.schemacr.validation.ValidationError;
-import com.maiconjh.schemacr.validation.ValidationResult;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.maiconjh.schemacr.validation.ValidationError;
+import com.maiconjh.schemacr.validation.ValidationResult;
+
+import ch.njol.skript.lang.SkriptParser;
+import ch.njol.skript.lang.util.SimpleExpression;
+import ch.njol.util.Kleenean;
 
 /**
  * Exposes validation errors as a string array to Skript.
@@ -36,7 +38,7 @@ public class ExprLastValidationErrors extends SimpleExpression<String> {
         }
 
         List<String> messages = result.getErrors().stream()
-                .map(ValidationError::toString)
+                .map(ValidationError::toCompactString)
                 .collect(Collectors.toList());
 
         return messages.toArray(new String[0]);

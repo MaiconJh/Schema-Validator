@@ -33,6 +33,41 @@ public class ValidationError {
         return description;
     }
 
+    /**
+     * Gets a short error message (just the description).
+     * Useful for Skript integration where detailed info may be too verbose.
+     * 
+     * @return short error message
+     */
+    public String getMessage() {
+        if (description != null && !description.isEmpty()) {
+            return description;
+        }
+        if (expectedType != null && !expectedType.isEmpty()) {
+            return "Expected " + expectedType + " at " + nodePath;
+        }
+        return "Validation failed at " + nodePath;
+    }
+
+    /**
+     * Gets a compact error string for list display in Skript.
+     * Format: "[path] expected type: actual type - description"
+     * 
+     * @return compact error string
+     */
+    public String toCompactString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[").append(nodePath).append("] ");
+        sb.append(expectedType);
+        if (actualType != null && !actualType.isEmpty()) {
+            sb.append(": ").append(actualType);
+        }
+        if (description != null && !description.isEmpty()) {
+            sb.append(" - ").append(description);
+        }
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
