@@ -14,6 +14,78 @@ Schema-Validator implements a **subset** of JSON Schema Draft 2020-12 with backw
 
 ---
 
+## The $schema Field
+
+The `$schema` field is a **metadata declaration** that indicates which version of JSON Schema you are using. It tells the validator how to interpret your schema.
+
+### Basic Usage
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" }
+  }
+}
+```
+
+### Why is $schema Important?
+
+1. **Version Declaration**: Tells the validator which set of keywords to use
+2. **Schema Validation**: The schema itself can be validated for correctness
+3. **Tool Support**: IDEs and editors use it for autocomplete and validation
+4. **Documentation**: Helps humans understand which version was used
+
+### Is It Required?
+
+**No**, but it is highly recommended because:
+- Ensures compatibility between schema and validator
+- Avoids ambiguities
+- Enables tools to validate your schema
+
+---
+
+## JSON Schema Draft Versions
+
+| Draft | URI | Key Features |
+|-------|-----|---------------|
+| **draft-04** | `http://json-schema.org/draft-04/schema#` | First stable version. Basic keywords: type, properties, required, enum, pattern |
+| **draft-06** | `http://json-schema.org/draft-06/schema#` | Added `const`, improved boolean handling |
+| **draft-07** | `http://json-schema.org/draft-07/schema#` | Added `if`/`then`/`else`, `unknownKeywords` |
+| **draft-2019-09** | `https://json-schema.org/draft/2019-09/schema` | Added `unevaluatedProperties`, `unevaluatedItems` |
+| **draft-2020-12** | `https://json-schema.org/draft/2020-12/schema` | Current version, includes all previous features |
+
+### Which Draft Should You Use?
+
+For Schema-Validator, we recommend **draft-07** because:
+- It supports `if`/`then`/`else` conditional validation
+- It has broad compatibility with older drafts
+- It is widely supported by tools
+
+Example with conditional validation (draft-07+):
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "if": { "properties": { "type": { "const": "premium" } } },
+  "then": { "required": ["subscription"] },
+  "else": { "properties": { "guestAccess": { "type": "boolean" } } }
+}
+```
+
+---
+
+## Official JSON Schema Resources
+
+For complete specification and learning:
+
+- **Official Website**: https://json-schema.org/
+- **Specification**: https://json-schema.org/specification.html
+- **Understanding JSON Schema**: https://json-schema.org/understanding-json-schema/
+- **GitHub Repository**: https://github.com/json-schema-org/json-schema-spec
+
+---
+
 ## Keyword Status Matrix
 
 | Keyword | Status | Validator | Notes |
