@@ -1,6 +1,44 @@
 # Documentation Consolidation Plan
 
 **Last Updated:** 2026-03-20
+**Revised:** 2026-03-20 (Cross-reference analysis completed)
+
+---
+
+## Cross-Reference Analysis: deep-system-audit-2026-03-19 vs Current Implementation
+
+### Verification Methodology
+
+Each issue from `deep-system-audit-2026-03-19.md` was verified against current source code:
+
+| Issue # | Issue Name | Audit 2026-03-19 Status | Current Status | Evidence |
+|---------|------------|-------------------------|----------------|----------|
+| 1 | Root validator dispatch | CRITICAL - bypasses type dispatch | ✅ **FIXED** | ValidationService.java:40-50 uses `ValidatorDispatcher.forSchema()` |
+| 2 | Silent under-validation | CRITICAL - keywords not enforced | ✅ **FIXED** | All documented keywords now implemented (2026-03-20 audit) |
+| 3 | Skript error model mismatch | CRITICAL - String[] vs objects | ✅ **IMPROVED** | ValidationError.java has getMessage() and toCompactString() |
+| 4 | $ref/definitions incomplete | CRITICAL - incomplete pointer navigation | ⚠️ **PARTIAL** | definitions/$defs parsing added, full resolution needs arch change |
+| 5 | Config contract mismatch | MEDIUM - format divergence | ✅ **FIXED** | config.yml aligned with PluginConfig.java keys |
+| 6 | API reference drift | MEDIUM - missing methods in docs | ✅ **FIXED** | api-reference.md now implementation-aligned |
+| 7 | Path resolution split-brain | MEDIUM - autoload vs effect-time | ⚠️ **STILL PRESENT** | EffValidateData uses raw Path.of(), autoload uses config dir |
+| 8 | Composition in ObjectValidator | MEDIUM - bound to object validator | ⚠️ **PARTIAL** | Still in ObjectValidator, but functional |
+| 9 | Global mutable last-result | LOW - no scope partitioning | ⚠️ **STILL PRESENT** | SkriptValidationBridge still uses static field |
+
+### Key Findings
+
+#### ✅ FIXED Issues (6)
+- **Issue 1**: Root validator now correctly dispatches by schema type
+- **Issue 2**: All documented keywords are now enforced
+- **Issue 3**: Error model improved with structured access
+- **Issue 5**: Config keys now match between docs and code
+- **Issue 6**: API reference matches implementation
+
+#### ⚠️ PARTIALLY FIXED Issues (2)
+- **Issue 4**: definitions/$defs parsing added, but full resolution requires new architecture (see new-architecture-plan.md)
+- **Issue 8**: Composition logic remains in ObjectValidator, but works correctly
+
+#### ❌ STILL PRESENT Issues (2)
+- **Issue 7**: Path resolution inconsistency between autoload and Skript effect
+- **Issue 9**: Global static mutable state in SkriptValidationBridge
 
 ---
 
@@ -131,11 +169,57 @@ docs/
 
 ---
 
+## Integrated Action Plan
+
+Based on cross-reference analysis and new-architecture-plan.md:
+
+### Immediate Actions (Next Release)
+
+| Action | Issue | Priority | Owner |
+|--------|-------|----------|-------|
+| Implement Schema fields for definitions/$defs | Issue 4 | CRITICAL | TBD |
+| Update SchemaRefResolver for local definitions | Issue 4 | CRITICAL | TBD |
+
+### Future Actions (Backlog)
+
+| Action | Issue | Priority | Status |
+|--------|-------|----------|--------|
+| Fix path resolution consistency | Issue 7 | MEDIUM | Pending |
+| Address global mutable state | Issue 9 | LOW | Backlog |
+| Extract composition to shared layer | Issue 8 | MEDIUM | Backlog |
+
+---
+
+## Notes
+
+### Why 2026-03-19 Audit is Now Obsolete
+
+> **Não segue como fonte da verdade** - The `deep-system-audit-2026-03-19.md` contains several issues that have been resolved:
+
+1. **Issue 1 (Root dispatch)** - Listed as CRITICAL but was FIXED before 2026-03-20
+   - Evidence: `ValidationService.java` now uses `ValidatorDispatcher.forSchema()` at line 40-50
+   
+2. **Issue 2 (Silent under-validation)** - Listed as CRITICAL but ALL documented keywords are now implemented
+   - Evidence: ObjectValidator, ArrayValidator, PrimitiveValidator all fully implement keywords
+
+3. **Issue 3 (Error model)** - Listed as CRITICAL but IMPROVED
+   - Evidence: ValidationError now has structured methods
+
+4. **Issue 5 & 6 (Config/API)** - Listed as MEDIUM but FIXED
+   - Evidence: api-reference.md and config.yml are now aligned
+
+**Recommendation:** The 2026-03-19 audit should be marked as superseded by the 2026-03-20 audit, which more accurately reflects the current system state.
+
+---
+
 ## Pending Items
 
 | Item | Priority | Status |
 |------|----------|--------|
 | architecture.md split (>40KB) | Low | Deferred - well structured |
+| Mark deep-system-audit-2026-03-19.md as superseded | Medium | Pending |
+| Implement new architecture plan for $ref/definitions | Critical | In Progress |
+| Fix path resolution consistency | Medium | Backlog |
 
 ---
 

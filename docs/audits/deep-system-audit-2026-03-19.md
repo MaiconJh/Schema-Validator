@@ -1,5 +1,13 @@
 # Deep System Audit → Executable Implementation Strategy (2026-03-19)
 
+> **⚠️ STATUS: SUPERSEDED** - This audit was superseded by `deep-system-audit-2026-03-20.md`
+> 
+> **Recommendation:** Do not use this document as source of truth. Many issues listed below have been resolved.
+> 
+> See `documentation-consolidation-plan-2026-03-20.md` for cross-reference analysis.
+
+---
+
 ## 🧾 SYSTEM STATE SUMMARY
 
 Schema-Validator has a stable core for object-focused validation (`properties`, `required`, `items`, `enum`, numeric/string bounds, `allOf`, `anyOf`) but suffers from **contract drift** between `/docs` and runtime behavior. The immediate production risks are correctness defects (root dispatch), silent under-validation (documented but unsupported keywords), and integration mismatch (Skript error object contract).
