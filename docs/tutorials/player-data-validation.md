@@ -96,10 +96,10 @@ health: 20.0
 class: "warrior"
 inventory:
   - slot: 0
-    item: "DIAMOND_SWORD"
+    item: "minecraft:diamond_sword"
     amount: 1
   - slot: 1
-    item: "APPLE"
+    item: "minecraft:apple"
     amount: 64
 location:
   world: "world"
