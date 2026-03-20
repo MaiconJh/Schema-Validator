@@ -9,7 +9,7 @@ info:
   rarity: "legendary"
 
 verification:
-  block-type: "diamond_ore"
+  block-type: "minecraft:diamond_ore"
   worlds:
     - "world"
     - "world_nether"

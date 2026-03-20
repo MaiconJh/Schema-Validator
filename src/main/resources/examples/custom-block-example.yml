@@ -17,7 +17,7 @@ diamond_ore_custom:
     rarity: "legendary"
   
   verification:
-    block-type: "tagged:diamond_ore"
+    block-type: "minecraft:diamond_ore"
     worlds:
       - "world"
       - "world_nether"
@@ -239,7 +239,7 @@ iron_ore_custom:
     rarity: "common"
   
   verification:
-    block-type: "tagged:iron_ore"
+    block-type: "minecraft:iron_ore"
     worlds:
       - "world"
     y-range:

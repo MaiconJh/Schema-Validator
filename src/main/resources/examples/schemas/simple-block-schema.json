@@ -30,7 +30,8 @@
       "type": "object",
       "properties": {
         "block-type": {
-          "type": "string"
+          "type": "string",
+          "format": "minecraft-block"
         },
         "worlds": {
           "type": "array",
