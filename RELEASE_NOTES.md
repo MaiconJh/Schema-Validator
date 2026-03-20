@@ -1,57 +1,57 @@
-# 🚨 Warning
+## ⚠️ Important Notice
 
-**This is a pre-release version (v0.3.1-SNAPSHOT).** This is an early release and may contain bugs, incomplete features, or unexpected behavior. **Not recommended for production use.** Please test thoroughly in a development environment before using on a live server.
+This addon was created with **Artificial Intelligence assistance**. Use with caution and report any bugs found.
 
----
 
-# ✨ What's New in v0.3.1
+## 🎮 Compatibility
 
-## 🎯 Major Features Added
+| Software | Version |
+|----------|---------|
+| Minecraft | 1.21+ |
+| Java | 21 |
+| Skript | 2.14+ |
+| Server | Paper/Spigot 1.21+ |
 
-### 1. Validação Condicional (oneOf, not, if/then/else)
+## 📋 Dependencies
 
-Suporte completo para keywords de validação condicional do JSON Schema:
+- [Skript 2.14+](https://github.com/SkriptLang/Skript)
+- Paper 1.21+ ou Spigot 1.21+
 
-- **oneOf** — O dado deve corresponder a exatamente UM dos schemas definidos
-- **not** — O dado NÃO deve corresponder ao schema especificado
-- **if/then/else** — Validação condicional: se a condição "if" for satisfeita, valida contra "then"; caso contrário, valida contra "else"
+## ✨ What's New in v0.3.5 - Minecraft Formats Update
 
-#### Exemplo de uso:
+### 🎯 Major Features Added
 
-```json
-{
-  "oneOf": [
-    { "properties": { "type": { "const": "weapon" } }, "required": ["damage"] },
-    { "properties": { "type": { "const": "armor" } }, "required": ["defense"] }
-  ],
-  "not": { "properties": { "type": { "const": "banned" } } },
-  "if": { "properties": { "rarity": { "const": "legendary" } } },
-  "then": { "required": ["abilities"] }
-}
-```
+#### 1. Conditional Validation (oneOf, not, if/then/else)
 
-### 2. Validação de Formatos (format)
+Full JSON Schema conditional validation support:
 
-Suporte para validação de formatos conforme JSON Schema:
+- **oneOf** — Data must match exactly ONE of the defined schemas
+- **not** — Data must NOT match the specified schema
+- **if/then/else** — Conditional validation: if "if" condition is met, validate against "then"; otherwise validate against "else"
 
-| Formato | Descrição |
-|---------|-----------|
-| `email` | Endereços de email |
-| `uri` | URIs completas |
-| `uri-reference` | Referências URI (relativas ou absolutas) |
-| `date-time` | Data/hora ISO 8601 |
-| `date` | Data ISO 8601 (YYYY-MM-DD) |
-| `time` | Hora ISO 8601 (HH:MM:SS) |
-| `ipv4` | Endereços IPv4 |
-| `ipv6` | Endereços IPv6 |
-| `hostname` | Hostnames |
-| `unix-time` | Timestamp Unix (segundos desde epoch) |
-| `json-pointer` | JSON Pointer |
-| `relative-json-pointer` | Relative JSON Pointer |
+#### 2. Format Validation
 
-### 3. Validação multipleOf
+Comprehensive format validators including 12 standard formats and 13 Minecraft-specific formats:
 
-Suporte para validação de múltiplos:
+| Standard Formats | Minecraft Formats |
+|-----------------|-------------------|
+| email | minecraft-item |
+| uri | minecraft-block |
+| uri-reference | minecraft-entity |
+| date-time | minecraft-attribute |
+| date | minecraft-effect |
+| time | minecraft-enchantment |
+| ipv4 | minecraft-biome |
+| ipv6 | minecraft-dimension |
+| hostname | minecraft-particle |
+| unix-time | minecraft-sound |
+| json-pointer | minecraft-potion |
+| relative-json-pointer | minecraft-recipe |
+| | minecraft-tag |
+
+#### 3. MultipleOf Validation
+
+Support for numeric divisibility constraints:
 
 ```json
 {
@@ -59,6 +59,27 @@ Suporte para validação de múltiplos:
   "multipleOf": 0.5
 }
 ```
+
+#### 4. Array & Object Validation
+
+- **minItems/maxItems/uniqueItems** — Array cardinality validation
+- **minProperties/maxProperties** — Object property count validation
+
+#### 5. System Features
+
+- **Supported Keywords Registry** — 39 keywords officially supported
+- **Unsupported Keyword Detection** — Automatic warnings for invalid keywords
+- **Fail-Fast Mode** — Optional strict validation via config
+
+---
+
+## 🐛 Bug Fixes
+
+| Fix | Description |
+|------|-------------|
+| **FileSchemaLoader.java** | Fixed detection of unsupported keywords in custom properties |
+| **PrimitiveValidator.java** | Fixed validation of `type: number` to accept Integer values |
+| **Schema examples** | Updated to use proper Minecraft namespaced IDs (e.g., `minecraft:diamond` instead of `diamond`) |
 
 ---
 
@@ -104,105 +125,11 @@ else:
 
 ---
 
-## 🧪 Advanced Usage
-
-### Validating with oneOf
-
-```skript
-set {_schema} to schema "my-schema" from "schemas/player.schema"
-set {_player} to object from json "{""type"":""warrior"",""damage"":50}"
-
-if validate {_player} against {_schema}:
-    broadcast "Valid warrior!"
-else:
-    broadcast "Errors: %{last validation errors}%"
-```
-
-### Validating formats
-
-```skript
-set {_schema} to schema "user-data" from "schemas/user.schema"
-set {_user} to object from json "{""email"":""player@example.com"",""ip"":""192.168.1.1""}"
-
-if validate {_user} against {_schema}:
-    broadcast "All formats valid!"
-```
-
-### Batch validation
-
-```skript
-set {_players::1} to object from json "{""name"":""Player1""}"
-set {_players::2} to object from json "{""name"":""Player2""}"
-set {_results::*} to validate {_players::*} against {_schema}
-```
-
----
-
-## 📁 New Example Files
-
-### Schemas
-- `schemas/conditional-validation.schema.json` — Demonstra oneOf, not, if/then/else
-- `schemas/data-types-formats.schema.json` — Demonstra formatos e multipleOf
-- `schemas/complex-item.schema.json` — Schema complexo combinando múltiplas features
-
-### Data Examples (Valid)
-- `conditional-valid-examples.yml` — Exemplos válidos de validação condicional
-- `formats-valid-examples.yml` — Exemplos válidos com formatos
-- `complex-item-valid.yml` — Exemplos válidos de itens Minecraft
-
-### Data Examples (Invalid)
-- `conditional-invalid-examples.yml` — Casos de erro para validação condicional
-- `formats-invalid-examples.yml` — Casos de erro para formatos
-- `complex-item-invalid.yml` — Casos de erro para schema de itens
-
-### Skript Examples
-- `validate-conditional-example.sk` — Script de exemplo para validação condicional
-- `validate-formats-example.sk` — Script de exemplo para validação de formatos
-
----
-
-## 🔧 Technical Changes
-
-### Added Classes
-- `OneOfValidator.java` — Validador para oneOf
-- `NotValidator.java` — Validador para not
-- `ConditionalValidator.java` — Validador para if/then/else
-- `FormatValidator.java` — Validador de formatos
-
-### Modified Files
-- `Schema.java` — Adicionados campos e métodos para oneOf, not, if/then/else
-- `FileSchemaLoader.java` — Adicionado parsing para novas keywords
-- `ObjectValidator.java` — Adicionada lógica de validação condicional
-- `PrimitiveValidator.java` — Adicionada validação de formatos
-
-### API Changes
-- Novas classes de validador integradas ao `ValidatorDispatcher`
-- Todos os validadores implementam `setRefResolver()` para suporte a $ref
-
----
-
 ## 🐞 Bug Reports & Contributions
 
 Found a bug or have a feature request? Please open an issue on the GitHub repository:
 
 🔗 **GitHub Issues:** https://github.com/MaiconJh/Schema-Validator/issues
-
-Your feedback and contributions are welcome! When reporting bugs, please include:
-- Server version (Paper/Spigot)
-- Skript version
-- Steps to reproduce the issue
-- Any relevant error logs
-
----
-
-## 🙌 Credits
-
-**Created by** — MaiconJH
-
-**Powered by:**
-- [Skript](https://github.com/SkriptLang/Skript) — Amazing scripting platform for Minecraft
-- [Paper](https://papermc.io/) — Modern Minecraft server software
-- [Jackson](https://github.com/FasterXML/jackson) — JSON/YAML parsing library
 
 ---
 

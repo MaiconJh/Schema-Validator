@@ -221,8 +221,8 @@ This reference reflects support for **JSON Schema Draft 2020-12** with backward 
 
 To add support for a new keyword:
 
-1. Add the keyword to [`SupportedKeywordsRegistry.java`](src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java)
-2. Update the parser in [`FileSchemaLoader.java`](src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java)
+1. Add the keyword to [`SupportedKeywordsRegistry.java`](https://github.com/MaiconJH/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java)
+2. Update the parser in [`FileSchemaLoader.java`](https://github.com/MaiconJH/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java)
 3. Implement validation in the appropriate validator class
 4. Add tests in `src/test/`
 5. Update this documentation

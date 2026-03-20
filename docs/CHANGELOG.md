@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.5] - 2026-03-20
+
+### Added
+
+#### Validation Features
+- **Conditional Validation (oneOf, not, if/then/else)** - Full JSON Schema support
+  - `oneOf` - Data must match exactly ONE of the defined schemas
+  - `not` - Data must NOT match the specified schema
+  - `if/then/else` - Conditional validation with schema branching
+
+- **Format Validation** - Comprehensive format validators
+  - Standard formats: `email`, `uri`, `uri-reference`, `date-time`, `date`, `time`, `ipv4`, `ipv6`, `hostname`, `unix-time`, `json-pointer`, `relative-json-pointer`
+  - **Minecraft Formats**: `minecraft-item`, `minecraft-block`, `minecraft-entity`, `minecraft-attribute`, `minecraft-effect`, `minecraft-enchantment`, `minecraft-biome`, `minecraft-dimension`, `minecraft-particle`, `minecraft-sound`, `minecraft-potion`, `minecraft-recipe`, `minecraft-tag`
+
+- **multipleOf Validation** - Numeric divisibility constraints
+
+- **Array Validation**: `minItems`, `maxItems`, `uniqueItems`
+- **Object Validation**: `minProperties`, `maxProperties`
+
+- **Schema Composition**: `allOf`, `anyOf`, `oneOf`
+
+- **Supported Keywords Registry** - 39 keywords officially supported
+- **Unsupported Keyword Detection** - Automatic warnings for invalid keywords
+- **Fail-Fast Mode** - Optional strict validation via config
+
+### Fixed
+- **FileSchemaLoader.java** - Fixed detection of unsupported keywords
+- **PrimitiveValidator.java** - Fixed validation of `type: number` to accept Integer values
+- Schema examples updated to use proper Minecraft namespaced IDs
+
+### Technical Changes
+- New validator classes: `OneOfValidator`, `NotValidator`, `ConditionalValidator`, `FormatValidator`
+- Enhanced `Schema.java` with conditional validation fields
+- Updated `ObjectValidator.java` with conditional validation logic
+- Added Minecraft format validators to `FormatValidator.java`
+
+---
+
 ## [0.3.1-SNAPSHOT] - Unreleased
 
 ### ⚠️ WARNING: This is a pre-release version. Not recommended for production use.

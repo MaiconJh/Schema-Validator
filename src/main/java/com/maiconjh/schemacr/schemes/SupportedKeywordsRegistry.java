@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  * <pre>
  * SupportedKeywordsRegistry registry = new SupportedKeywordsRegistry();
  * boolean isSupported = registry.isKeywordSupported("type");
- * Set<String> allKeywords = registry.getAllSupportedKeywords();
+ * {@code Set<String>} allKeywords = registry.getAllSupportedKeywords();
  * </pre>
  * 
  * @see <a href="https://json-schema.org/draft/2020-12/json-schema-core.html">JSON Schema Specification</a>
