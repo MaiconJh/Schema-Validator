@@ -1,0 +1,329 @@
+# ============================================
+# Exemplo Completo de Bloco Customizado
+# ============================================
+# Este arquivo demonstra todas as propriedades disponíveis
+# no schema custom-block.schema.json
+
+# Nome da chave do bloco (deve seguir padrão: ^[a-zA-Z0-9_-]+$)
+my_awesome_block:
+  # ID único do bloco usado internamente
+  block-id: "awesome_block_001"
+  
+  # ---- SEÇÃO: INFO (OBRIGATÓRIO) ----
+  info:
+    # Nome amigável do bloco com suporte a cores (&)
+    name: "&6Bloco Awesome"
+    # Lista de linhas de descrição do bloco
+    description:
+      - "&7Um bloco muito especial"
+      - "&eDrope itens raros!"
+    # Categoria do bloco para organização
+    category: "ores"
+    # Classe do bloco
+    class: "rare"
+    # Raridade do bloco
+    rarity: "rare"
+  
+  # ---- SEÇÃO: VERIFICATION (OBRIGATÓRIO) ----
+  verification:
+    # Tipo do bloco no Minecraft (pode usar 'tagged:')
+    block-type: "minecraft:gold_ore"
+    # Lista de mundos onde o bloco está ativo
+    worlds:
+      - "world"
+      - "world_nether"
+    # Altura onde o bloco pode ser encontrado (formato alternativo)
+    y-min: 1
+    y-max: 32
+    # Regiões do WorldGuard onde o bloco está ativo
+    regions:
+      - "mining_zone"
+      - "rare_ores_area"
+    # Permissões
+    permissions:
+      mine: "customblocks.mine.awesome"
+      view-info: "customblocks.info.awesome"
+  
+  # ---- SEÇÃO: HARDNESS (OBRIGATÓRIO) ----
+  hardness:
+    # Dureza base em ticks
+    base: 100
+    # Mudanças de dureza baseadas em contexto
+    change:
+      # Modificadores por tipo de ferramenta
+      tool-usage:
+        pickaxes:
+          type: "percentage"
+          value: 50
+          tool-properties:
+            wooden: 100
+            stone: 75
+            golden: 25
+            iron: 50
+            diamond: 20
+            netherite: 15
+        axes:
+          type: "percentage"
+          value: 75
+        shovels:
+          type: "percentage"
+          value: 100
+        hands:
+          type: "percentage"
+          value: 200
+      # Modificadores por ambiente
+      on_water:
+        type: "percentage"
+        value: 150
+      on_lava:
+        type: "percentage"
+        value: 50
+      on_ground:
+        type: "percentage"
+        value: 100
+      on_air:
+        type: "percentage"
+        value: 100
+    # Modificadores adicionais
+    modifiers:
+      environment:
+        on_water: 1.5
+        on_lava: 0.5
+        on_ground: 1.0
+        on_air: 1.0
+      tools:
+        pickaxes: 0.8
+        axes: 1.2
+        shovels: 1.0
+        hands: 2.0
+        other: 1.5
+      enchantments:
+        efficiency-1: 0.9
+        efficiency-2: 0.8
+        efficiency-3: 0.7
+        efficiency-4: 0.6
+        efficiency-5: 0.5
+  
+  # ---- SEÇÃO: DROPS (OBRIGATÓRIO) ----
+  drops:
+    # Drop primário
+    primary:
+      # Tipo do drop (item, variable, command)
+      type: "item"
+      # Valor do drop (item, variável ou comando)
+      value: "minecraft:diamond"
+      # Configuração de quantidade
+      amount:
+        # Chance de dropar (0-100)
+        chance: 100
+        # Quantidade base
+        base: 1
+        # Multiplicador de fortuna
+        fortune_base: 1
+        # Bônus aleatório
+        random-bonus: 0
+      # Ferramenta necessária (alternativo)
+      required-tool: "pickaxes"
+      # Nível mínimo da ferramenta (0-6)
+      min-tool-level: 2
+      # Origem do drop para coleções
+      origin: "diamond_ore"
+      # Condições especiais para o drop
+      conditions:
+        - "player has permission customblocks.canmine"
+      # Tags NBT personalizadas (objeto vazio示例)
+      nbt: {}
+      # Mensagem especial ao dropar
+      message: "&aVocê encontrou um diamante!"
+      # Experiência
+      experience:
+        mining: 3
+        total: 5
+      # Código Skript executado ao dropar
+      evaluate:
+        - "send message \"&eDrop especial!\" to player"
+        - "give 1 diamond to player"
+    
+    # Drop raro
+    rare:
+      type: "item"
+      value: "minecraft:emerald"
+      amount:
+        chance: 10
+        base: 1
+        fortune_base: 1
+      required-tools:
+        - "pickaxes"
+        - "axes"
+      min-tool-level: 3
+      origin: "rare_emerald"
+      conditions: []
+      evaluate: []
+    
+    # Drop personalizado com nome livre
+    bonus_gold:
+      type: "item"
+      value: "minecraft:gold_nugget"
+      amount:
+        chance: 25
+        base: 2
+        fortune_multiplier: 2
+        random-bonus: 3
+  
+  # ---- SEÇÃO: SOUNDS ----
+  sounds:
+    # Som durante mineração ( cracking )
+    cracking:
+      sound: "block.gold_ore.hit"
+      seed: 12345
+      volume: 1.0
+      pitch:
+        type: "increase"
+        value: 0.5
+    # Som ao quebrar
+    break:
+      sound: "block.gold_ore.break"
+      volume: 1.0
+      pitch: 1.0
+    # Som durante mineração contínua
+    mining:
+      sound: "block.gold_ore.step"
+      volume: 0.8
+      pitch:
+        type: "random"
+        value: 0.3
+      interval: 20
+    # Som ao dropar item raro
+    rare-drop:
+      sound: "entity.item.pickup"
+      volume: 1.0
+      pitch: 1.5
+  
+  # ---- SEÇÃO: EFFECTS ----
+  effects:
+    # Efeitos durante mineração
+    mining:
+      particles: "blockcrack_15232"
+      count: 10
+      spread: 0.5
+      speed: 0.1
+    # Efeitos ao quebrar
+    break:
+      particles: "blockdestroy_15232"
+      count: 20
+      spread: 1.0
+      speed: 0.2
+    # Efeitos ao dropar item raro
+    rare-drop:
+      particles: "happy_villager"
+      count: 5
+      spread: 0.3
+      speed: 0.05
+  
+  # ---- SEÇÃO: STAGES ----
+  stages:
+    # Estágio primário
+    stage_1:
+      id: "awesome_block_stage_1"
+      chance: 100
+      timeout: 0
+    # Estágio alternativo
+    stage_2:
+      id: "awesome_block_stage_2"
+      chance: 0
+      timeout: 200
+  
+  # ---- SEÇÃO: RESPAWN ----
+  after_respawn:
+    block: "minecraft:gold_block"
+    time: 100
+    evaluate:
+      - "broadcast \"Block respawned!\""
+  
+  before_respawn:
+    evaluate:
+      - "send title \"&eVoltando...\" to player"
+  
+  respawn:
+    enabled: true
+    time: 300
+    temporary-block: "minecraft:cobblestone"
+    notify-nearby: true
+    notify-radius: 10
+    conditions:
+      - "world is 'world'"
+  
+  # ---- SEÇÃO: VISUAL ----
+  # Mostrar efeitos visuais de quebra?
+  visual_effect: true
+  # Verificar flag do WorldGuard antes de quebrar?
+  verify-block-break-flag: true
+  
+  # ---- SEÇÃO: INTEGRATIONS ----
+  integrations:
+    # Integração com WorldGuard
+    worldguard:
+      respect-flags: true
+      required-flags:
+        - "build"
+      blacklist-regions:
+        - "protected_zone"
+    # Integração com AuraSkills
+    auraskills:
+      skill: "mining"
+      xp-amount: 50
+      requirements:
+        min-level: 1
+        max-level: 100
+    # Integração com Coleções
+    collections:
+      enabled: true
+      collection-id: "awesome_ores"
+      amount-per-break: 1
+  
+  # ---- SEÇÃO: ADVANCED ----
+  advanced:
+    # Duração do cache em ticks
+    cache-duration: 1200
+    # Processamento em lote
+    batch-processing: true
+    # Tamanho do lote
+    batch-size: 100
+    # Validar ao carregar
+    validate-on-load: true
+    # Versão do schema
+    version: "1.0.0"
+    # Compatibilidade
+    compatibility:
+      - "paper"
+      - "spigot"
+
+# ============================================
+# Segundo Bloco de Exemplo
+# ============================================
+another_block:
+  block-id: "test_block_002"
+  
+  info:
+    name: "&cBloco de Teste"
+    description:
+      - "&7Apenas um teste"
+    category: "blocks"
+    class: "normal"
+    rarity: "common"
+  
+  verification:
+    block-type: "minecraft:stone"
+    worlds:
+      - "world"
+  
+  hardness:
+    base: 50
+  
+  drops:
+    primary:
+      type: "item"
+      value: "minecraft:cobblestone"
+      amount:
+        chance: 100
+        base: 1

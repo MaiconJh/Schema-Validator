@@ -23,8 +23,9 @@ public class PrimitiveValidator implements Validator {
 
         boolean valid = switch (type) {
             case STRING -> data instanceof String;
-            // NUMBER excludes Integer per JSON Schema spec (number = decimal only)
-            case NUMBER -> data instanceof Number && !(data instanceof Integer);
+            // NUMBER accepts any numeric type (Integer, Long, Float, Double, etc.)
+            // Per JSON Schema spec, "number" includes both integers and decimals
+            case NUMBER -> data instanceof Number;
             // INTEGER accepts any valid integer (Long, Integer, Short, Byte, or decimal with no fractional part)
             case INTEGER -> data instanceof Number && isValidInteger((Number) data);
             case BOOLEAN -> data instanceof Boolean;

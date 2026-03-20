@@ -331,9 +331,49 @@ public class FileSchemaLoader {
      * @throws IllegalArgumentException if fail-fast mode is enabled and unsupported keyword is found
      */
     private void detectUnsupportedKeywords(Map<String, Object> raw, String path) {
+        detectUnsupportedKeywords(raw, path, null);
+    }
+    
+    /**
+     * Internal method with set of valid custom property names from parent scope.
+     * @param raw raw schema map
+     * @param path path context for logging
+     * @param validCustomProperties set of valid custom property names from parent properties/patternProperties
+     */
+    private void detectUnsupportedKeywords(Map<String, Object> raw, String path, java.util.Set<String> validCustomProperties) {
         if (raw == null || keywordsRegistry == null) {
             return;
         }
+        
+        // Collect valid custom properties from properties/patternProperties at current level
+        java.util.Set<String> currentValidProperties = new java.util.HashSet<>();
+        
+        // Add valid properties from "properties" keyword
+        Object propertiesObj = raw.get("properties");
+        if (propertiesObj instanceof Map<?, ?> propertiesMap) {
+            for (Object key : propertiesMap.keySet()) {
+                if (key instanceof String keyStr) {
+                    currentValidProperties.add(keyStr);
+                }
+            }
+        }
+        
+        // Add valid properties from "patternProperties" keyword
+        Object patternPropertiesObj = raw.get("patternProperties");
+        if (patternPropertiesObj instanceof Map<?, ?> patternPropertiesMap) {
+            for (Object key : patternPropertiesMap.keySet()) {
+                if (key instanceof String keyStr) {
+                    currentValidProperties.add(keyStr);
+                }
+            }
+        }
+        
+        // Merge with parent valid properties
+        java.util.Set<String> allValidProperties = new java.util.HashSet<>();
+        if (validCustomProperties != null) {
+            allValidProperties.addAll(validCustomProperties);
+        }
+        allValidProperties.addAll(currentValidProperties);
         
         for (String key : raw.keySet()) {
             // Skip internal/structural keys
@@ -341,26 +381,30 @@ public class FileSchemaLoader {
                 continue;
             }
             
-            if (!keywordsRegistry.isKeywordSupported(key)) {
-                String message = "[" + path + "] Unsupported keyword detected: '" + key + 
-                            "'. This keyword will be ignored during validation.";
-                
-                if (failFastMode) {
-                    throw new IllegalArgumentException("FAIL-FAST: " + message + " Set strict-mode: false in config to allow.");
-                } else {
-                    logger.warning(message);
-                }
+            // Skip if this is a valid custom property defined in properties/patternProperties
+            // or if it's a standard JSON Schema keyword
+            if (allValidProperties.contains(key) || keywordsRegistry.isKeywordSupported(key)) {
+                continue;
+            }
+            
+            String message = "[" + path + "] Unsupported keyword detected: '" + key + 
+                        "'. This keyword will be ignored during validation.";
+            
+            if (failFastMode) {
+                throw new IllegalArgumentException("FAIL-FAST: " + message + " Set strict-mode: false in config to allow.");
+            } else {
+                logger.warning(message);
             }
         }
         
-        // Recursively check nested schemas
+        // Recursively check nested schemas, passing current valid properties
         for (Object value : raw.values()) {
             if (value instanceof Map<?, ?> nestedMap) {
-                detectUnsupportedKeywords((Map<String, Object>) nestedMap, path + ".nested");
+                detectUnsupportedKeywords((Map<String, Object>) nestedMap, path + ".nested", allValidProperties);
             } else if (value instanceof List<?> list) {
                 for (Object item : list) {
                     if (item instanceof Map<?, ?> itemMap) {
-                        detectUnsupportedKeywords((Map<String, Object>) itemMap, path + ".item");
+                        detectUnsupportedKeywords((Map<String, Object>) itemMap, path + ".item", allValidProperties);
                     }
                 }
             }

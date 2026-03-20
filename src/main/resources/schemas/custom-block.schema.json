@@ -45,6 +45,7 @@
           "properties": {
             "block-type": {
               "type": "string",
+              "format": "minecraft-block",
               "description": "Tipo do bloco no Minecraft (pode usar 'tagged:')"
             },
             "worlds": {
@@ -223,6 +224,7 @@
                 },
                 "value": {
                   "type": "string",
+                  "format": "minecraft-item",
                   "description": "Valor do drop (item, variável ou comando)"
                 },
                 "amount": {

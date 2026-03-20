@@ -106,6 +106,72 @@ public final class FormatValidator {
         "^.*$"
     );
 
+    // Minecraft item ID pattern: namespace:name (e.g., minecraft:diamond_sword)
+    // Supports custom namespaces like "myplugin:custom_item"
+    private static final Pattern MINECRAFT_ITEM = Pattern.compile(
+        "^[a-z][a-z0-9_*-]*:[a-z][a-z0-9_*-]+$"
+    );
+
+    // Minecraft block ID pattern: namespace:name (e.g., minecraft:gold_ore)
+    private static final Pattern MINECRAFT_BLOCK = Pattern.compile(
+        "^[a-z][a-z0-9_*-]*:[a-z][a-z0-9_*-]+$"
+    );
+
+    // Minecraft entity ID pattern: namespace:name (e.g., minecraft:zombie)
+    private static final Pattern MINECRAFT_ENTITY = Pattern.compile(
+        "^[a-z][a-z0-9_.-]*:[a-z][a-z0-9_.-]+$"
+    );
+
+    // Minecraft attribute ID pattern: namespace:name (e.g., minecraft:generic.max_health)
+    private static final Pattern MINECRAFT_ATTRIBUTE = Pattern.compile(
+        "^[a-z][a-z0-9_.-]*:[a-z][a-z0-9_.-]+$"
+    );
+
+    // Minecraft status effect ID pattern: namespace:name (e.g., minecraft:speed)
+    private static final Pattern MINECRAFT_EFFECT = Pattern.compile(
+        "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]+$"
+    );
+
+    // Minecraft enchantment ID pattern: namespace:name (e.g., minecraft:efficiency)
+    private static final Pattern MINECRAFT_ENCHANTMENT = Pattern.compile(
+        "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]+$"
+    );
+
+    // Minecraft biome ID pattern: namespace:name (e.g., minecraft:plains)
+    private static final Pattern MINECRAFT_BIOME = Pattern.compile(
+        "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]+$"
+    );
+
+    // Minecraft dimension ID pattern: namespace:name (e.g., minecraft:overworld)
+    private static final Pattern MINECRAFT_DIMENSION = Pattern.compile(
+        "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]+$"
+    );
+
+    // Minecraft particle ID pattern: namespace:name (e.g., minecraft:blockcrack_15232)
+    private static final Pattern MINECRAFT_PARTICLE = Pattern.compile(
+        "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]+$"
+    );
+
+    // Minecraft sound event ID pattern: namespace:name (e.g., minecraft:block.gold_ore.break)
+    private static final Pattern MINECRAFT_SOUND = Pattern.compile(
+        "^[a-z][a-z0-9_.*]*:[a-z][a-z0-9_.*]+$"
+    );
+
+    // Minecraft potion ID pattern: namespace:name (e.g., minecraft:strength)
+    private static final Pattern MINECRAFT_POTION = Pattern.compile(
+        "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]+$"
+    );
+
+    // Minecraft recipe ID pattern: namespace:name (e.g., minecraft:diamond_sword)
+    private static final Pattern MINECRAFT_RECIPE = Pattern.compile(
+        "^[a-z][a-z0-9_/-]*:[a-z][a-z0-9_/-]+$"
+    );
+
+    // Minecraft tag ID pattern: #namespace:name (e.g., #minecraft:pickaxes)
+    private static final Pattern MINECRAFT_TAG = Pattern.compile(
+        "^#[a-z][a-z0-9_*-]*:[a-z][a-z0-9_*-]+$"
+    );
+
     private FormatValidator() {
         // Utility class
     }
@@ -140,6 +206,19 @@ public final class FormatValidator {
             case "relative-json-pointer" -> RELATIVE_JSON_POINTER.matcher(value).matches();
             case "uuid" -> UUID.matcher(value).matches();
             case "regex" -> isValidRegex(value);
+            case "minecraft-item" -> MINECRAFT_ITEM.matcher(value).matches();
+            case "minecraft-block" -> MINECRAFT_BLOCK.matcher(value).matches();
+            case "minecraft-entity" -> MINECRAFT_ENTITY.matcher(value).matches();
+            case "minecraft-attribute" -> MINECRAFT_ATTRIBUTE.matcher(value).matches();
+            case "minecraft-effect" -> MINECRAFT_EFFECT.matcher(value).matches();
+            case "minecraft-enchantment" -> MINECRAFT_ENCHANTMENT.matcher(value).matches();
+            case "minecraft-biome" -> MINECRAFT_BIOME.matcher(value).matches();
+            case "minecraft-dimension" -> MINECRAFT_DIMENSION.matcher(value).matches();
+            case "minecraft-particle" -> MINECRAFT_PARTICLE.matcher(value).matches();
+            case "minecraft-sound" -> MINECRAFT_SOUND.matcher(value).matches();
+            case "minecraft-potion" -> MINECRAFT_POTION.matcher(value).matches();
+            case "minecraft-recipe" -> MINECRAFT_RECIPE.matcher(value).matches();
+            case "minecraft-tag" -> MINECRAFT_TAG.matcher(value).matches();
             default -> true; // Unknown format - skip validation
         };
     }
