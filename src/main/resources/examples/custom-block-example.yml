@@ -86,7 +86,7 @@ diamond_ore_custom:
   drops:
     primary:
       type: "item"
-      value: "diamond"
+      value: "minecraft:diamond"
       amount:
         chance: 100
         base: 1
@@ -106,7 +106,7 @@ diamond_ore_custom:
     
     rare:
       type: "item"
-      value: "diamond_block"
+      value: "minecraft:diamond_block"
       amount:
         chance: 5
         base: 1
@@ -196,7 +196,7 @@ diamond_ore_custom:
       timeout: 100
   
   after_respawn:
-    block: "cobblestone"
+    block: "minecraft:cobblestone"
     time: 200
     evaluate:
       - 'send message "Bloco esgotado!"'
@@ -252,7 +252,7 @@ iron_ore_custom:
   drops:
     primary:
       type: "item"
-      value: "iron_ingot"
+      value: "minecraft:iron_ingot"
       amount:
         chance: 100
         base: 1
