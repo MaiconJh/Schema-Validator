@@ -137,7 +137,7 @@ ValidatorDispatcher.forSchema(schema) ✅ FIXED
 | Class | Responsibility |
 |-------|---------------|
 | `ValidationService` | Entry point, facade |
-| `ValidatorDispatcher` | Type-based validator selection (exists but NOT used at entrypoint) |
+| `ValidatorDispatcher` | Type-based validator selection (NOW USED at entrypoint ✅) |
 | `ObjectValidator` | Object validation, composition, conditional |
 | `ArrayValidator` | Array validation, cardinality |
 | `PrimitiveValidator` | String, number, boolean validation |
