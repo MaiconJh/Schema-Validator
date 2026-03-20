@@ -75,6 +75,9 @@ See [`docs/guides/integration.md`](docs/guides/integration.md) for details.
 - [Tutorials](docs/tutorials/README.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 
+
+[![SkriptHubViewTheDocs](http://skripthub.net/static/addon/ViewTheDocsButton.png)](http://skripthub.net/docs/?addon=Schema-Validator)
+
 ## Contributing
 
 Contributions are welcome! See [`CONTRIBUTING.md`](CONTRIBUTING.md) for guidelines.
