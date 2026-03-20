@@ -33,14 +33,18 @@ Schema-Validator has significantly evolved since the last audit. The system now 
 
 ## ⚠️ ISSUES STILL PENDING
 
-### Issue 1: Root Validator Dispatch (CRITICAL - STILL NOT FIXED)
+### Issue 1: Root Validator Dispatch (CRITICAL - FIXED ✅)
 - **Name:** Root validator bypasses schema-type dispatch
 - **Category:** Runtime Bug
 - **Severity:** CRITICAL
-- **Root cause:** `ValidationService` (line 24) always uses `ObjectValidator` as root instead of dispatching via `ValidatorDispatcher.forSchema()`
+- **Root cause:** `ValidationService.validate()` always used `ObjectValidator` instead of dispatching via `ValidatorDispatcher.forSchema()`
 - **Surface impact:** Root array/primitive schemas may fail with object-type errors
-- **Evidence:** `ValidationService.java` line 24: `this.rootValidator = new ObjectValidator();`
+- **Evidence (BEFORE):** `ValidationService.java` line 24: `this.rootValidator = new ObjectValidator();`
 - **Recommended fix:** Use `ValidatorDispatcher.forSchema(schema)` at validation entrypoint
+- **Implementation:** ✅ FIXED in `src/main/java/com/maiconjh/schemacr/core/ValidationService.java:41-50`
+  - Modified `validate()` method to use `ValidatorDispatcher.forSchema(schema)`
+  - Added refResolver support for ObjectValidator instances
+  - Changes include new import for ValidatorDispatcher
 
 ### Issue 2: Skript Error Model Mismatch (LOW)
 - **Name:** Expression returns String[] while docs describe structured objects
@@ -124,9 +128,9 @@ EffValidateData (Skript effect)
     ↓
 ValidationService.validate()
     ↓
-ObjectValidator (HARDCODED - ISSUE!)
+ValidatorDispatcher.forSchema(schema) ✅ FIXED
     ↓
-[dispatches internally to ArrayValidator/PrimitiveValidator]
+[ObjectValidator | ArrayValidator | PrimitiveValidator]
 ```
 
 ### Validator Classes
@@ -175,7 +179,7 @@ ObjectValidator (HARDCODED - ISSUE!)
 - ✅ Keyword registry with warnings
 
 ### What Needs Architecture First
-- ⚠️ Root validator dispatch fix (blocking)
+- ✅ Root validator dispatch fix (RESOLVED)
 - ⚠️ Full $ref recursive support
 - ⚠️ Structured Skript error objects
 
@@ -196,13 +200,15 @@ ObjectValidator (HARDCODED - ISSUE!)
 
 ## 🚨 RECOMMENDATIONS
 
-### Priority 1: Fix Root Dispatch (CRITICAL)
+### Priority 1: Fix Root Dispatch (RESOLVED ✅)
 ```java
-// Current (WRONG - line 24 in ValidationService.java):
-this.rootValidator = new ObjectValidator();
+// FIXED in ValidationService.validate() method:
+Validator validator = ValidatorDispatcher.forSchema(schema);
 
-// Should be:
-this.rootValidator = ValidatorDispatcher.forSchema(schema);
+// With refResolver support:
+if (refResolver != null && validator instanceof ObjectValidator) {
+    ((ObjectValidator) validator).setRefResolver(refResolver);
+}
 ```
 
 ### Priority 2: Document $ref Limitations

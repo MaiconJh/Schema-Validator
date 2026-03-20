@@ -6,6 +6,7 @@ import com.maiconjh.schemacr.validation.ObjectValidator;
 import com.maiconjh.schemacr.validation.ValidationError;
 import com.maiconjh.schemacr.validation.ValidationResult;
 import com.maiconjh.schemacr.validation.Validator;
+import com.maiconjh.schemacr.validation.ValidatorDispatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,15 @@ public class ValidationService {
     }
 
     public ValidationResult validate(Object data, Schema schema) {
-        List<ValidationError> errors = rootValidator.validate(data, schema, "$", null);
+        // Use dispatcher to get the appropriate validator based on schema type
+        Validator validator = ValidatorDispatcher.forSchema(schema);
+        
+        // Set refResolver if available (for validators that support it)
+        if (refResolver != null && validator instanceof ObjectValidator) {
+            ((ObjectValidator) validator).setRefResolver(refResolver);
+        }
+        
+        List<ValidationError> errors = validator.validate(data, schema, "$", null);
         return ValidationResult.from(errors);
     }
 
