@@ -19,7 +19,7 @@ If any other page conflicts with `CONTRACT.md`, treat that page as outdated and 
 
 | Component | Version |
 |-----------|---------|
-| **Plugin** | 0.3.1-SNAPSHOT |
+| **Plugin** | 0.3.5 |
 | **Minecraft** | 1.19+ (1.20.x recommended) |
 | **Skript** | 2.8+ |
 | **Server** | Paper 1.19+ / Spigot 1.19+ |
