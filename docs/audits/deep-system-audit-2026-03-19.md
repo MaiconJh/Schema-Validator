@@ -1,14 +1,39 @@
-# Deep System Audit → Executable Implementation Strategy (2026-03-19)
+# Deep System Audit → Verified Implementation Status (2026-03-19)
 
-> **⚠️ STATUS: SUPERSEDED** - This audit was superseded by `deep-system-audit-2026-03-20.md`
-> 
-> **Recommendation:** Do not use this document as source of truth. Many issues listed below have been resolved.
-> 
-> See `documentation-consolidation-plan-2026-03-20.md` for cross-reference analysis.
+> ⚠️ **ATENÇÃO**: Este arquivo foi verificado e corrigido em 2026-03-20. 
+> O arquivo `deep-system-audit-2026-03-20.md` contém informações INCORRETAS que não foram verificadas contra o código fonte.
+> **Não siga como fonte da verdade** - use este documento como referência verificada.
+
+## 🧾 VERIFICATION NOTES (Added 2026-03-20)
+
+### Cross-Check Results
+
+| Issue | Audit 2026-03-20 Claim | Actual Code Status | Verified |
+|-------|----------------------|-------------------|----------|
+| Root dispatch | ✅ FIXED | ✅ **VERIFIED - Uses ValidatorDispatcher** | ✅ Yes |
+| minItems/maxItems/uniqueItems | ✅ FIXED | ❌ **NOT IMPLEMENTED** | ❌ No |
+| minProperties/maxProperties | ✅ FIXED | ❌ **NOT IMPLEMENTED** | ❌ No |
+| multipleOf | ✅ FIXED | ✅ **VERIFIED** | ✅ Yes |
+| format | ✅ FIXED | ✅ **VERIFIED** | ✅ Yes |
+| oneOf/not/if-then-else | ✅ FIXED | ✅ **VERIFIED** | ✅ Yes |
+
+### Evidence for Incorrect Claims in 2026-03-20
+
+1. **ArrayValidator.java (lines 1-36)**: NÃO contém implementação de minItems, maxItems ou uniqueItems
+   - Search result: 0 matches for these keywords
+
+2. **ObjectValidator.java**: NÃO contém implementação de minProperties ou maxProperties  
+   - Search result: 0 matches for these keywords
+
+3. **Schema.java**: NÃO contém campos para minProperties ou maxProperties
+   - Search result: 0 matches for these keywords
+
+4. **Example schemas using unimplemented features**:
+   - `complex-item.schema.json` uses `minItems: 1` but it's NOT validated
 
 ---
 
-## 🧾 SYSTEM STATE SUMMARY
+## 🧾 SYSTEM STATE SUMMARY (Original 2026-03-19)
 
 Schema-Validator has a stable core for object-focused validation (`properties`, `required`, `items`, `enum`, numeric/string bounds, `allOf`, `anyOf`) but suffers from **contract drift** between `/docs` and runtime behavior. The immediate production risks are correctness defects (root dispatch), silent under-validation (documented but unsupported keywords), and integration mismatch (Skript error object contract).
 
@@ -22,310 +47,166 @@ Current maturity by area:
 
 ## ❌ ISSUE BREAKDOWN (DETAILED)
 
-Issue:
+### ✅ Issue 1: Root validator dispatch - VERIFIED RESOLVED
 - **Name:** Root validator bypasses schema-type dispatch
 - **Category:** Runtime Bug
 - **Severity:** CRITICAL
 - **Root cause:** `ValidationService` always delegates to `ObjectValidator` at root instead of selecting validator by root schema type.
 - **Surface impact:** Root array/primitive schemas fail with object-type errors.
-- **Hidden risk:** Future feature work appears broken/non-deterministic because validation entrypoint is semantically wrong.
+- **Verification (2026-03-20):** ✅ **RESOLVED**
+  - **Evidence:** `ValidationService.java` lines 40-50 now use `ValidatorDispatcher.forSchema(schema)`
+  - Code: `Validator validator = ValidatorDispatcher.forSchema(schema);`
+  - Comment confirms: "Use dispatcher to get the appropriate validator based on schema type"
 
-Issue:
-- **Name:** Silent under-validation for documented keywords
+### ❌ Issue 2: Silent under-validation for documented keywords - PARTIALLY RESOLVED
+- **Name:** Docs advertise keywords that parser/validators do not enforce
 - **Category:** Contract Violation
 - **Severity:** CRITICAL
-- **Root cause:** Docs advertise keywords (`oneOf`, `not`, `format`, `multipleOf`, `minItems`, `uniqueItems`, etc.) that parser/validators do not enforce.
-- **Surface impact:** Invalid data can pass validation while users believe constraints are active.
-- **Hidden risk:** Data integrity defects and loss of trust in validation guarantees.
+- **Status (2026-03-20):** MIXED - Some keywords fixed, others still broken
 
-Issue:
-- **Name:** Skript error model mismatch
-- **Category:** Contract Violation
-- **Severity:** CRITICAL
-- **Root cause:** Expression returns `String[]` while docs promise structured `ValidationError` objects.
-- **Surface impact:** Documented scripts using error property access fail.
-- **Hidden risk:** Ecosystem scripts encode unstable assumptions; migration becomes costly later.
+#### Keywords Status:
+| Keyword | Audit 2026-03-20 | Actual Implementation | Verified |
+|---------|-----------------|---------------------|----------|
+| `oneOf` | ✅ FIXED | ✅ IMPLEMENTED in ObjectValidator.java:114-155 | ✅ Yes |
+| `not` | ✅ FIXED | ✅ IMPLEMENTED in ObjectValidator.java:157-172 | ✅ Yes |
+| `if/then/else` | ✅ FIXED | ✅ IMPLEMENTED in ObjectValidator.java:174-195 | ✅ Yes |
+| `format` | ✅ FIXED | ✅ IMPLEMENTED in FormatValidator.java + PrimitiveValidator.java:136-143 | ✅ Yes |
+| `multipleOf` | ✅ FIXED | ✅ IMPLEMENTED in PrimitiveValidator.java:89-103 | ✅ Yes |
+| `minItems` | ✅ FIXED | ❌ NOT IMPLEMENTED in ArrayValidator.java | ❌ No |
+| `maxItems` | ✅ FIXED | ❌ NOT IMPLEMENTED in ArrayValidator.java | ❌ No |
+| `uniqueItems` | ✅ FIXED | ❌ NOT IMPLEMENTED in ArrayValidator.java | ❌ No |
+| `minProperties` | ✅ FIXED | ❌ NOT IMPLEMENTED in ObjectValidator.java | ❌ No |
+| `maxProperties` | ✅ FIXED | ❌ NOT IMPLEMENTED in ObjectValidator.java | ❌ No |
 
-Issue:
-- **Name:** `$ref` and `definitions` support is incomplete relative to claims
+> ⚠️ **CRITICAL**: The audit 2026-03-20 incorrectly claims minItems, maxItems, uniqueItems, minProperties, and maxProperties are implemented. This is FALSE - they are NOT in the code.
+
+### ✅ Issue 3: Skript error model mismatch - IMPROVED
+- **Name:** Expression returns String[] while docs promise structured ValidationError objects
+- **Category:** Contract Violation  
+- **Severity:** LOW (Improved)
+- **Verification (2026-03-20):** ✅ **IMPROVED**
+  - Added `getMessage()` method in ValidationError.java
+  - Added `toCompactString()` method for Skript display
+  - Updated ExprLastValidationErrors to use compact format
+
+### ⚠️ Issue 4: $ref and definitions support - PARTIALLY RESOLVED
+- **Name:** Reference support is partial relative to JSON Schema spec
 - **Category:** Feature Gap
-- **Severity:** CRITICAL
-- **Root cause:** Resolver and loader partially support references, but pointer navigation model is incomplete for full definitions/pointer behavior.
-- **Surface impact:** Referenced schemas may resolve unpredictably, especially local pointers.
-- **Hidden risk:** Recursive/composed schemas become brittle as schema library grows.
+- **Severity:** MEDIUM
+- **Status (2026-03-20):** PARTIAL
+  - ✅ definitions parsing: EXISTS in FileSchemaLoader.java:92-99
+  - ✅ $defs parsing: EXISTS in FileSchemaLoader.java:101-109
+  - ❌ Resolution to definitions: NOT WORKING (Schema doesn't store definitions)
+  - Root cause: FileSchemaLoader extracts definitions to local Map that is lost after Schema creation
 
-Issue:
-- **Name:** Config contract mismatch (`settings.*` vs root keys)
+### Issue 5: Config contract mismatch
+- **Name:** Config documentation format diverges from actual config.yml
 - **Category:** Contract Violation
 - **Severity:** MEDIUM
-- **Root cause:** Documentation format diverges from actual `config.yml` and code lookup keys.
-- **Surface impact:** Operator config changes are ignored or misapplied.
-- **Hidden risk:** Production environments become hard to support due to inconsistent setup states.
+- **Status:** Needs verification
 
-Issue:
-- **Name:** API reference signature drift
+### Issue 6: API reference signature drift
+- **Name:** Docs list methods/overloads not present in implementation
 - **Category:** Contract Violation
 - **Severity:** MEDIUM
-- **Root cause:** Docs list methods/overloads not present in implementation.
-- **Surface impact:** Integration attempts fail at compile time.
-- **Hidden risk:** Maintainers lose confidence in docs as source of truth.
 
-Issue:
-- **Name:** Path resolution split-brain (autoload vs effect-time validation)
+### Issue 7: Path resolution split-brain
+- **Name:** Auto-load uses different path resolution than effect-time validation
 - **Category:** Architecture
 - **Severity:** MEDIUM
-- **Root cause:** Auto-load uses configured schema directory while Skript effect uses raw `Path.of` inputs.
-- **Surface impact:** Same schema path works in one flow and fails in another.
-- **Hidden risk:** Environment-specific failures and difficult reproduction.
 
-Issue:
-- **Name:** Composition logic is object-validator bound
+### Issue 8: Composition logic object-validator bound
+- **Name:** allOf/anyOf execution lives in ObjectValidator instead of shared layer
 - **Category:** Architecture
 - **Severity:** MEDIUM
-- **Root cause:** `allOf`/`anyOf` execution lives in `ObjectValidator` instead of shared composition layer.
-- **Surface impact:** Non-object composition support is constrained.
-- **Hidden risk:** `oneOf`/`not` implementation complexity and duplicated logic.
 
-Issue:
-- **Name:** Global mutable last-result bridge in Skript integration
+### Issue 9: Global mutable last-result bridge
+- **Name:** Static shared lastResult has no scope partitioning
 - **Category:** Architecture
 - **Severity:** LOW
-- **Root cause:** static shared `lastResult` has no scope partitioning.
-- **Surface impact:** Concurrent scripts can overwrite each other’s results.
-- **Hidden risk:** Race-condition-like observability bugs under load.
 
 ---
 
-## 🔗 DEPENDENCY GRAPH
+## 🔗 DEPENDENCY GRAPH (Updated 2026-03-20)
 
-### Core dependency chain (must be sequential)
-1. **Contract baseline** (supported keyword matrix, docs corrections)
-2. **Runtime correctness fix** (root dispatch)
-3. **Shared validation context abstraction** (path/state/error aggregation)
-4. **Low-risk keyword additions** (`minItems`, `maxItems`, `uniqueItems`, `minProperties`, `maxProperties`, `multipleOf`)
-5. **Composition engine extraction** (type-agnostic `allOf`/`anyOf` infrastructure)
-6. **High-complexity features** (`oneOf`, `not`, robust `$ref`/pointer semantics)
+### Priority Fix Order (Based on Code Analysis)
 
-### Feature dependency map
-- **`oneOf` depends on:**
-  - root dispatch correctness
-  - composition engine (type-agnostic)
-  - deterministic error aggregation model
-- **`not` depends on:**
-  - composition engine
-  - unified validation context
-- **`multipleOf` depends on:**
-  - numeric utility abstraction (precision-safe arithmetic)
-- **`minItems/maxItems/uniqueItems` depend on:**
-  - schema model extension
-  - array validator extension
-- **`minProperties/maxProperties` depend on:**
-  - schema model extension
-  - object validator extension
-- **`$ref` hardening depends on:**
-  - explicit reference contract
-  - schema graph/pointer navigation improvements
-  - recursion/cycle guard in context
-- **Structured Skript errors depend on:**
-  - stable canonical error DTO contract
-  - adapter layer for backward compatibility
-
-### Parallelization opportunities
-Can run in parallel after Phase A contract stabilization:
-- Config/API/docs fixes
-- Low-risk keyword implementation streams (array cardinality vs object cardinality)
-- Contract/regression test scaffolding
-
-Blocked by architecture:
-- `oneOf`, `not`, deep `$ref` behaviors should wait for shared composition + context layers.
+1. **IMMEDIATE**: Fix incorrect audit claims about minItems/maxItems/minProperties/maxProperties
+2. **HIGH**: Implement missing array cardinality validators (minItems, maxItems, uniqueItems)
+3. **HIGH**: Implement missing object cardinality validators (minProperties, maxProperties)
+4. **MEDIUM**: Complete $ref resolution (definitions/$defs storage in Schema)
 
 ---
 
-## 🛠️ IMPLEMENTATION UNITS
+## 🛠️ CORRECTED IMPLEMENTATION UNITS
 
-### Unit 1
+### ✅ Unit 1 - Root Dispatch (COMPLETE)
 - **Feature/Issue:** Root validator dispatch bug
 - **Strategy:** Use `ValidatorDispatcher.forSchema(schema)` at validation entrypoint.
-- **Files/components affected:** `ValidationService`, validator tests.
-- **Required refactor:** Minimal (entrypoint selection only).
-- **Backward compatibility plan:** Preserve error model and existing API signatures.
-- **Risk level:** MEDIUM.
-- **Rollback strategy:** Feature toggle (`validation.root-dispatch-v2`) or quick revert commit.
+- **Files/components affected:** `ValidationService`
+- **Status:** ✅ **COMPLETE - VERIFIED**
 
-### Unit 2
-- **Feature/Issue:** Unsupported documented keywords causing silent under-validation
-- **Strategy:** Add unsupported-keyword detection in schema loader + warnings + optional fail-fast mode.
-- **Files/components affected:** `FileSchemaLoader`, config docs/runtime flags, logging.
-- **Required refactor:** Add keyword scan utility.
-- **Backward compatibility plan:** Default behavior remains permissive; warnings only unless fail-fast enabled.
-- **Risk level:** LOW-MEDIUM.
-- **Rollback strategy:** Disable warnings/fail-fast via config flag.
+### ❌ Unit 2 - Array Cardinality (NOT COMPLETE)
+- **Feature/Issue:** minItems, maxItems, uniqueItems
+- **Status:** ❌ **NOT IMPLEMENTED** despite audit claims
+- **Required work:**
+  - Add minItems, maxItems, uniqueItems fields to Schema.java
+  - Parse these in FileSchemaLoader
+  - Implement validation in ArrayValidator
 
-### Unit 3
-- **Feature/Issue:** Config and API contract drift
-- **Strategy:** Align docs to runtime now; optionally introduce alias reader for legacy doc keys.
-- **Files/components affected:** `/docs/configuration.md`, `/docs/api-reference.md`, `PluginConfig` (if aliasing added).
-- **Required refactor:** None or very small key alias handling.
-- **Backward compatibility plan:** Support both old/new keys for one deprecation cycle if aliases added.
-- **Risk level:** LOW.
-- **Rollback strategy:** Remove aliases; retain current keys only.
+### ❌ Unit 3 - Object Cardinality (NOT COMPLETE)
+- **Feature/Issue:** minProperties, maxProperties
+- **Status:** ❌ **NOT IMPLEMENTED** despite audit claims
+- **Required work:**
+  - Add minProperties, maxProperties fields to Schema.java
+  - Parse these in FileSchemaLoader  
+  - Implement validation in ObjectValidator
 
-### Unit 4
-- **Feature/Issue:** Skript structured error mismatch
-- **Strategy:** Keep current string expression; add new structured expression/effect accessors.
-- **Files/components affected:** Skript integration classes + docs.
-- **Required refactor:** Adapter DTO layer from internal `ValidationError`.
-- **Backward compatibility plan:** Existing scripts continue using string list unchanged.
-- **Risk level:** MEDIUM.
-- **Rollback strategy:** Keep legacy path; disable new syntax registration.
-
-### Unit 5
-- **Feature/Issue:** Low-risk keyword expansion (array/object cardinality + multipleOf)
-- **Strategy:** Extend `Schema` model and parser; implement validators with deterministic errors.
-- **Files/components affected:** `Schema`, `FileSchemaLoader`, `ArrayValidator`, `ObjectValidator`, `PrimitiveValidator`, tests.
-- **Required refactor:** Constraint fields + parser/validator wiring.
-- **Backward compatibility plan:** New constraints are opt-in via schema keyword usage.
-- **Risk level:** MEDIUM.
-- **Rollback strategy:** Guard by per-keyword feature flags; disable on regressions.
-
-### Unit 6
-- **Feature/Issue:** Composition extraction for `oneOf`/`not`
-- **Strategy:** Build `CompositeValidator` layer reusable across all schema types.
-- **Files/components affected:** validator package, dispatcher, schema composition parsing, tests.
-- **Required refactor:** Move composition logic out of `ObjectValidator`.
-- **Backward compatibility plan:** Keep existing `allOf`/`anyOf` behavior parity via conformance tests.
-- **Risk level:** HIGH.
-- **Rollback strategy:** Keep legacy composition path behind fallback toggle.
-
-### Unit 7
-- **Feature/Issue:** `$ref`/pointer robustness
-- **Strategy:** Define explicit pointer support scope; implement resolver against richer schema node model.
-- **Files/components affected:** `SchemaRefResolver`, schema model/parser, registry interactions, tests.
-- **Required refactor:** Potential schema AST/pointer navigation utilities.
-- **Backward compatibility plan:** Keep current simple ref behavior as fallback mode.
-- **Risk level:** HIGH.
-- **Rollback strategy:** fallback to current resolver path by config toggle.
-
-### Unit 8
-- **Feature/Issue:** Path resolution consistency
-- **Strategy:** Standardize resolution rules for validate effect (absolute, plugin-relative, configured schema dir).
-- **Files/components affected:** `EffValidateData`, docs, integration tests.
-- **Required refactor:** centralized path resolver utility.
-- **Backward compatibility plan:** Continue accepting raw paths; add deterministic resolution order.
-- **Risk level:** MEDIUM.
-- **Rollback strategy:** revert to raw path mode via config toggle.
+### Unit 4 - $ref Resolution (IN PROGRESS)
+- **Feature/Issue:** definitions/$defs resolution
+- **Status:** ⚠️ **PARTIAL** - parsing exists, resolution needs architecture change
+- **Plan:** See docs/new-architecture-plan.md
 
 ---
 
-## 🧱 EXECUTION PHASES
+## 📋 ACTION PLAN
 
-### Phase A — Contract Stabilization
-- **Scope:** Align docs with current behavior; add unsupported-keyword warnings; freeze misleading examples.
-- **Entry conditions:** Audit accepted; docs owners and maintainers aligned.
-- **Exit validation criteria:**
-  - Published supported-feature matrix.
-  - Config/API/Skript docs match runtime.
-  - Unsupported-keyword warnings observable in logs.
-- **Risk level:** LOW.
+### Immediate Actions Required:
 
-### Phase B — Runtime Corrections
-- **Scope:** Fix correctness bugs (root dispatch, path semantics baseline).
-- **Entry conditions:** Phase A complete; regression harness for current behavior exists.
-- **Exit validation criteria:**
-  - Root primitive/array schema tests pass.
-  - No regressions in object-schema flows.
-  - Path resolution behavior documented and tested.
-- **Risk level:** MEDIUM.
+1. **CORRECT AUDIT** - Mark minItems/maxItems/uniqueItems/minProperties/maxProperties as ❌ NOT IMPLEMENTED
+2. **ADD IMPLEMENTATIONS** - Implement the missing validators:
+   - ArrayValidator: add minItems, maxItems, uniqueItems
+   - ObjectValidator: add minProperties, maxProperties  
+   - Schema: add corresponding fields
+   - FileSchemaLoader: parse these keywords
 
-### Phase C — Feature Expansion (Low Risk First)
-- **Scope:** Implement low-complexity constraints (`minItems`, `maxItems`, `uniqueItems`, `minProperties`, `maxProperties`, `multipleOf`).
-- **Entry conditions:** Phase B stable across CI.
-- **Exit validation criteria:**
-  - Contract tests (valid/invalid fixtures) per new keyword.
-  - Feature flags available for each new keyword family.
-- **Risk level:** MEDIUM.
+### Verification Methodology Used:
 
-### Phase D — High Complexity Features
-- **Scope:** `oneOf`, `not`, and `$ref` scope improvements.
-- **Entry conditions:** Shared composition/context infrastructure available.
-- **Exit validation criteria:**
-  - Deterministic error aggregation for composed schemas.
-  - Cycle-safe reference tests pass.
-  - Performance baseline unchanged within agreed threshold.
-- **Risk level:** HIGH.
-
-### Phase E — Architecture Refactor
-- **Scope:** Modular validator engine, pluggable keyword handlers, validation context, adapter isolation.
-- **Entry conditions:** Phase D feature behavior stabilized and covered by contract/regression suites.
-- **Exit validation criteria:**
-  - New keyword can be added without touching core dispatcher logic.
-  - Legacy behavior preserved under compatibility tests.
-  - Operational observability dashboards/log counters in place.
-- **Risk level:** HIGH.
+1. Read source code files directly
+2. Search for keyword implementations using search_files tool
+3. Check Schema.java for model fields
+4. Check validators for validation logic
+5. Compare example schemas to actual capabilities
 
 ---
 
-## 🧪 VALIDATION STRATEGY
+## 🧠 FINAL STRATEGY (Updated)
 
-### 1) Contract Tests (per documented feature)
-For each supported keyword:
-- `valid/<keyword>/*.json|yml` fixtures that must pass.
-- `invalid/<keyword>/*.json|yml` fixtures that must fail with expected error code/path.
-- Golden assertions for error shape and message invariants.
+### What Was Verified as DONE
+1. ✅ Root dispatch correctness fix
+2. ✅ oneOf/not/if-then-else composition
+3. ✅ multipleOf validation
+4. ✅ format validation (25 formats)
 
-### 2) Regression Tests
-- Preserve legacy behavior for existing schemas and Skript flows.
-- Snapshot tests for error-path formatting (`$`, `$.a.b`, `$.arr[0]`).
-- Compatibility tests for prior examples before/after each phase.
+### What Is NOT Done (Despite Audit Claims)
+1. ❌ minItems/maxItems/uniqueItems - NOT implemented
+2. ❌ minProperties/maxProperties - NOT implemented
 
-### 3) Docs Execution Tests
-- Parse runnable snippets from docs and execute in test harness.
-- Docs CI gate fails if examples reference unsupported keywords without disclaimer.
-- Ensure quickstart path and config examples pass as-is.
-
-### 4) Safety Checks
-- Runtime detection for ignored/unknown keywords.
-- Fail-fast optional mode for strict environments.
-- CI check that documented “supported” matrix equals implemented keyword registry.
+### What Needs Architecture Change
+1. $ref/definitions full resolution (see new-architecture-plan.md)
 
 ---
 
-## 🚨 RISK CONTROL PLAN
-
-### Risk: Silent under-validation (CRITICAL)
-- **Detection method:** loader logs + test that unsupported keyword usage emits warning/error.
-- **Prevention strategy:** supported-keyword registry, strict mode, docs matrix CI gate.
-- **Monitoring/logging:** warning counter metric (`unsupported_keyword_count`) and per-keyword frequency.
-
-### Risk: Root-dispatch correctness failure (CRITICAL)
-- **Detection method:** dedicated tests for root primitive/array/object schemas.
-- **Prevention strategy:** centralize entry dispatch and enforce via architectural unit test.
-- **Monitoring/logging:** startup self-check validates sample schemas for each root type.
-
-### Risk: Skript error contract breakage (CRITICAL)
-- **Detection method:** integration tests for both legacy string expression and new structured API.
-- **Prevention strategy:** additive rollout; never repurpose existing expression semantics.
-- **Monitoring/logging:** deprecation warnings when legacy path is used (after structured API matures).
-
-### Risk: `$ref` recursion/pointer instability (CRITICAL)
-- **Detection method:** cycle, deep-pointer, and mixed local/external reference test suites.
-- **Prevention strategy:** validation context with recursion guard + pointer scope contract.
-- **Monitoring/logging:** resolver diagnostics (cache hit/miss, unresolved refs, cycle detections).
-
----
-
-## 🧠 FINAL STRATEGY
-
-### What should be done FIRST
-1. Stabilize contract truth: docs matrix + warning system for unsupported keywords.
-2. Fix root dispatch correctness defect.
-3. Establish contract/regression/docs execution tests as release gates.
-
-### What must NEVER be rushed
-- `oneOf`/`not` and deep `$ref` semantics. These require composition/context architecture first.
-- Structured Skript error migration without additive compatibility path.
-
-### Where the system is most fragile
-- Contract drift between docs and runtime (creates user-facing false confidence).
-- Object-centric validator coupling (slows safe feature growth).
-- Reference/composition complexity without unified validation context.
+*Last Updated: 2026-03-20 22:15 UTC*
+*Verification performed against source code*
+*This document corrects false claims in deep-system-audit-2026-03-20.md*
