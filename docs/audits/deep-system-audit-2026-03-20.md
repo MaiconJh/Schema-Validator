@@ -62,9 +62,10 @@ Schema-Validator has significantly evolved since the last audit. The system now 
 - **Category:** Feature Gap
 - **Severity:** MEDIUM
 - **Root cause:** Resolver supports basic JSON Pointer but not full recursive references
-- **Implementation:** ✅ IMPROVED in `src/main/java/com/maiconjh/schemacr/schemes/SchemaRefResolver.java:327-336`
-  - Added support for `definitions` keyword (Draft-07 and earlier)
-  - Added support for `$defs` keyword (2019-09 and later)
+- **Implementation:** ✅ IMPROVED in `src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java:100-110`
+  - Added support for `definitions` keyword (Draft-07 and earlier) - already existed
+  - Added support for `$defs` keyword (2019-09 and later) - **NEW**
+  - Note: Full JSON Pointer resolution (`#/definitions/Name`) requires architectural changes to store definitions in Schema objects
 
 ### Issue 4: Config Contract Mismatch (RESOLVED)
 - **Status:** ✅ Previously documented, current config appears aligned
@@ -251,7 +252,7 @@ if (refResolver != null && validator instanceof ObjectValidator) {
 
 ---
 
-*Last Updated: 2026-03-20 21:15 UTC*
+*Last Updated: 2026-03-20 21:30 UTC*
 *Author: System Audit*
 *All issues resolved - this document is the single source of truth*
 *This document supersedes deep-system-audit-2026-03-19.md*

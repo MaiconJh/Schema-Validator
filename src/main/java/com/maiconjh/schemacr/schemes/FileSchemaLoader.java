@@ -98,6 +98,16 @@ public class FileSchemaLoader {
             }
         }
         
+        // Also extract $defs (JSON Schema 2019-09 and later)
+        if (raw.containsKey("$defs") && raw.get("$defs") instanceof Map<?, ?> defs) {
+            for (Map.Entry<?, ?> entry : defs.entrySet()) {
+                if (entry.getValue() instanceof Map<?, ?> defMap) {
+                    String defName = String.valueOf(entry.getKey());
+                    definitions.put(defName, toSchema(defName, castMap(defMap)));
+                }
+            }
+        }
+        
         Schema schema = toSchema(schemaName, raw);
         logger.info("Loaded schema '" + schemaName + "' from " + path);
         return schema;

@@ -323,16 +323,6 @@ public class SchemaRefResolver {
             return current.getItemSchema();
         }
         
-        // Support definitions (JSON Schema Draft-07 and earlier)
-        if ("definitions".equals(part)) {
-            return current;
-        }
-        
-        // Support $defs (JSON Schema 2019-09 and later)
-        if ("$defs".equals(part)) {
-            return current;
-        }
-        
         return null;
     }
 
