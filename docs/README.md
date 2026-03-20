@@ -12,6 +12,7 @@ If any other page conflicts with `CONTRACT.md`, treat that page as outdated and 
 
 - [`reference/json-schema.md`](reference/json-schema.md) — implemented schema keywords + status.
 - [`reference/skript-syntax.md`](reference/skript-syntax.md) — implemented Skript effects/expressions.
+- [`minecraft-formats.md`](minecraft-formats.md) — custom Minecraft ID validation formats.
 - [`api-reference.md`](api-reference.md) — implementation-facing Java API notes.
 - [`configuration.md`](configuration.md) — exact runtime config keys.
 

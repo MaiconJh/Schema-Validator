@@ -40,41 +40,6 @@ If this README conflicts with the contract, `docs/CONTRACT.md` is authoritative.
 3. Ensure Skript is installed.
 4. Start/restart the server.
 
-## Custom Minecraft Formats
-
-The plugin supports custom validation formats for Minecraft IDs using the `format` keyword in JSON schemas:
-
-| Format | Example Valid Values | Description |
-|--------|---------------------|-------------|
-| `minecraft-item` | `minecraft:diamond_sword`, `myplugin:custom_sword` | Minecraft items |
-| `minecraft-block` | `minecraft:gold_ore`, `minecraft:stone` | Minecraft blocks |
-| `minecraft-entity` | `minecraft:zombie`, `minecraft:player` | Minecraft entities |
-| `minecraft-attribute` | `minecraft:generic.max_health`, `minecraft:generic.attack_damage` | Entity attributes |
-| `minecraft-effect` | `minecraft:speed`, `minecraft:regeneration` | Status effects |
-| `minecraft-enchantment` | `minecraft:efficiency`, `minecraft:sharpness` | Enchantments |
-| `minecraft-biome` | `minecraft:plains`, `minecraft:deep_dark` | Biomes |
-| `minecraft-dimension` | `minecraft:overworld`, `minecraft:the_nether` | Dimensions |
-| `minecraft-particle` | `minecraft:blockcrack_15232`, `minecraft:happy_villager` | Particles |
-| `minecraft-sound` | `minecraft:block.gold_ore.break`, `minecraft:entity.player.levelup` | Sound events |
-| `minecraft-potion` | `minecraft:strength`, `minecraft:healing` | Potion types |
-| `minecraft-recipe` | `minecraft:diamond_sword`, `myplugin:custom_craft` | Recipes |
-| `minecraft-tag` | `#minecraft:pickaxes`, `#minecraft:logs` | Tags (with #) |
-
-### Usage Example
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "item_id": { "type": "string", "format": "minecraft-item" },
-    "block_id": { "type": "string", "format": "minecraft-block" },
-    "entity_id": { "type": "string", "format": "minecraft-entity" },
-    "effect_id": { "type": "string", "format": "minecraft-effect" },
-    "tag_id": { "type": "string", "format": "minecraft-tag" }
-  }
-}
-```
-
 ## Runtime config
 
 `plugins/Schema-Validator/config.yml` supports:
