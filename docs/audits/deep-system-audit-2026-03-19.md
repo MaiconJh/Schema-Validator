@@ -1,294 +1,293 @@
-# Deep System Audit — Estado Verificado da Implementação (revalidação em 2026-03-21)
+# Deep System Audit — Verified Implementation State (revalidated on 2026-03-21)
 
-> **Objetivo desta revisão:** revalidar integralmente o conteúdo do relatório de 2026-03-19 contra o código-fonte atual, removendo suposições e corrigindo drift documental.
+> **Goal of this revision:** fully revalidate the 2026-03-19 report against the current codebase, removing assumptions and correcting documentation drift.
 >
-> **Critério de verdade adotado:** somente comportamento observável no código em `src/main/java` e contratos ativos em `src/main/resources`.
+> **Truth criterion used:** only observable behavior in `src/main/java` and active contracts in `src/main/resources`.
 
 ---
 
-## 1) Metodologia de verificação cruzada
+## 1) Cross-check methodology
 
-### 1.1 Processo executado
-1. Leitura integral do documento anterior (`deep-system-audit-2026-03-19.md`).
-2. Extração de cada afirmação, hipótese, seção e conclusão.
-3. Mapeamento direto de cada item para evidência concreta no código (classe, método, fluxo de execução).
-4. Classificação por status:
-   - **Válido**: implementado e consistente com execução atual.
-   - **Parcial**: há implementação, mas incompleta ou com restrições não documentadas.
-   - **Inválido**: contradiz implementação atual.
-   - **Não verificável**: não foi possível confirmar por ausência de artefato executável/contratual correspondente.
+### 1.1 Executed process
+1. Full reading of the previous document (`deep-system-audit-2026-03-19.md`).
+2. Extraction of each claim, hypothesis, section, and conclusion.
+3. Direct mapping of every item to concrete code evidence (class, method, execution flow).
+4. Status classification:
+   - **Valid**: implemented and consistent with current execution.
+   - **Partial**: implementation exists but is incomplete or constrained.
+   - **Invalid**: contradicts current implementation.
+   - **Not verifiable**: could not be confirmed due to missing executable/contractual artifacts.
 
-### 1.2 Fontes rastreáveis utilizadas
+### 1.2 Traceable sources used
 - `src/main/java/com/maiconjh/schemacr/core/ValidationService.java`
 - `src/main/java/com/maiconjh/schemacr/validation/{ObjectValidator,ArrayValidator,PrimitiveValidator,FormatValidator,ValidatorDispatcher,ValidationError}.java`
 - `src/main/java/com/maiconjh/schemacr/schemes/{Schema,FileSchemaLoader,SchemaRefResolver,SupportedKeywordsRegistry}.java`
 - `src/main/java/com/maiconjh/schemacr/integration/{EffValidateData,ExprLastValidationErrors,SkriptValidationBridge,DataFileLoader}.java`
 - `src/main/java/com/maiconjh/schemacr/config/PluginConfig.java`
 - `src/main/resources/config.yml`
-- `docs/CONTRACT.md` e `docs/api-reference.md` (apenas para detectar drift, não como fonte primária de comportamento).
+- `docs/CONTRACT.md` and `docs/api-reference.md` (used only to detect drift, not as primary behavior sources).
 
 ---
 
-## 2) Matriz de verificação — afirmações do documento anterior
+## 2) Verification matrix — claims from the previous document
 
-## 2.1 Dispatch do validador raiz
+## 2.1 Root validator dispatch
 
-**Afirmação anterior:** bug crítico de dispatch na raiz foi resolvido.
+**Previous claim:** critical root dispatch bug was resolved.
 
-**Status:** ✅ **Válido**.
+**Status:** ✅ **Valid**.
 
-**Evidência:** `ValidationService.validate(...)` usa `ValidatorDispatcher.forSchema(schema)` antes de validar (`ValidationService.java`, método `validate`, linhas 40–50), portanto o tipo raiz não está mais rigidamente preso a `ObjectValidator`.
+**Evidence:** `ValidationService.validate(...)` uses `ValidatorDispatcher.forSchema(schema)` before validation (`ValidationService.java`, `validate`, lines 40–50), so root type is no longer hard-bound to `ObjectValidator`.
 
-**Estado real atual:** schemas raiz de tipo `array` e primitivos passam pelo validador apropriado via dispatcher.
+**Current real state:** root schemas of type `array` and primitives are dispatched to the appropriate validator.
 
-**Comentário técnico da alteração**
-- **O que foi alterado no documento:** removida a narrativa de risco ativo para dispatch raiz e reclassificado como corrigido e ativo.
-- **Por que foi necessário:** a versão anterior ainda mantinha trechos legados que induziam interpretação parcialmente conflitante com o fluxo atual.
-- **Evidência da correção:** chamada explícita a `ValidatorDispatcher.forSchema(schema)` no caminho de execução principal.
-- **Estado real:** dispatch raiz dinâmico está implementado.
+**Technical change note**
+- **What changed in the document:** removed active-risk narrative for root dispatch and reclassified it as corrected and live.
+- **Why this was required:** the previous version still had legacy wording that could conflict with the current execution path.
+- **Correction evidence:** explicit call to `ValidatorDispatcher.forSchema(schema)` in the main validation flow.
+- **Real state:** dynamic root dispatch is implemented.
 
 ## 2.2 `minItems`, `maxItems`, `uniqueItems`
 
-**Afirmação anterior:** não implementados (com menção de correção incorreta em outro audit).
+**Previous claim:** not implemented (with mention of incorrect fixes in another audit).
 
-**Status:** ✅ **Válido (continuam não implementados)**.
+**Status:** ✅ **Valid (still not implemented)**.
 
-**Evidência:** `ArrayValidator.validate(...)` apenas verifica tipo lista e valida `items` elemento a elemento; não há qualquer checagem de cardinalidade/unicidade.
+**Evidence:** `ArrayValidator.validate(...)` only checks list type and validates `items` per element; there is no cardinality/uniqueness enforcement.
 
-**Estado real atual:** schemas contendo essas keywords podem ser parseados, mas tais restrições não são aplicadas em runtime.
+**Current real state:** schemas containing those keywords may parse, but constraints are not enforced at runtime.
 
-**Comentário técnico da alteração**
-- **O que foi alterado no documento:** mantida a conclusão de não implementação e adicionada explicação do efeito prático (subvalidação silenciosa).
-- **Por que foi necessário:** reforçar consequência operacional e evitar falsa sensação de cobertura JSON Schema.
-- **Evidência da correção:** ausência de regras no `ArrayValidator`.
-- **Estado real:** apenas `items` é efetivamente validado em arrays.
+**Technical change note**
+- **What changed in the document:** kept the non-implementation conclusion and added practical impact (silent under-validation).
+- **Why this was required:** to avoid false confidence about JSON Schema coverage.
+- **Correction evidence:** missing rules in `ArrayValidator`.
+- **Real state:** only `items` is effectively validated for arrays.
 
 ## 2.3 `minProperties`, `maxProperties`
 
-**Afirmação anterior:** não implementados.
+**Previous claim:** not implemented.
 
-**Status:** ✅ **Válido (continuam não implementados)**.
+**Status:** ✅ **Valid (still not implemented)**.
 
-**Evidência:** `ObjectValidator` valida `required`, `properties`, `patternProperties`, `additionalProperties`, composição (`allOf/anyOf/oneOf/not/if-then-else`) e `$ref`, mas não há contagem mínima/máxima de propriedades.
+**Evidence:** `ObjectValidator` enforces `required`, `properties`, `patternProperties`, `additionalProperties`, composition (`allOf/anyOf/oneOf/not/if-then-else`) and `$ref`, but no minimum/maximum property count checks exist.
 
-**Estado real atual:** cardinalidade de campos do objeto não é imposta.
+**Current real state:** object property cardinality is not enforced.
 
-**Comentário técnico da alteração**
-- **O que foi alterado no documento:** reforçada distinção entre “objeto validado estruturalmente” e “cardinalidade de propriedades”.
-- **Por que foi necessário:** remover ambiguidade entre suporte a `required` e suporte a limites de quantidade.
-- **Evidência da correção:** inexistência de lógica de `minProperties/maxProperties` no validador de objeto.
-- **Estado real:** limites de quantidade de propriedades seguem ausentes.
+**Technical change note**
+- **What changed in the document:** clarified the distinction between “object structural validation” and “property count limits”.
+- **Why this was required:** to remove ambiguity between `required` support and count-limit support.
+- **Correction evidence:** no `minProperties/maxProperties` logic in object validation.
+- **Real state:** property count limits are still absent.
 
 ## 2.4 `multipleOf`
 
-**Afirmação anterior:** implementado.
+**Previous claim:** implemented.
 
-**Status:** ✅ **Válido**.
+**Status:** ✅ **Valid**.
 
-**Evidência:** `PrimitiveValidator` executa divisão pelo divisor e valida integralidade do resultado (`multipleOf`) para `number`/`integer`.
+**Evidence:** `PrimitiveValidator` performs division by the divisor and validates integral result (`multipleOf`) for `number`/`integer`.
 
-**Estado real atual:** `multipleOf` está ativo para tipos numéricos.
+**Current real state:** `multipleOf` is active for numeric types.
 
 ## 2.5 `format`
 
-**Afirmação anterior:** implementado.
+**Previous claim:** implemented.
 
-**Status:** ✅ **Válido**.
+**Status:** ✅ **Valid**.
 
-**Evidência:** `PrimitiveValidator` chama `FormatValidator.isValid(...)` quando `schema.hasFormat()`; falha gera `ValidationError`.
+**Evidence:** `PrimitiveValidator` calls `FormatValidator.isValid(...)` when `schema.hasFormat()`; failures become `ValidationError`.
 
-**Estado real atual:** validação de formato está em modo “hard fail” (erro de validação, não aviso).
+**Current real state:** format validation is hard-fail (validation error, not warning).
 
 ## 2.6 `oneOf`, `not`, `if/then/else`
 
-**Afirmação anterior:** implementados.
+**Previous claim:** implemented.
 
-**Status:** ✅ **Válido**.
+**Status:** ✅ **Valid**.
 
-**Evidência:** blocos dedicados em `ObjectValidator.validate(...)` para `oneOf`, `not` e condicional `if/then/else`.
+**Evidence:** dedicated blocks in `ObjectValidator.validate(...)` for `oneOf`, `not`, and conditional `if/then/else`.
 
-**Estado real atual:** composição condicional e exclusão lógica funcionam no validador de objeto.
+**Current real state:** conditional composition and logical exclusion work in object validation.
 
-## 2.7 Modelo de erro Skript
+## 2.7 Skript error model
 
-**Afirmação anterior:** havia mismatch e foi “improved”.
+**Previous claim:** mismatch existed and was “improved”.
 
-**Status:** ✅ **Parcialmente válido**.
+**Status:** ✅ **Partially valid**.
 
-**Evidência:**
-- `ValidationError` possui `getMessage()` e `toCompactString()`.
-- `ExprLastValidationErrors` retorna `String[]` com `toCompactString()`.
+**Evidence:**
+- `ValidationError` includes `getMessage()` and `toCompactString()`.
+- `ExprLastValidationErrors` returns `String[]` using `toCompactString()`.
 
-**Estado real atual:** a integração Skript continua textual (strings), não objeto estruturado exposto em expressão Skript.
+**Current real state:** Skript integration is still string-based, not structured object output in Skript expressions.
 
-**Comentário técnico da alteração**
-- **O que foi alterado no documento:** clarificação de que houve melhoria de serialização, mas não mudança do contrato de tipo de retorno.
-- **Por que foi necessário:** evitar leitura equivocada de “resolvido” quando a limitação fundamental permanece.
-- **Evidência da correção:** assinatura de `ExprLastValidationErrors extends SimpleExpression<String>`.
-- **Estado real:** saída compacta em string, sem objeto rico no lado Skript.
+**Technical change note**
+- **What changed in the document:** clarified that serialization improved, but return-type contract did not change.
+- **Why this was required:** to avoid treating this as fully solved while the core limitation remains.
+- **Correction evidence:** `ExprLastValidationErrors extends SimpleExpression<String>`.
+- **Real state:** compact string output, no rich object exposure in Skript.
 
 ## 2.8 `$ref`, `definitions`, `$defs`
 
-**Afirmação anterior:** suporte parcial.
+**Previous claim:** partial support.
 
-**Status:** ✅ **Válido (com ressalvas importantes)**.
+**Status:** ✅ **Valid (with important caveats)**.
 
-**Evidência:**
-- `FileSchemaLoader` extrai `definitions` e `$defs` em mapa interno.
-- `Schema` não armazena árvore de `definitions/$defs`.
-- `SchemaRefResolver.navigateTo(...)` navega apenas por `properties` e `items`; não navega por `definitions/$defs`.
+**Evidence:**
+- `FileSchemaLoader` extracts `definitions` and `$defs` into an internal map.
+- `Schema` does not store a `definitions/$defs` tree.
+- `SchemaRefResolver.navigateTo(...)` only navigates `properties` and `items`; it does not navigate `definitions/$defs`.
 
-**Estado real atual:** parsing de blocos de definição existe, mas resolução por JSON Pointer para `#/definitions/...`/`#/$defs/...` não está completa de ponta a ponta.
+**Current real state:** definition-block parsing exists, but JSON Pointer resolution for `#/definitions/...`/`#/$defs/...` is not complete end-to-end.
 
-## 2.9 “Issue 5: Config contract mismatch” (sem verificação no texto antigo)
+## 2.9 “Issue 5: Config contract mismatch” (left unverified in the old text)
 
-**Status:** ❌ **Não segue como fonte da verdade**.
+**Status:** ❌ **Não segue como fonte da verdade** (*Not to be followed as source of truth*).
 
-**Análise crítica e evidências:**
-- O documento antigo deixava “Needs verification”, sem conclusão validada.
-- Hoje é possível confirmar drift documental objetivo:
-  - `config.yml` inclui `strict-mode` e define `validation-on-load: false` por padrão.
-  - `PluginConfig` lê `strict-mode` e default interno de `validation-on-load` como `true` (usado quando chave faltar).
-  - `docs/CONTRACT.md` lista `validation-on-load: true` e omite `strict-mode` na tabela de contrato.
+**Critical analysis and evidence:**
+- The old document left this as “Needs verification”, without validated conclusion.
+- Current code confirms objective contract drift:
+  - `config.yml` includes `strict-mode` and sets `validation-on-load: false` by default.
+  - `PluginConfig` reads `strict-mode` and uses internal default `validation-on-load = true` (when key is missing).
+  - `docs/CONTRACT.md` lists `validation-on-load: true` and omits `strict-mode` from config contract.
 
-**Estado real atual:** existe desalinhamento entre documentação contratual e configuração real distribuída.
+**Current real state:** there is a mismatch between contractual docs and shipped configuration behavior.
 
 ## 2.10 “Issue 6: API reference signature drift”
 
-**Status:** ⚠️ **Parcial / requer recorte temporal**.
+**Status:** ⚠️ **Partial / requires time-scope context**.
 
-**Evidência:** `docs/api-reference.md` está majoritariamente alinhado com assinaturas atuais de `FileSchemaLoader`, `SchemaRegistrationService` e `ValidationService`.
+**Evidence:** `docs/api-reference.md` is mostly aligned with current signatures in `FileSchemaLoader`, `SchemaRegistrationService`, and `ValidationService`.
 
-**Estado real atual:** o drift histórico indicado no audit não se sustenta integralmente no estado presente; há alinhamento significativo na referência de API.
+**Current real state:** the historical drift claim does not fully hold in the current code state; API reference is significantly aligned.
 
-**Comentário técnico da alteração**
-- **O que foi alterado no documento:** rebaixado de problema ativo generalizado para observação histórica com revisão pontual contínua.
-- **Por que foi necessário:** conclusão antiga estava genérica e não refletia o estado atual dos métodos públicos.
-- **Evidência da correção:** comparação direta entre `docs/api-reference.md` e assinaturas em código.
-- **Estado real:** referência de API atual está próxima do código.
+**Technical change note**
+- **What changed in the document:** downgraded from generalized active issue to historical observation requiring periodic review.
+- **Why this was required:** previous conclusion was broad and no longer reflected actual public methods.
+- **Correction evidence:** direct comparison between `docs/api-reference.md` and current source signatures.
+- **Real state:** current API reference is close to implementation.
 
 ## 2.11 “Issue 7: Path resolution split-brain”
 
-**Status:** ✅ **Válido**.
+**Status:** ✅ **Valid**.
 
-**Evidência:**
-- `SchemaValidatorPlugin.autoLoadSchemas()` usa diretório de configuração (`PluginConfig#getSchemaDirectory()`).
-- `EffValidateData` valida usando `Path.of(schemaFile)` e `Path.of(dataFile)` recebidos diretamente no efeito Skript.
+**Evidence:**
+- `SchemaValidatorPlugin.autoLoadSchemas()` uses configured schema directory (`PluginConfig#getSchemaDirectory()`).
+- `EffValidateData` validates using direct `Path.of(schemaFile)` and `Path.of(dataFile)` from Skript effect inputs.
 
-**Estado real atual:** coexistem dois modos de resolução de caminho (auto-load configurado vs caminho explícito em runtime de efeito).
+**Current real state:** two path-resolution modes coexist (config-driven auto-load vs explicit runtime paths in effect execution).
 
 ## 2.12 “Issue 8: Composition logic object-validator bound”
 
-**Status:** ✅ **Válido**.
+**Status:** ✅ **Valid**.
 
-**Evidência:** blocos de `allOf`, `anyOf`, `oneOf`, `not`, `if/then/else` estão implementados no `ObjectValidator`, não numa camada transversal compartilhada.
+**Evidence:** `allOf`, `anyOf`, `oneOf`, `not`, `if/then/else` blocks are implemented inside `ObjectValidator`, not in a shared cross-type composition layer.
 
-**Estado real atual:** composição está acoplada ao fluxo de validação de objeto, ainda que sub-schemas sejam despachados por tipo.
+**Current real state:** composition remains coupled to object-validator flow, even though nested schemas are type-dispatched.
 
 ## 2.13 “Issue 9: Global mutable last-result bridge”
 
-**Status:** ✅ **Válido**.
+**Status:** ✅ **Valid**.
 
-**Evidência:** `SkriptValidationBridge` mantém `private static volatile ValidationResult lastResult` único e global no processo.
+**Evidence:** `SkriptValidationBridge` stores a single global `private static volatile ValidationResult lastResult`.
 
-**Estado real atual:** não há escopo por jogador/evento/contexto; o último resultado é global.
+**Current real state:** there is no scope partition by player/event/context; the last result is global.
 
-## 2.14 Registro de keywords suportadas
+## 2.14 Supported keyword registry
 
-**Status:** ❌ **Não segue como fonte da verdade** (quando interpretado literalmente como suporte completo).
+**Status:** ❌ **Não segue como fonte da verdade** (*Not to be followed as source of truth*) when interpreted as full enforcement support.
 
-**Análise crítica e evidências:**
-- `SupportedKeywordsRegistry` marca `minItems`, `maxItems`, `uniqueItems`, `minProperties`, `maxProperties`, `dependencies` como suportadas.
-- Validadores (`ArrayValidator`/`ObjectValidator`) não implementam enforcement dessas regras.
+**Critical analysis and evidence:**
+- `SupportedKeywordsRegistry` marks `minItems`, `maxItems`, `uniqueItems`, `minProperties`, `maxProperties`, `dependencies` as supported.
+- Validators (`ArrayValidator`/`ObjectValidator`) do not enforce those rules.
 
-**Estado real atual:** o registry funciona mais como whitelist de parsing/documentação do que prova de enforcement real.
+**Current real state:** the registry behaves more like parsing/documentation whitelist than enforcement truth.
 
-## 2.15 Restrição de raiz descrita em documentação canônica
+## 2.15 Root constraint in canonical docs
 
-**Status:** ❌ **Não segue como fonte da verdade**.
+**Status:** ❌ **Não segue como fonte da verdade** (*Not to be followed as source of truth*).
 
-**Análise crítica e evidências:**
-- `docs/CONTRACT.md` afirma que `ValidationService()` impõe raiz objeto por usar `ObjectValidator` fixo.
-- `ValidationService.validate(...)` usa dispatcher por tipo do schema raiz.
+**Critical analysis and evidence:**
+- `docs/CONTRACT.md` states `ValidationService()` effectively enforces object root by fixed `ObjectValidator` behavior.
+- `ValidationService.validate(...)` dispatches by root schema type.
 
-**Estado real atual:** essa restrição de raiz não representa mais o comportamento vigente.
-
----
-
-## 3) Estado atual consolidado (somente fatos validados)
-
-### 3.1 Funcionalidades comprovadamente implementadas
-- Dispatch por tipo no nó raiz (`object`, `array`, primitivos).
-- Validação de objeto: `properties`, `required`, `patternProperties`, `additionalProperties`, `allOf`, `anyOf`, `oneOf`, `not`, `if/then/else`.
-- Validação de array: `items`.
-- Validação primitiva: `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`, `minLength`, `maxLength`, `pattern`, `format`, `enum`.
-- Expressão Skript de erros com retorno textual (`String[]`) e formatação compacta.
-
-### 3.2 Funcionalidades ausentes ou parciais
-- Não implementado: `minItems`, `maxItems`, `uniqueItems`.
-- Não implementado: `minProperties`, `maxProperties`.
-- Parcial: `$ref` com `definitions/$defs` (extração existe; resolução de ponteiro local não percorre esses nós no modelo atual).
-- Limitação arquitetural: resultado de validação global compartilhado na integração Skript.
-
-### 3.3 Divergências documentais críticas
-- `docs/CONTRACT.md` contém pelo menos duas divergências de alto impacto:
-  1. afirma restrição de raiz objeto que não condiz com o código atual;
-  2. descreve contrato de erro Skript como `toString()` quando implementação usa `toCompactString()`.
-- Contrato de configuração na documentação não acompanha integralmente `config.yml`/`PluginConfig` (ex.: `strict-mode`).
+**Current real state:** that root-object restriction no longer reflects current runtime behavior.
 
 ---
 
-## 4) Plano de ação técnico detalhado
+## 3) Consolidated current state (validated facts only)
 
-## 4.1 Inconsistências identificadas e impacto
-1. **Keywords declaradas vs enforcement real (array/object cardinality).**
-   - **Impacto:** falsa confiança de validação; dados inválidos podem ser aceitos silenciosamente.
-2. **$ref parcial para `definitions/$defs`.**
-   - **Impacto:** schemas com referências internas padrão podem falhar ou validar de forma incompleta.
-3. **Drift em documentação canônica (`CONTRACT.md`).**
-   - **Impacto:** integradores tomam decisões erradas sobre capacidades e limitações do runtime.
-4. **`lastResult` global no bridge Skript.**
-   - **Impacto:** risco de sobreposição de contexto entre execuções concorrentes/eventos.
-5. **Path resolution com semânticas diferentes (auto-load vs efeito).**
-   - **Impacto:** comportamento não uniforme entre operação automática e validação ad hoc.
+### 3.1 Features confirmed as implemented
+- Root-node type dispatch (`object`, `array`, primitives).
+- Object validation: `properties`, `required`, `patternProperties`, `additionalProperties`, `allOf`, `anyOf`, `oneOf`, `not`, `if/then/else`.
+- Array validation: `items`.
+- Primitive validation: `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`, `minLength`, `maxLength`, `pattern`, `format`, `enum`.
+- Skript error expression with text output (`String[]`) and compact formatting.
 
-## 4.2 Metodologias utilizadas na verificação
-- Inspeção estática de fluxo principal de execução (caminho de entrada → parser → dispatcher → validadores).
-- Validação semântica por leitura de métodos responsáveis por enforcement de constraints.
-- Comparação de contrato documental versus assinatura/uso real das classes públicas.
-- Análise de acoplamento arquitetural (estado global, resolução de referências, fronteiras de integração).
+### 3.2 Missing or partial features
+- Not implemented: `minItems`, `maxItems`, `uniqueItems`.
+- Not implemented: `minProperties`, `maxProperties`.
+- Partial: `$ref` with `definitions/$defs` (extraction exists; local pointer resolution does not traverse those nodes in current model).
+- Architectural limitation: globally shared validation result in Skript bridge.
 
-## 4.3 Critérios adotados para validação da verdade
-- **Código executável prevalece** sobre documentação textual.
-- **Implementado** significa “há parser + modelo + enforcement no runtime” (não apenas keyword reconhecida).
-- **Parcial** quando existe parte do pipeline, mas sem fechamento funcional.
-- **Não verificável** quando não há artefato de execução ou evidência concreta suficiente.
-
-## 4.4 Próximos passos concretos (ordem recomendada)
-1. Corrigir `docs/CONTRACT.md` para refletir comportamento real de dispatch raiz, tipo de saída Skript e chaves de configuração atuais.
-2. Implementar `minItems/maxItems/uniqueItems` (modelo `Schema`, parser `FileSchemaLoader`, enforcement `ArrayValidator`).
-3. Implementar `minProperties/maxProperties` (modelo + parser + enforcement em `ObjectValidator`).
-4. Revisar arquitetura de `$ref` para suportar navegação em `definitions/$defs` no modelo em memória.
-5. Revisar `SupportedKeywordsRegistry` para distinguir claramente:
-   - keywords **reconhecidas**;
-   - keywords **enforced**.
-6. Avaliar escopo contextual para `SkriptValidationBridge` (por evento/jogador/tópico) para eliminar estado global compartilhado.
-7. Unificar estratégia de resolução de paths entre auto-load e validação via efeito Skript (ou documentar explicitamente o dualismo).
+### 3.3 Critical documentation divergences
+- `docs/CONTRACT.md` contains at least two high-impact divergences:
+  1. claims an object-root restriction that no longer matches runtime behavior;
+  2. describes Skript error output contract as `toString()` while implementation uses `toCompactString()`.
+- Documented configuration contract does not fully match `config.yml`/`PluginConfig` (example: `strict-mode`).
 
 ---
 
-## 5) Registro de reestruturação deste documento
+## 4) Detailed technical action plan
 
-### 5.1 O que foi reestruturado
-- Documento foi reorganizado de narrativa mista para trilha auditável: **metodologia → matriz de verificação → estado consolidado → plano de ação**.
-- Cada seção passou a conter status explícito e evidência concreta no código.
-- Seções incorretas/obsoletas/não conclusivas receberam marcação formal obrigatória.
+## 4.1 Identified inconsistencies and impact
+1. **Declared keyword support vs real enforcement (array/object cardinality).**
+   - **Impact:** false confidence in validation; invalid data can be silently accepted.
+2. **Partial `$ref` for `definitions/$defs`.**
+   - **Impact:** schemas using standard internal references can fail or validate incompletely.
+3. **Drift in canonical documentation (`CONTRACT.md`).**
+   - **Impact:** integrators make wrong assumptions about runtime capabilities/constraints.
+4. **Global `lastResult` in Skript bridge.**
+   - **Impact:** possible context overlap in concurrent/event-driven scenarios.
+5. **Path-resolution semantic split (auto-load vs effect path).**
+   - **Impact:** inconsistent behavior between automatic loading and ad hoc validation.
 
-### 5.2 Por que a reestruturação foi necessária
-- A versão anterior misturava estado histórico, conclusões parciais e itens “a verificar”, reduzindo confiabilidade como fonte operacional.
-- Faltava hierarquia lógica para leitura progressiva e tomada de decisão técnica.
+## 4.2 Verification methodologies used
+- Static inspection of core runtime flow (entry point → parser → dispatcher → validators).
+- Semantic validation by reading methods that enforce constraints.
+- Contract-vs-implementation comparison for public API and docs.
+- Architectural coupling review (global state, reference resolution, integration boundaries).
 
-### 5.3 Resultado
-- Este arquivo passa a representar apenas informações verificadas no estado atual do sistema.
-- Itens sem validação forte foram explicitamente tratados como não fonte da verdade.
+## 4.3 Criteria used to validate truth
+- **Executable code takes precedence** over textual documentation.
+- **Implemented** means parser + model + runtime enforcement (not just keyword recognition).
+- **Partial** when part of the pipeline exists but functional closure is missing.
+- **Not verifiable** when there is no concrete executable evidence.
 
+## 4.4 Concrete next steps (recommended order)
+1. Update `docs/CONTRACT.md` to reflect real root dispatch behavior, Skript output type, and current config keys.
+2. Implement `minItems/maxItems/uniqueItems` (`Schema` model, `FileSchemaLoader` parse, `ArrayValidator` enforcement).
+3. Implement `minProperties/maxProperties` (model + parse + `ObjectValidator` enforcement).
+4. Refactor `$ref` architecture to support `definitions/$defs` traversal in in-memory model.
+5. Update `SupportedKeywordsRegistry` to clearly separate:
+   - **recognized** keywords;
+   - **enforced** keywords.
+6. Evaluate contextual scoping for `SkriptValidationBridge` (per event/player/topic) to remove global shared state.
+7. Unify path resolution strategy between auto-load and Skript effect validation (or document explicit dual behavior).
+
+---
+
+## 5) Restructuring record for this document
+
+### 5.1 What was restructured
+- Reorganized from mixed narrative to auditable sequence: **methodology → verification matrix → consolidated state → action plan**.
+- Added explicit status and concrete code evidence to each section.
+- Marked incorrect/obsolete/non-conclusive sections with the required formal marker.
+
+### 5.2 Why restructuring was necessary
+- Previous version mixed historical state, partial conclusions, and “to verify” placeholders, reducing reliability as an operational source.
+- Hierarchical progression for technical decision-making was missing.
+
+### 5.3 Result
+- This file now represents only validated information against the current system state.
+- Items without strong validation are explicitly treated as non-authoritative.
