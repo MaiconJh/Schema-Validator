@@ -1,0 +1,23 @@
+---
+title: Validation behavior
+section: Reference
+description: Learn how validation executes, aggregates errors, and returns final status.
+---
+
+## Evaluation order
+
+Validation generally proceeds from structure checks to leaf constraints, collecting failures along the way.
+
+## Error aggregation model
+
+- Collects multiple failures in one pass where feasible.
+- Preserves path context to identify offending fields.
+- Exposes errors for downstream Skript handling.
+
+## Conditional branches
+
+Conditional validators apply branch logic and report which branch failed when mismatches occur.
+
+## Next step
+
+Explore [Examples](examples.html).

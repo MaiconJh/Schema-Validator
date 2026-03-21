@@ -1,0 +1,21 @@
+title: Schema Validator Docs
+url: ""
+baseurl: "/docs/pages"
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+collections: {}
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: default
+      toc: true
+      sidebar_group: "Documentation"
+include:
+  - _includes
+  - _layouts
+exclude:
+  - Gemfile
+  - Gemfile.lock

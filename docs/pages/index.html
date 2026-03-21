@@ -1,127 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Documentação - Schema Validator</title>
-  <style>
-    /* Estilo Dark GitHub */
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-      background-color: #0d1117;
-      color: #c9d1d9;
-      margin: 0;
-      padding: 2rem;
-      line-height: 1.6;
-    }
+---
+title: Overview
+section: Documentation
+description: Learn how Schema Validator is organized and how to navigate this documentation set.
+---
 
-    h1, h2, h3 {
-      color: #f0f6fc;
-      margin-top: 2rem;
-    }
+## Documentation map
 
-    a {
-      color: #58a6ff;
-      text-decoration: none;
-    }
+Use this documentation in sequence for the smoothest journey:
 
-    a:hover {
-      text-decoration: underline;
-    }
+1. **Getting started** for product context and supported capabilities.
+2. **Installation** and **Quickstart** to run your first validation.
+3. **Configuration** and **Schema keywords** for implementation details.
+4. **Validation behavior**, **Examples**, and **Architecture** for advanced reasoning and troubleshooting.
 
-    .nav-buttons {
-      display: flex;
-      gap: 12px;
-      margin: 2rem 0;
-    }
+## What Schema Validator does
 
-    .nav-buttons a {
-      padding: 8px 16px;
-      background-color: #21262d;
-      border-radius: 6px;
-      border: 1px solid #30363d;
-      font-weight: 600;
-      transition: background 0.2s;
-    }
+Schema Validator is a plugin-centric validation system that evaluates YAML/JSON files against JSON Schema-like rules. It integrates with Skript flows and returns structured results and error messages for downstream logic.
 
-    .nav-buttons a:hover {
-      background-color: #30363d;
-    }
+## Recommended paths
 
-    img.diagram {
-      display: block;
-      max-width: 100%;
-      margin: 2rem auto;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      background-color: #0d1117;
-      padding: 12px;
-    }
+### New users
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 2rem 0;
-    }
+- Read [Getting started](getting-started.html)
+- Continue to [Installation](installation.html)
+- Run [Quickstart](quickstart.html)
 
-    th, td {
-      border: 1px solid #30363d;
-      padding: 8px 12px;
-    }
+### Production users
 
-    th {
-      background-color: #161b22;
-      color: #f0f6fc;
-    }
+- Review [Configuration](configuration.html)
+- Validate schema design in [Schema keywords](schema-keywords.html)
+- Confirm edge handling in [Validation behavior](validation-behavior.html)
 
-    td {
-      background-color: #0d1117;
-    }
-  </style>
-</head>
-<body>
-  <h1>Schema Validator Documentation</h1>
+## Related pages
 
-  <div class="nav-buttons">
-    <a href="previous.html">← Previous</a>
-    <a href="index.html">Home</a>
-    <a href="next.html">Next →</a>
-  </div>
-
-  <h2>Validation Flow Overview</h2>
-  <img class="diagram" src="assets/Validation_Flow_Overview.svg" alt="Validation Flow Diagram">
-
-  <h3>Flow Components</h3>
-  <table>
-    <tr>
-      <th>Step</th>
-      <th>Description</th>
-    </tr>
-    <tr>
-      <td>Plugin Load</td>
-      <td>Plugin loads configuration, registers schemas, and initializes static context</td>
-    </tr>
-    <tr>
-      <td>Skript Event</td>
-      <td>A Skript script triggers validation using `validate yaml/json ... using schema ...`</td>
-    </tr>
-    <tr>
-      <td>Load Schema & Data</td>
-      <td>System loads the JSON schema and data file (YAML or JSON)</td>
-    </tr>
-    <tr>
-      <td>Run Validation Engine</td>
-      <td>Validators process data according to schema rules</td>
-    </tr>
-    <tr>
-      <td>Return Result & Errors</td>
-      <td>Validation result and any errors are returned</td>
-    </tr>
-  </table>
-
-  <div class="nav-buttons">
-    <a href="previous.html">← Previous</a>
-    <a href="index.html">Home</a>
-    <a href="next.html">Next →</a>
-  </div>
-</body>
-</html>
+- [Examples](examples.html)
+- [Architecture](architecture.html)
+- [Design decisions](PAGES_ARCHITECTURE.html)

@@ -1,0 +1,7 @@
+<nav class="ghd-breadcrumbs" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="{{ '/index.html' | relative_url }}">Docs</a></li>
+    {% if page.section %}<li>{{ page.section }}</li>{% endif %}
+    <li aria-current="page">{{ page.title }}</li>
+  </ol>
+</nav>

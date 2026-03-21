@@ -1,0 +1,38 @@
+---
+title: Quickstart
+section: Setup
+description: Execute your first successful and failing validation in minutes.
+---
+
+## First validation
+
+1. Create a minimal schema (object with required fields).
+2. Create a matching YAML/JSON data file.
+3. Trigger validation via integration syntax.
+4. Inspect the result and errors expression.
+
+## Minimal schema pattern
+
+```json
+{
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string" }
+  }
+}
+```
+
+## Expected outcomes
+
+### Success case
+
+Data contains required properties and correct types.
+
+### Failure case
+
+Validation returns false plus one or more human-readable errors.
+
+## Next step
+
+Read [Configuration](configuration.html) for production-ready behavior.

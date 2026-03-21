@@ -1,0 +1,28 @@
+---
+title: Architecture
+section: Advanced
+description: Component-level architecture for loading, dispatching, and validating data.
+---
+
+## Main components
+
+- **File schema loader**: reads schema files and parses JSON/YAML.
+- **Schema registry**: stores and retrieves schema definitions.
+- **Validation service**: orchestrates validator dispatch.
+- **Integration bridge**: exposes validation to scripting contexts.
+
+## Data flow
+
+1. Schema registration at startup.
+2. Runtime request from Skript integration.
+3. Data and schema resolution.
+4. Dispatch to keyword validators.
+5. Result and error propagation.
+
+## Operational guidance
+
+Use modular schemas and isolate complex keyword logic for maintainability.
+
+## Continue
+
+Return to [Overview](index.html) or read [Design decisions](PAGES_ARCHITECTURE.html).

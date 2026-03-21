@@ -1,0 +1,30 @@
+---
+title: Schema keywords
+section: Reference
+description: Understand supported keywords and how they are interpreted by validators.
+---
+
+## Structural keywords
+
+- `type`
+- `properties`
+- `required`
+- `items`
+
+## Logical keywords
+
+- `oneOf`
+- `not`
+- Conditional patterns (`if` / `then` / `else`)
+
+## Format and primitive constraints
+
+Validators can enforce primitive type checks and registered format checks.
+
+## Design tip
+
+Start with strict required fields, then progressively add conditional logic.
+
+## Next step
+
+Review [Validation behavior](validation-behavior.html).
