@@ -1,55 +1,24 @@
-# Skript Syntax Reference
+# Reference: Skript syntax
 
-> Normative behavior is defined in [`../CONTRACT.md`](../CONTRACT.md).
+## Registered effect patterns
 
-## Effects (implemented)
+1. `validate yaml %string% using schema %string%`
+2. `validate json %string% using schema %string%`
 
-### Validate YAML file
+## Registered expression pattern
 
-```skript
-validate yaml %string% using schema %string%
-```
+- `last schema validation errors`
 
-### Validate JSON file
+## Runtime behavior
 
-```skript
-validate json %string% using schema %string%
-```
+- Effect loads data path and schema path from the two string expressions.
+- Effect stores `ValidationResult` into global bridge (`SkriptValidationBridge`).
+- Expression returns `String[]`; empty array when no result or success.
 
-The effect loads:
-- data file from first string path
-- schema file from second string path
+## Source mapping
 
-## Expressions (implemented)
+1. Registration: `SkriptSyntaxRegistration.register()`.  
+2. Effect init/execute: `EffValidateData.init()`, `EffValidateData.execute()`.  
+3. Expression retrieval: `ExprLastValidationErrors.get()`.
 
-### Last validation errors
-
-```skript
-last schema validation errors
-```
-
-Returns:
-- list of strings (stringified validation errors)
-- empty list when validation succeeded or no previous result exists
-
-## Not supported
-
-- `last schema validation result`
-- `last validation errors`
-- boolean success expression for last result
-
-## Example
-
-```skript
-command /validateplayer:
-    trigger:
-        validate yaml "plugins/Schema-Validator/player.yml" using schema "plugins/Schema-Validator/schemas/player-profile.schema.json"
-        set {_errors::*} to last schema validation errors
-
-        if size of {_errors::*} is 0:
-            send "&aValid data"
-        else:
-            send "&cInvalid data"
-            loop {_errors::*}:
-                send "&7- %loop-value%"
-```
+[← Previous](README.md) | [Next →](schema-keywords.md) | [Home](../../README.md)
