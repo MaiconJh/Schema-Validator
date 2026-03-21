@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-color-mode="auto">
+  <head>
+    {% include head.html %}
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    {% include header.html %}
+
+    <div class="ghd-shell">
+      {% include sidebar.html %}
+
+      <main id="content" class="ghd-content" tabindex="-1">
+        {% include breadcrumbs.html %}
+
+        <article>
+          <header class="ghd-article-header">
+            <h1>{{ page.title }}</h1>
+            {% if page.description %}<p class="lead">{{ page.description }}</p>{% endif %}
+          </header>
+
+          <div class="ghd-layout">
+            <div class="ghd-markdown" id="article-body">
+              {{ content }}
+            </div>
+            {% if page.toc != false %}
+            <aside class="ghd-toc" aria-label="Table of contents">
+              <h2>In this article</h2>
+              <nav id="toc"></nav>
+            </aside>
+            {% endif %}
+          </div>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

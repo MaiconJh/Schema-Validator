@@ -1,0 +1,37 @@
+---
+title: Getting started
+section: Fundamentals
+description: Understand prerequisites, concepts, and terminology before installation.
+---
+
+## Core concepts
+
+Schema Validator has three primary layers:
+
+- **Schema registration layer**: loads and resolves schemas.
+- **Validation dispatcher layer**: routes data nodes to specific validators.
+- **Integration layer**: exposes commands/effects/expressions to Skript.
+
+## Prerequisites
+
+- Java runtime compatible with your deployment.
+- Access to plugin configuration and schema files.
+- Familiarity with JSON/YAML document structure.
+
+## Terminology
+
+### Schema
+
+A rule set that defines allowed types, required fields, formats, and conditional branches.
+
+### Data file
+
+A JSON or YAML input that is validated against a selected schema.
+
+### Validation result
+
+A structured object containing a success status and collected validation errors.
+
+## Next step
+
+Proceed to [Installation](installation.html).
