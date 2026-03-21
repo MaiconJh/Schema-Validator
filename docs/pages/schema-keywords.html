@@ -5,66 +5,169 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Schema keywords · Schema Validator Docs</title>
   <meta name="description" content="Understand supported keywords and how they are interpreted by validators.">
-  <link rel="stylesheet" href="assets/css/github-docs.css">
-  <script defer src="assets/js/docs.js"></script>
+  <link rel="stylesheet" href="assets/css/modern-docs.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script defer src="assets/js/modern-docs.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#content">Skip to content</a>
   
-<header class="ghd-header" role="banner">
-  <a class="ghd-logo" href="index.html" aria-label="Schema Validator Docs home">
-    <span aria-hidden="true">◆</span>
-    <span>Schema Validator Docs</span>
-  </a>
-  <div class="ghd-header-controls">
-    <label class="ghd-search-wrap" for="search-input">
-      <span class="sr-only">Search documentation pages</span>
-      <input id="search-input" type="search" placeholder="Search docs pages" autocomplete="off" aria-label="Search docs pages">
-    </label>
-    <button id="theme-toggle" class="ghd-btn" type="button" aria-label="Toggle dark mode">Toggle theme</button>
-    <button id="sidebar-toggle" class="ghd-btn mobile-only" type="button" aria-controls="sidebar" aria-expanded="false">Menu</button>
-  </div>
-</header>
-  <div class="ghd-shell">
+  <!-- Header -->
+  <header class="header" role="banner">
+    <div class="header-inner">
+      <a class="header-logo" href="index.html" aria-label="Schema Validator Docs home">
+        <span class="header-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </span>
+        <span>Schema Validator</span>
+      </a>
+      <div class="header-controls">
+        <label class="header-search">
+          <input id="search-input" type="search" placeholder="Search documentation..." autocomplete="off" aria-label="Search documentation">
+        </label>
+        <button id="theme-toggle" class="header-btn" type="button" aria-label="Toggle dark mode"></button>
+        <button id="sidebar-toggle" class="header-btn mobile-only" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle menu"></button>
+      </div>
+    </div>
+  </header>
+  
+  <div class="shell">
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar" class="sidebar" aria-label="Documentation sidebar">
+      <div class="sidebar-section">
+        <p class="sidebar-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Documentation
+        </p>
+        <ul class="sidebar-nav" id="page-index">
+          <li class="sidebar-nav-item"><a href="index.html">Overview</a></li>
+          <li class="sidebar-nav-item"><a href="getting-started.html">Getting started</a></li>
+          <li class="sidebar-nav-item"><a href="installation.html">Installation</a></li>
+          <li class="sidebar-nav-item"><a href="quickstart.html">Quickstart</a></li>
+          <li class="sidebar-nav-item"><a href="configuration.html">Configuration</a></li>
+          <li class="sidebar-nav-item"><a href="schema-keywords.html">Schema keywords</a></li>
+          <li class="sidebar-nav-item"><a href="validation-behavior.html">Validation behavior</a></li>
+          <li class="sidebar-nav-item"><a href="examples.html">Examples</a></li>
+          <li class="sidebar-nav-item"><a href="architecture.html">Architecture</a></li>
+        </ul>
+      </div>
+    </nav>
     
-<nav id="sidebar" class="ghd-sidebar" aria-label="Documentation sidebar">
-  <p class="ghd-sidebar-title">Documentation</p>
-  <ul class="ghd-nav-list" id="page-index">
-    <li><a href="index.html">Overview</a></li>
-    <li><a href="getting-started.html">Getting started</a></li>
-    <li><a href="installation.html">Installation</a></li>
-    <li><a href="quickstart.html">Quickstart</a></li>
-    <li><a href="configuration.html">Configuration</a></li>
-    <li><a href="schema-keywords.html">Schema keywords</a></li>
-    <li><a href="validation-behavior.html">Validation behavior</a></li>
-    <li><a href="examples.html">Examples</a></li>
-    <li><a href="architecture.html">Architecture</a></li>
-  </ul>
-</nav>
-    <main id="content" class="ghd-content" tabindex="-1">
-      <nav class="ghd-breadcrumbs" aria-label="Breadcrumb">
-        <ol>
-          <li><a href="index.html">Docs</a></li>
-          <li>Reference</li>
-          <li aria-current="page">Schema keywords</li>
+    <!-- Main Content -->
+    <main id="content" class="main" tabindex="-1">
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol class="breadcrumbs-list">
+          <li class="breadcrumbs-item"><a href="index.html" class="breadcrumbs-link">Docs</a></li>
+          <li class="breadcrumbs-item"><span class="breadcrumbs-current">Schema keywords</span></li>
         </ol>
       </nav>
+      
+      <!-- Article -->
       <article>
-        <header class="ghd-article-header">
-          <h1>Schema keywords</h1>
-          <p class="lead">Understand supported keywords and how they are interpreted by validators.</p>
+        <header class="article-header">
+          <h1 class="article-title">Schema Keywords</h1>
+          <p class="article-lead">Understand supported keywords and how they are interpreted by validators to build powerful schemas.</p>
         </header>
-        <div class="ghd-layout">
-          <div class="ghd-markdown" id="article-body">
+        
+        <div class="content-layout">
+          <div class="article-content" id="article-body">
             
-<h2>Structural keywords</h2><ul><li><code>type</code></li><li><code>properties</code></li><li><code>required</code></li><li><code>items</code></li></ul>
-<h2>Logical keywords</h2><ul><li><code>oneOf</code></li><li><code>not</code></li><li>Conditional patterns (<code>if</code>/<code>then</code>/<code>else</code>)</li></ul>
-<h2>Format and primitive constraints</h2><p>Primitive and format validators enforce low-level correctness before advanced composition rules.</p>
-<h2>Design tip</h2><p>Start strict on required keys, then add conditional branches incrementally.</p>
-<h2>Next step</h2><p>Review <a href="validation-behavior.html">Validation behavior</a>.</p>
+            <h2>Structural Keywords</h2>
+            <p>These keywords define the basic structure and shape of your data:</p>
+            
+            <div class="card">
+              <h3 class="card-title"><code>type</code> <span class="badge badge-primary">Required</span></h3>
+              <p class="card-description">Specifies the type of data allowed. Valid types: <code>string</code>, <code>number</code>, <code>integer</code>, <code>boolean</code>, <code>array</code>, <code>object</code>, <code>null</code>.</p>
+            </div>
+            
+            <div class="card">
+              <h3 class="card-title"><code>properties</code></h3>
+              <p class="card-description">Defines the expected properties of an object. Each key corresponds to a field name, with its value being the schema for that field.</p>
+            </div>
+            
+            <div class="card">
+              <h3 class="card-title"><code>required</code></h3>
+              <p class="card-description">An array of property names that must be present in the object. All listed fields must exist for validation to pass.</p>
+            </div>
+            
+            <div class="card">
+              <h3 class="card-title"><code>items</code></h3>
+              <p class="card-description">Defines the schema for items in an array. When an array is expected, use this to validate each element against a schema.</p>
+            </div>
+            
+            <h2>Logical Keywords</h2>
+            <p>These keywords allow for complex validation logic and schema composition:</p>
+            
+            <div class="card">
+              <h3 class="card-title"><code>oneOf</code></h3>
+              <p class="card-description">Validates that data matches exactly one of the provided schemas. Useful for union types or polymorphic data.</p>
+            </div>
+            
+            <div class="card">
+              <h3 class="card-title"><code>not</code></h3>
+              <p class="card-description">Negates a schema - data must NOT match the provided schema. Useful for excluding specific values.</p>
+            </div>
+            
+            <div class="card">
+              <h3 class="card-title"><code>if</code> / <code>then</code> / <code>else</code></h3>
+              <p class="card-description">Conditional validation. Apply different schemas based on whether data matches the <code>if</code> condition.</p>
+            </div>
+            
+            <h2>Format and Primitive Constraints</h2>
+            <p>Primitive and format validators enforce low-level correctness before advanced composition rules:</p>
+            
+            <ul>
+              <li><code>format</code> — Validate against common formats (email, uri, date-time, etc.)</li>
+              <li><code>minimum</code> / <code>maximum</code> — Numeric bounds</li>
+              <li><code>minLength</code> / <code>maxLength</code> — String length constraints</li>
+              <li><code>pattern</code> — Regular expression matching</li>
+              <li><code>enum</code> — Enumeration of allowed values</li>
+            </ul>
+            
+            <div class="callout callout-success">
+              <svg class="callout-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <div class="callout-content">
+                <span class="callout-title">Design Tip</span>
+                <p>Start strict on required keys, then add conditional branches incrementally. This approach makes schemas easier to maintain and debug.</p>
+              </div>
+            </div>
+            
+            <h2>Next Steps</h2>
+            <p>Learn how validation executes and how errors are handled:</p>
+            
+            <!-- Navigation Arrows -->
+            <div class="nav-arrows">
+              <a href="configuration.html" class="nav-arrow prev">
+                <span class="nav-arrow-label">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                  Previous
+                </span>
+                <span class="nav-arrow-title">← Configuration</span>
+              </a>
+              <a href="validation-behavior.html" class="nav-arrow next">
+                <span class="nav-arrow-label">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  Next
+                </span>
+                <span class="nav-arrow-title">Validation behavior →</span>
+              </a>
+            </div>
+            
           </div>
-          <aside class="ghd-toc" aria-label="Table of contents">
-            <h2>In this article</h2>
+          
+          <!-- Table of Contents -->
+          <aside class="toc" aria-label="Table of contents">
+            <h2 class="toc-title">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+              On this page
+            </h2>
             <nav id="toc"></nav>
           </aside>
         </div>

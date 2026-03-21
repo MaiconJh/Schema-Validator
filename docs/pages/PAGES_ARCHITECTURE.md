@@ -1,31 +1,27 @@
-# Documentation Pagination and UX Architecture (`docs/pages/`)
+﻿# Documentation UX Architecture (`docs/pages/`)
 
 ## Scope and constraints
 
 This architecture is intentionally isolated to `docs/pages/` and does not modify project-level docs outside this tree.
 
-## Research basis (GitHub Docs + GitHub Pages)
+## Design references
 
-The implementation aligns with patterns from:
+The current visual system follows modern product-docs patterns inspired by Stripe, Vercel, Next.js, React, and Tailwind-style layouts. The core implementation is the `modern-docs.css` design system and `modern-docs.js` interaction layer.
 
-1. GitHub Docs information architecture using a persistent left sidebar, breadcrumb trail, and “In this article” table of contents.
-2. GitHub Docs style guidance that emphasizes consistency, scannability, and predictable article structure.
-3. GitHub Pages + Jekyll conventions for `_config.yml`, `_layouts`, and `_includes`-driven templates.
-4. GitHub/Primer design foundations for color tokens and light/dark mode behavior.
+## Source of truth in this folder
 
-Reference links used during design:
+Primary assets:
+- `docs/pages/assets/css/modern-docs.css`
+- `docs/pages/assets/js/modern-docs.js`
 
-- https://docs.github.com/en/contributing/style-guide-and-content-model/style-guide
-- https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll
-- https://docs.github.com/en/pages/configuring-a-publishing-source-for-your-github-pages-site
-- https://primer.style/product/getting-started/foundations/color/
+Optional Jekyll compatibility (not required for the static HTML build):
+- `docs/pages/_config.yml`
+- `docs/pages/_layouts/default.html`
+- `docs/pages/_includes/*`
 
-## Pagination architecture
-
-### Hierarchy
+## Information architecture
 
 The page order reflects onboarding-to-advanced progression:
-
 1. `index.html` (Overview)
 2. `getting-started.html`
 3. `installation.html`
@@ -36,63 +32,68 @@ The page order reflects onboarding-to-advanced progression:
 8. `examples.html`
 9. `architecture.html`
 
-### Navigation and permanence
+## Navigation system
 
-- Sidebar links provide persistent global navigation.
-- Breadcrumbs provide local context and path awareness.
-- Permanent heading anchors (`¶`) are generated for deep-linking.
+Persistent elements:
+- Sidebar navigation is always present on desktop and collapsible on mobile.
+- Breadcrumbs provide local context within each page.
+- Navigation arrows at the end of articles provide linear progression.
 
-## Jekyll compatibility model
+Active state:
+- `modern-docs.js` sets `.active` and `aria-current="page"` on the current page link.
+- Active styling uses a left inset highlight and elevated contrast for visibility.
 
-Implemented Jekyll files in this directory:
+Icons:
+- Sidebar icons are injected by `modern-docs.js` and inherit link color on hover and active.
 
-- `_config.yml`
-- `_layouts/default.html`
-- `_includes/*`
+## Sidebar visual system
 
-Pages use front matter to map page metadata (`title`, `description`, `section`) into shared templates.
+Hierarchy and spacing:
+- Uppercase section label with increased letter-spacing.
+- Links are flex-aligned with icon and text spacing (`gap`) and padded hit targets.
 
-## Table of contents model
+Interaction styling:
+- No default underline. Underline appears only on hover and focus.
+- Hover uses a subtle background and text color shift.
+- Active uses a stronger background and a left accent bar.
 
-A client-side script scans `h2` and `h3` headings, builds a TOC, and marks active section links via `IntersectionObserver`.
+Theming:
+- Sidebar colors are driven by `--sidebar-*` tokens.
+- Background uses a subtle vertical gradient in both light and dark modes.
 
-## Search approach
+## Table of contents (TOC)
 
-The header search field performs lightweight client-side filtering:
+The TOC is generated client-side by scanning `h2` and `h3` headings inside `#article-body`. Active section tracking is handled via `IntersectionObserver`.
 
-- Filters sidebar page links by text match.
-- Highlights whether the current article contains the query term.
+## Search behavior
 
-## Visual style system
+The header search input performs client-side filtering:
+- Filters sidebar links by text match.
+- Marks the article with a no-results state if the term is not present.
 
-The CSS reproduces a GitHub Docs-like aesthetic with:
+## Layout and responsiveness
 
-- Primer-aligned neutral, border, and accent palette.
-- Sticky top header and sticky sidebar.
-- Code block/card borders and subtle surfaces.
-- Automatic and user-toggleable theme mode.
+Desktop layout:
+- `.shell` grid: sidebar + main content.
+- `.content-layout` grid: article + TOC.
 
-## Responsive behavior
+Responsive behavior:
+- At `max-width: 1200px`, TOC is hidden.
+- At `max-width: 1024px`, sidebar becomes an off-canvas panel.
+- At `max-width: 768px`, paddings and typography scale down.
 
-- Desktop: sidebar + content + TOC columns.
-- Tablet: TOC moves below main content.
-- Mobile: collapsible sidebar menu with explicit toggle button.
+## Accessibility decisions
 
-## Accessibility decisions (WCAG 2.1 focused)
-
+Key decisions aligned with WCAG 2.1:
 - Skip link for keyboard users.
 - Semantic landmarks (`header`, `nav`, `main`, `article`, `aside`).
 - ARIA labels for sidebar, breadcrumbs, search, and TOC.
-- Keyboard-focusable controls and visible focus behavior.
-- Contrast-aware color tokens in light/dark themes.
+- Visible focus styles and `aria-current="page"` for active nav items.
 
 ## Information flow rationale
 
 The sequence prioritizes user success:
-
 - Concept framing first.
 - Immediate setup and quick win second.
 - Operational and reference depth third.
 - Architectural understanding last.
-
-This reduces cognitive load while preserving discoverability for advanced users.

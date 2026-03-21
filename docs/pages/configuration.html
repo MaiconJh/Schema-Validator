@@ -5,64 +5,176 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Configuration · Schema Validator Docs</title>
   <meta name="description" content="Configure schema directories, runtime behavior, and safe defaults.">
-  <link rel="stylesheet" href="assets/css/github-docs.css">
-  <script defer src="assets/js/docs.js"></script>
+  <link rel="stylesheet" href="assets/css/modern-docs.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script defer src="assets/js/modern-docs.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#content">Skip to content</a>
   
-<header class="ghd-header" role="banner">
-  <a class="ghd-logo" href="index.html" aria-label="Schema Validator Docs home">
-    <span aria-hidden="true">◆</span>
-    <span>Schema Validator Docs</span>
-  </a>
-  <div class="ghd-header-controls">
-    <label class="ghd-search-wrap" for="search-input">
-      <span class="sr-only">Search documentation pages</span>
-      <input id="search-input" type="search" placeholder="Search docs pages" autocomplete="off" aria-label="Search docs pages">
-    </label>
-    <button id="theme-toggle" class="ghd-btn" type="button" aria-label="Toggle dark mode">Toggle theme</button>
-    <button id="sidebar-toggle" class="ghd-btn mobile-only" type="button" aria-controls="sidebar" aria-expanded="false">Menu</button>
-  </div>
-</header>
-  <div class="ghd-shell">
+  <!-- Header -->
+  <header class="header" role="banner">
+    <div class="header-inner">
+      <a class="header-logo" href="index.html" aria-label="Schema Validator Docs home">
+        <span class="header-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </span>
+        <span>Schema Validator</span>
+      </a>
+      <div class="header-controls">
+        <label class="header-search">
+          <input id="search-input" type="search" placeholder="Search documentation..." autocomplete="off" aria-label="Search documentation">
+        </label>
+        <button id="theme-toggle" class="header-btn" type="button" aria-label="Toggle dark mode"></button>
+        <button id="sidebar-toggle" class="header-btn mobile-only" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle menu"></button>
+      </div>
+    </div>
+  </header>
+  
+  <div class="shell">
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar" class="sidebar" aria-label="Documentation sidebar">
+      <div class="sidebar-section">
+        <p class="sidebar-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Documentation
+        </p>
+        <ul class="sidebar-nav" id="page-index">
+          <li class="sidebar-nav-item"><a href="index.html">Overview</a></li>
+          <li class="sidebar-nav-item"><a href="getting-started.html">Getting started</a></li>
+          <li class="sidebar-nav-item"><a href="installation.html">Installation</a></li>
+          <li class="sidebar-nav-item"><a href="quickstart.html">Quickstart</a></li>
+          <li class="sidebar-nav-item"><a href="configuration.html">Configuration</a></li>
+          <li class="sidebar-nav-item"><a href="schema-keywords.html">Schema keywords</a></li>
+          <li class="sidebar-nav-item"><a href="validation-behavior.html">Validation behavior</a></li>
+          <li class="sidebar-nav-item"><a href="examples.html">Examples</a></li>
+          <li class="sidebar-nav-item"><a href="architecture.html">Architecture</a></li>
+        </ul>
+      </div>
+    </nav>
     
-<nav id="sidebar" class="ghd-sidebar" aria-label="Documentation sidebar">
-  <p class="ghd-sidebar-title">Documentation</p>
-  <ul class="ghd-nav-list" id="page-index">
-    <li><a href="index.html">Overview</a></li>
-    <li><a href="getting-started.html">Getting started</a></li>
-    <li><a href="installation.html">Installation</a></li>
-    <li><a href="quickstart.html">Quickstart</a></li>
-    <li><a href="configuration.html">Configuration</a></li>
-    <li><a href="schema-keywords.html">Schema keywords</a></li>
-    <li><a href="validation-behavior.html">Validation behavior</a></li>
-    <li><a href="examples.html">Examples</a></li>
-    <li><a href="architecture.html">Architecture</a></li>
-  </ul>
-</nav>
-    <main id="content" class="ghd-content" tabindex="-1">
-      <nav class="ghd-breadcrumbs" aria-label="Breadcrumb">
-        <ol>
-          <li><a href="index.html">Docs</a></li>
-          <li>Operations</li>
-          <li aria-current="page">Configuration</li>
+    <!-- Main Content -->
+    <main id="content" class="main" tabindex="-1">
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol class="breadcrumbs-list">
+          <li class="breadcrumbs-item"><a href="index.html" class="breadcrumbs-link">Docs</a></li>
+          <li class="breadcrumbs-item"><span class="breadcrumbs-current">Configuration</span></li>
         </ol>
       </nav>
+      
+      <!-- Article -->
       <article>
-        <header class="ghd-article-header">
-          <h1>Configuration</h1>
-          <p class="lead">Configure schema directories, runtime behavior, and safe defaults.</p>
+        <header class="article-header">
+          <h1 class="article-title">Configuration</h1>
+          <p class="article-lead">Configure schema directories, runtime behavior, and safe defaults to customize Schema Validator for your project.</p>
         </header>
-        <div class="ghd-layout">
-          <div class="ghd-markdown" id="article-body">
+        
+        <div class="content-layout">
+          <div class="article-content" id="article-body">
             
-<h2>Configuration priorities</h2><ul><li>Set explicit schema/data folders.</li><li>Enable predictable error logging.</li><li>Separate development and production schemas.</li></ul>
-<h2>Common options</h2><h3>Schema path configuration</h3><p>Define where schemas are discovered and reloaded.</p><h3>Error verbosity</h3><p>Use concise end-user output and detailed operator logs.</p><h3>Reload strategy</h3><p>Prefer explicit reload operations in production.</p>
-<h2>Next step</h2><p>Continue with <a href="schema-keywords.html">Schema keywords</a>.</p>
+            <h2>Configuration Priorities</h2>
+            <p>When configuring Schema Validator, focus on these key areas for optimal performance:</p>
+            
+            <div class="card">
+              <h3 class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+                Schema Path Configuration
+              </h3>
+              <p class="card-description">Define where schemas are discovered and loaded. Configure explicit paths for better control over schema management.</p>
+            </div>
+            
+            <div class="card">
+              <h3 class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/></svg>
+                Error Verbosity
+              </h3>
+              <p class="card-description">Configure error output levels - use concise end-user messages or detailed operator logs for debugging.</p>
+            </div>
+            
+            <div class="card">
+              <h3 class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                Reload Strategy
+              </h3>
+              <p class="card-description">Prefer explicit reload operations in production for stability, or automatic reloading during development.</p>
+            </div>
+            
+            <h2>Common Options</h2>
+            
+            <h3>Schema Path Configuration</h3>
+            <p>Define where schemas are discovered and reloaded. The plugin scans these directories for schema files on startup and when triggered.</p>
+            
+            <div class="code-block">
+              <pre><code>schema:
+  path: ./plugins/schema-validator/schemas
+  watch: false
+  reloadOnChange: false</code></pre>
+            </div>
+            
+            <h3>Error Verbosity</h3>
+            <p>Control how detailed error messages are. Choose between user-friendly messages or developer-focused debugging output.</p>
+            
+            <div class="code-block">
+              <pre><code>logging:
+  level: info  # trace, debug, info, warn, error
+  verboseErrors: false
+  includePaths: true</code></pre>
+            </div>
+            
+            <h3>Reload Strategy</h3>
+            <p>Configure when schemas should be reloaded to balance performance and development workflow.</p>
+            
+            <div class="code-block">
+              <pre><code>runtime:
+  autoReload: false  # Recommended for production
+  cacheSchemas: true
+  maxCacheSize: 100</code></pre>
+            </div>
+            
+            <div class="callout callout-info">
+              <svg class="callout-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>
+              <div class="callout-content">
+                <span class="callout-title">Development vs Production</span>
+                <p>Enable auto-reload during development for faster iteration. Disable it in production for better performance and stability.</p>
+              </div>
+            </div>
+            
+            <h2>Next Steps</h2>
+            <p>With configuration basics covered, learn about the available schema keywords:</p>
+            
+            <!-- Navigation Arrows -->
+            <div class="nav-arrows">
+              <a href="quickstart.html" class="nav-arrow prev">
+                <span class="nav-arrow-label">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                  Previous
+                </span>
+                <span class="nav-arrow-title">← Quickstart</span>
+              </a>
+              <a href="schema-keywords.html" class="nav-arrow next">
+                <span class="nav-arrow-label">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  Next
+                </span>
+                <span class="nav-arrow-title">Schema keywords →</span>
+              </a>
+            </div>
+            
           </div>
-          <aside class="ghd-toc" aria-label="Table of contents">
-            <h2>In this article</h2>
+          
+          <!-- Table of Contents -->
+          <aside class="toc" aria-label="Table of contents">
+            <h2 class="toc-title">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+              On this page
+            </h2>
             <nav id="toc"></nav>
           </aside>
         </div>
