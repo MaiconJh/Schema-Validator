@@ -1,87 +1,39 @@
-# Schema Validator
+# Schema-Validator
 
-> **Version:** 0.3.1-SNAPSHOT
+Schema-Validator is a Paper/Skript add-on that validates JSON or YAML data files against a schema file from Skript code.
 
-Schema Validator is a Minecraft (Paper/Spigot) plugin with Skript syntax for validating YAML/JSON data against schema files.
+This documentation was reconstructed from source code in this repository (not from prior docs). If behavior in docs and code diverge, code is authoritative.
 
-## Compatibility
+## Start here
 
-| Component | Version |
-|-----------|---------|
-| Minecraft | 1.19+ (1.20.x recommended) |
-| Skript | 2.8+ |
-| Server | Paper 1.19+ / Spigot 1.19+ |
-| Java | 17+ |
+- [Quickstart](docs/quickstart.md)
+- [Installation](docs/installation.md)
+- [Configuration](docs/configuration.md)
+- [Guides](docs/guides/README.md)
+- [Reference](docs/reference/README.md)
+- [Explanation](docs/explanation/README.md)
 
-## Documentation Policy
+## What the plugin actually exposes
 
-- Canonical behavior contract: [`docs/CONTRACT.md`](docs/CONTRACT.md)
-- Docs index and structure: [`docs/README.md`](docs/README.md)
+- Skript effect: `validate yaml %string% using schema %string%`
+- Skript effect: `validate json %string% using schema %string%`
+- Skript expression: `last schema validation errors`
+- Automatic schema loading from a configured folder during plugin startup
+- Validation engine for object, array, and primitive schema types with composition/conditional keywords and selected constraints
 
-If this README conflicts with the contract, `docs/CONTRACT.md` is authoritative.
+## Runtime constraints you should know
 
-## Implemented Core Capabilities
+- The Skript validation effect loads data files as `Map<String, Object>` roots; top-level arrays/scalars are not supported in that path.
+- `$ref` resolution is implemented but the Skript effect path uses `new ValidationService()` (without resolver wiring), so `$ref` is not resolved there.
+- Array size/uniqueness keywords (`minItems`, `maxItems`, `uniqueItems`) are recognized as supported keywords metadata, but are not enforced by `ArrayValidator`.
 
-- Validate YAML/JSON files from Skript using:
-  - `validate yaml %string% using schema %string%`
-  - `validate json %string% using schema %string%`
-- Retrieve latest validation errors using:
-  - `last schema validation errors`
-- Schema keyword subset including:
-  - object keywords (`properties`, `required`, `additionalProperties`, `patternProperties`)
-  - array `items`
-  - string/number constraints (`minLength`, `maxLength`, `pattern`, `format`, `minimum`, `maximum`, `multipleOf`, etc.)
-  - `enum`, `allOf`, `anyOf`, `oneOf`, `not`
-  - conditional validation (`if`, `then`, `else`)
-- Custom Minecraft ID format validation:
-  - `minecraft-item`, `minecraft-block`, `minecraft-entity`, etc.
+## Source mapping
 
-## Important Limitations
+1. Plugin bootstrap, auto-load, config wiring: `SchemaValidatorPlugin.onEnable()`, `autoLoadSchemas()`.  
+2. Skript syntax registration: `SkriptSyntaxRegistration.register()`.  
+3. Skript effect + expression behavior: `EffValidateData`, `ExprLastValidationErrors`, `SkriptValidationBridge`.  
+4. Data loading root type: `DataFileLoader.load()` uses `TypeReference<Map<String, Object>>`.  
+5. `$ref` mechanism and resolver-aware path: `ObjectValidator.validate()` + `ValidationService(SchemaRefResolver)` constructor.  
+6. Array enforcement scope: `ArrayValidator.validate()`.
 
-- Default validation entrypoint expects object-like root data.
-- `$ref` exists but is only active when validation uses resolver wiring (`ValidationService(refResolver)`).
-- `minItems`, `maxItems`, and `uniqueItems` are not currently enforced.
-
-## Installation
-
-1. Build with Gradle:
-
-```bash
-./gradlew build
-```
-
-2. Copy generated JAR to your server `plugins/` directory.
-3. Ensure Skript is installed.
-4. Start/restart the server.
-
-## Runtime Config
-
-`plugins/Schema-Validator/config.yml` supports:
-
-```yaml
-schema-directory: "schemas"
-auto-load: true
-cache-enabled: true
-validation-on-load: true
-```
-
-See [`docs/guides/integration.md`](docs/guides/integration.md) for details.
-
-## Quick Links
-
-- [Quick Start](docs/quickstart.md)
-- [Documentation Index](docs/README.md)
-- [API Reference](docs/api-reference.md)
-- [Tutorials](docs/tutorials/README.md)
-- [Troubleshooting](docs/TROUBLESHOOTING.md)
-
-
-[![SkriptHubViewTheDocs](http://skripthub.net/static/addon/ViewTheDocsButton.png)](http://skripthub.net/docs/?addon=Schema-Validator)
-
-## Contributing
-
-Contributions are welcome! See [`CONTRIBUTING.md`](CONTRIBUTING.md) for guidelines.
-
-## License
-
-This project is licensed under the MIT License. See [`LICENSE`](LICENSE) for details.
+[← Previous](README.md) | [Next →](docs/README.md) | [Home](README.md)

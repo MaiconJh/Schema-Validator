@@ -1,77 +1,27 @@
 # Installation
 
-> Canonical behavior contract: [CONTRACT.md](CONTRACT.md).
-
-Learn how to install the Schema Validator plugin on your Minecraft server.
-
-## Requirements
-
-| Requirement | Version |
-|-------------|---------|
-| Minecraft Server | Paper 1.21+ or Spigot 1.21+ |
-| Skript | 2.9+ |
-| Java | 21 or higher |
-
-## Installation Steps
-
-### Step 1: Build the Plugin
-
-Clone the repository and build:
+## Build from source
 
 ```bash
-git clone https://github.com/your-repo/Schema-Validator.git
-cd Schema-Validator
 ./gradlew build
 ```
 
-The compiled JAR will be at `build/libs/Schema-Validator-0.1.0-SNAPSHOT.jar`
+This project is configured for Java 21 toolchain and Paper/Skript compile-only APIs.
 
-### Step 2: Install the Plugin
+## Deploy
 
-1. Copy the JAR file to `plugins/` on your server
-2. Start or restart the server
-3. The plugin will create the necessary folders
+1. Copy built JAR from `build/libs/` to your server `plugins/` folder.
+2. Ensure Skript is installed (hard dependency).
+3. Start server.
 
-### Step 3: Install Skript (if not installed)
+## Verify load
 
-Download Skript from:
-- [Skript Hub](https://skripthub.github.io/)
-- [Github](https://github.com/SkriptLang/Skript)
+On enable, plugin logs configuration and schema autoload summary.
 
-Place it in `plugins/` and restart.
+## Source mapping
 
-### Step 4: Verify Installation
+1. Build settings and dependencies: `build.gradle`, `plugin.yml`.  
+2. Required dependency (`depend: Skript`): `src/main/resources/plugin.yml`.  
+3. Startup behavior/logs: `SchemaValidatorPlugin.onEnable()`, `PluginConfig.load()`.
 
-Run this command:
-
-```
-/pl Schema-Validator
-```
-
-You should see the plugin in the list.
-
----
-
-## Folder Structure
-
-After installation, the plugin creates:
-
-```
-plugins/
-└── Schema-Validator/
-    ├── config.yml           # Plugin configuration
-    └── schemas/             # Your schema files
-        └── (created automatically if missing)
-```
-
----
-
-## Next Steps
-
-1. [Quick Start](quickstart.md) - Learn the basics
-2. [Configuration](configuration.md) - Configure the plugin
-3. [FAQ](faq.md) - Common questions
-
----
-
-[← Back](README.md) | [Next: Quick Start →](quickstart.md)
+[← Previous](quickstart.md) | [Next →](configuration.md) | [Home](../README.md)
