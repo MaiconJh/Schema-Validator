@@ -1,83 +1,51 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="1100" height="320" viewBox="0 0 1100 320" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <title>Validation Flow Overview</title>
-  <desc>Schema-Validator Validation Flow Diagram</desc>
-
-  <!-- Background -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="300" viewBox="0 0 1100 300">
   <rect width="100%" height="100%" fill="#0d1117"/>
-
-  <!-- Title -->
-  <text x="550" y="35" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#e6edf3" text-anchor="middle">Validation Flow Overview</text>
+  <text x="550" y="30" font-family="Arial" font-size="18" font-weight="bold" fill="#e6edf3" text-anchor="middle">Validation Flow Overview</text>
+  <line x1="100" y1="45" x2="1000" y2="45" stroke="#30363d" stroke-width="2"/>
   
-  <!-- Subtitle line -->
-  <line x1="100" y1="50" x2="1000" y2="50" stroke="#30363d" stroke-width="2"/>
-
-  <!-- Main Flow Boxes -->
-  <g font-family="Arial, sans-serif" font-size="14" fill="#e6edf3" text-anchor="middle">
-
-    <!-- Step 1: Plugin Load -->
-    <rect x="40" y="90" width="180" height="75" rx="8" fill="#1c3a5e" stroke="#58a6ff" stroke-width="3"/>
-    <text x="130" y="120" font-weight="bold">Plugin Load</text>
-    <text x="130" y="145" font-size="12" fill="#8b949e">(Startup)</text>
-
-    <!-- Step 2: Skript Event -->
-    <rect x="280" y="90" width="180" height="75" rx="8" fill="#1c3a5e" stroke="#58a6ff" stroke-width="3"/>
-    <text x="370" y="120" font-weight="bold">Skript Event</text>
-    <text x="370" y="145" font-size="12" fill="#8b949e">(Trigger)</text>
-
-    <!-- Step 3: Load Schema & Data -->
-    <rect x="520" y="90" width="180" height="75" rx="8" fill="#1c3a5e" stroke="#58a6ff" stroke-width="3"/>
-    <text x="610" y="120" font-weight="bold">Load Schema</text>
-    <text x="610" y="145" font-size="12" fill="#8b949e">and Data</text>
-
-    <!-- Step 4: Run Validation Engine -->
-    <rect x="760" y="90" width="180" height="75" rx="8" fill="#1a4a2e" stroke="#3fb950" stroke-width="3"/>
-    <text x="850" y="120" font-weight="bold">Run Validation</text>
-    <text x="850" y="145" font-size="12" fill="#8b949e">Engine</text>
-
-    <!-- Step 5: Return Result -->
-    <rect x="760" y="200" width="180" height="65" rx="8" fill="#4a1a1a" stroke="#f85149" stroke-width="3"/>
-    <text x="850" y="228" font-weight="bold">Return Result</text>
-    <text x="850" y="250" font-size="12" fill="#8b949e">and Errors</text>
-  </g>
-
-  <!-- Connecting Arrows - Main Flow -->
-  <g stroke="#58a6ff" stroke-width="3" fill="none">
-    <!-- Arrow 1: Plugin Load to Skript Event -->
-    <line x1="220" y1="127" x2="265" y2="127"/>
-    <polygon points="265,122 280,127 265,132" fill="#58a6ff"/>
-    
-    <!-- Arrow 2: Skript Event to Load Schema -->
-    <line x1="460" y1="127" x2="505" y2="127"/>
-    <polygon points="505,122 520,127 505,132" fill="#58a6ff"/>
-    
-    <!-- Arrow 3: Load Schema to Validation Engine -->
-    <line x1="700" y1="127" x2="745" y2="127"/>
-    <polygon points="745,122 760,127 745,132" fill="#58a6ff"/>
-    
-    <!-- Arrow 4: Validation Engine to Return Result -->
-    <line x1="850" y1="165" x2="850" y2="190"/>
-    <polygon points="845,190 850,200 855,190" fill="#f85149"/>
-  </g>
-
-  <!-- Labels for arrows -->
-  <g font-family="Arial, sans-serif" font-size="12" fill="#8b949e" text-anchor="middle">
-    <text x="250" y="118">triggers</text>
-    <text x="490" y="118">loads</text>
-    <text x="730" y="118">processes</text>
-    <text x="890" y="180" fill="#f85149">returns</text>
-  </g>
-
-  <!-- Legend -->
-  <g font-family="Arial, sans-serif" font-size="12" fill="#8b949e">
-    <rect x="40" y="270" width="16" height="16" rx="3" fill="#1c3a5e" stroke="#58a6ff" stroke-width="2"/>
-    <text x="65" y="283">Input/Trigger</text>
-    
-    <rect x="180" y="270" width="16" height="16" rx="3" fill="#1a4a2e" stroke="#3fb950" stroke-width="2"/>
-    <text x="205" y="283">Processing</text>
-    
-    <rect x="330" y="270" width="16" height="16" rx="3" fill="#4a1a1a" stroke="#f85149" stroke-width="2"/>
-    <text x="355" y="283">Output</text>
-  </g>
-
+  <rect x="40" y="80" width="180" height="70" rx="8" fill="#1c3a5e" stroke="#58a6ff" stroke-width="3"/>
+  <text x="130" y="115" font-family="Arial" font-size="14" font-weight="bold" fill="#e6edf3" text-anchor="middle">Plugin Load</text>
+  <text x="130" y="138" font-family="Arial" font-size="12" fill="#8b949e" text-anchor="middle">(Startup)</text>
+  
+  <rect x="280" y="80" width="180" height="70" rx="8" fill="#1c3a5e" stroke="#58a6ff" stroke-width="3"/>
+  <text x="370" y="115" font-family="Arial" font-size="14" font-weight="bold" fill="#e6edf3" text-anchor="middle">Skript Event</text>
+  <text x="370" y="138" font-family="Arial" font-size="12" fill="#8b949e" text-anchor="middle">(Trigger)</text>
+  
+  <rect x="520" y="80" width="180" height="70" rx="8" fill="#1c3a5e" stroke="#58a6ff" stroke-width="3"/>
+  <text x="610" y="115" font-family="Arial" font-size="14" font-weight="bold" fill="#e6edf3" text-anchor="middle">Load Schema</text>
+  <text x="610" y="138" font-family="Arial" font-size="12" fill="#8b949e" text-anchor="middle">and Data</text>
+  
+  <rect x="760" y="80" width="180" height="70" rx="8" fill="#1a4a2e" stroke="#3fb950" stroke-width="3"/>
+  <text x="850" y="115" font-family="Arial" font-size="14" font-weight="bold" fill="#e6edf3" text-anchor="middle">Run Validation</text>
+  <text x="850" y="138" font-family="Arial" font-size="12" fill="#8b949e" text-anchor="middle">Engine</text>
+  
+  <rect x="760" y="180" width="180" height="60" rx="8" fill="#4a1a1a" stroke="#f85149" stroke-width="3"/>
+  <text x="850" y="208" font-family="Arial" font-size="14" font-weight="bold" fill="#e6edf3" text-anchor="middle">Return Result</text>
+  <text x="850" y="228" font-family="Arial" font-size="12" fill="#8b949e" text-anchor="middle">and Errors</text>
+  
+  <line x1="220" y1="115" x2="280" y2="115" stroke="#58a6ff" stroke-width="3"/>
+  <polygon points="280,110 295,115 280,120" fill="#58a6ff"/>
+  
+  <line x1="460" y1="115" x2="520" y2="115" stroke="#58a6ff" stroke-width="3"/>
+  <polygon points="520,110 535,115 520,120" fill="#58a6ff"/>
+  
+  <line x1="700" y1="115" x2="760" y2="115" stroke="#58a6ff" stroke-width="3"/>
+  <polygon points="760,110 775,115 760,120" fill="#58a6ff"/>
+  
+  <line x1="850" y1="150" x2="850" y2="180" stroke="#f85149" stroke-width="3"/>
+  <polygon points="845,180 850,195 855,180" fill="#f85149"/>
+  
+  <text x="250" y="105" font-family="Arial" font-size="11" fill="#8b949e" text-anchor="middle">triggers</text>
+  <text x="490" y="105" font-family="Arial" font-size="11" fill="#8b949e" text-anchor="middle">loads</text>
+  <text x="730" y="105" font-family="Arial" font-size="11" fill="#8b949e" text-anchor="middle">processes</text>
+  <text x="890" y="165" font-family="Arial" font-size="11" fill="#f85149" text-anchor="middle">returns</text>
+  
+  <rect x="40" y="250" width="14" height="14" rx="2" fill="#1c3a5e" stroke="#58a6ff" stroke-width="2"/>
+  <text x="62" y="262" font-family="Arial" font-size="11" fill="#8b949e">Input/Trigger</text>
+  
+  <rect x="180" y="250" width="14" height="14" rx="2" fill="#1a4a2e" stroke="#3fb950" stroke-width="2"/>
+  <text x="202" y="262" font-family="Arial" font-size="11" fill="#8b949e">Processing</text>
+  
+  <rect x="320" y="250" width="14" height="14" rx="2" fill="#4a1a1a" stroke="#f85149" stroke-width="2"/>
+  <text x="342" y="262" font-family="Arial" font-size="11" fill="#8b949e">Output</text>
 </svg>
