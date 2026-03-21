@@ -1,127 +1,154 @@
-# Reference: Examples and schema construction (code-verified)
+# Reference: Examples and Schema Construction
 
-This page is a full rewrite of the examples section based on:
-
-- Source code in `src/main/java/**` (parser + validators + Skript bridge).
-- Example assets in `src/main/resources/examples/**`.
-
-It is organized in the requested phased workflow and only documents behavior that is implemented.
-
-## Phase 1 — Schema behavior analysis map
-
-## 1) Schema node model
-
-All schema nodes are parsed into the `Schema` model, with these fields:
-
-- Type and structure: `type`, `properties`, `patternProperties`, `items`, `required`, `additionalProperties`.
-- Primitive constraints: `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `minLength`, `maxLength`, `pattern`, `format`, `multipleOf`, `enum`.
-- Composition/conditional: `allOf`, `anyOf`, `oneOf`, `not`, `if`, `then`, `else`.
-- Metadata/storage-only fields: `version`, `compatibility`, `$ref`.
-
-Source: `Schema` class fields/getters and constructor defaults (empty maps/lists when null).【F:src/main/java/com/maiconjh/schemacr/schemes/Schema.java†L15-L157】
-
-## 2) Supported schema `type` values
-
-The parser maps `type` to:
-
-- `object`, `array`, `string`, `number`, `integer`, `boolean`, `null`, `any`
-
-Source: `SchemaType` enum and loader type parsing path.【F:src/main/java/com/maiconjh/schemacr/schemes/SchemaType.java†L6-L15】【F:src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java†L142-L318】
-
-## 3) Parse defaults and optional behavior
-
-Defaults when keyword is omitted:
-
-- `type`: defaults to `any`.
-- `additionalProperties`: defaults to `true`.
-- `required`: defaults to empty list.
-- `properties` / `patternProperties`: default to empty map.
-- `enum`: default empty list (no enum restriction).
-
-Regex patterns in schema are compiled during parsing; invalid regex is logged and ignored for that constraint.
-
-Sources: loader parsing + `Schema` constructor null normalization.【F:src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java†L143-L214】【F:src/main/java/com/maiconjh/schemacr/schemes/Schema.java†L121-L157】
-
-## 4) Validation flow map
-
-Runtime validator dispatch:
-
-- `OBJECT` → `ObjectValidator`
-- `ARRAY` → `ArrayValidator`
-- all other types → `PrimitiveValidator`
-
-Object validation order:
-
-1. Resolve `$ref` **only if** resolver is wired.
-2. Ensure runtime value is `Map`.
-3. Apply `allOf`, `anyOf`, `oneOf`, `not`, `if/then/else`.
-4. Check `required`.
-5. Validate declared `properties` that are present.
-6. For unknown keys, try `patternProperties`; if no match and `additionalProperties: false`, fail.
-
-Sources: `ValidationService`, `ValidatorDispatcher`, `ObjectValidator`.【F:src/main/java/com/maiconjh/schemacr/core/ValidationService.java†L22-L48】【F:src/main/java/com/maiconjh/schemacr/validation/ValidatorDispatcher.java†L12-L27】【F:src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java†L30-L254】
-
-Primitive validation behavior:
-
-- `any` always passes.
-- `integer` accepts integral values (including numeric types with no fractional part).
-- `enum` short-circuits: when `enum` exists, other primitive constraints are not evaluated after enum check.
-- Unknown `format` values pass (no failure).
-
-Sources: `PrimitiveValidator`, `FormatValidator`.【F:src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java†L18-L145】【F:src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java†L218-L259】
-
-Array validation behavior:
-
-- Value must be a `List`.
-- `items` is applied recursively per element.
-- `minItems`, `maxItems`, `uniqueItems` are not enforced by `ArrayValidator`.
-
-Sources: `ArrayValidator` and keyword registry mismatch (recognized vs enforced).【F:src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java†L13-L36】【F:src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java†L75-L94】
-
-## 5) Interdependencies that affect examples
-
-- `$ref` only works in resolver-aware paths. The Skript effect creates `new ValidationService()` without resolver, so `$ref` inside the `validate yaml/json ...` effect is not resolved there.
-- Data loaded by the Skript effect is hard-typed to `Map<String,Object>`, so top-level array/scalar data files are not supported in that path.
-
-Sources: `EffValidateData` and `DataFileLoader`.【F:src/main/java/com/maiconjh/schemacr/integration/EffValidateData.java†L57-L61】【F:src/main/java/com/maiconjh/schemacr/integration/DataFileLoader.java†L19-L26】
+This document provides a complete reference for building validation schemas using the Schema-Validator library. All content is based on the existing source code in `src/main/java/` and demonstrates the actual library implementation.
 
 ---
 
-## Phase 2 — Example identification and audit
+## 1. Schema Model
 
-## Primary example corpus audited
+The Schema-Validator library uses the [`Schema`](src/main/java/com/maiconjh/schemacr/schemes/Schema.java:13) class to represent schema nodes. This class contains the following main fields:
 
-- Schemas: `src/main/resources/examples/schemas/*.json|*.yml`
-- Data files: `src/main/resources/examples/*.yml`
-- Skript examples: `src/main/resources/examples/*.sk`
+### 1.1 Structure and Type
 
-Representative assets used below:
+| Field | Description |
+|-------|-------------|
+| `type` | Data type (object, array, string, number, integer, boolean, null, any) |
+| `properties` | Property map for objects |
+| `patternProperties` | Properties with regex patterns |
+| `itemSchema` | Schema for array items |
+| `requiredFields` | List of required fields |
+| `additionalProperties` | Allows undeclared properties |
 
-- `simple-block-schema.json` + `simple-block-example.yml`
-- `data-types-formats.schema.json` + `formats-valid-examples.yml` / `formats-invalid-examples.yml`
-- `conditional-validation.schema.json` + valid/invalid conditional YAML samples
-- `player-profile.schema.json` and `.yml`
-- `player-with-address.schema.json` (`$ref`/definitions case)
+### 1.2 Primitive Constraints
 
-Sources: files under `src/main/resources/examples`.【F:src/main/resources/examples/schemas/simple-block-schema.json†L1-L59】【F:src/main/resources/examples/simple-block-example.yml†L1-L21】【F:src/main/resources/examples/schemas/data-types-formats.schema.json†L1-L104】【F:src/main/resources/examples/formats-valid-examples.yml†L1-L57】【F:src/main/resources/examples/formats-invalid-examples.yml†L1-L162】【F:src/main/resources/examples/schemas/conditional-validation.schema.json†L1-L152】【F:src/main/resources/examples/schemas/player-with-address.schema.json†L1-L74】
+| Field | Description |
+|-------|-------------|
+| `minimum`, `maximum` | Numeric limits |
+| `exclusiveMinimum`, `exclusiveMaximum` | Exclusive limits |
+| `minLength`, `maxLength` | String length |
+| `pattern` | Regex for validation |
+| `format` | Format (email, uri, date-time, etc.) |
+| `multipleOf` | Valid multiple for numbers |
+| `enumValues` | Allowed values |
 
-## Corrections made from audit
+### 1.3 Composition and Conditionals
 
-1. Some `.sk` examples use syntax not registered by this plugin (for example `validate {_player} against {_schema}`), while implemented syntax is file-path based (`validate yaml/json %string% using schema %string%`).
-2. `$ref` examples in schema files are valid as schema assets, but are not reproducible through the current Skript effect path due to resolver wiring limitation.
-3. Keywords like `const` may appear in examples (`conditional-validation.schema.json`, `complex-item.schema.json`) but are not enforced by current validators.
+| Field | Description |
+|-------|-------------|
+| `allOf` | Must validate against all schemas |
+| `anyOf` | Must validate against at least one |
+| `oneOf` | Must validate against exactly one |
+| `notSchema` | Must not validate against this schema |
+| `ifSchema`, `thenSchema`, `elseSchema` | Conditional validation |
 
-Sources: syntax registration, effect implementation, keyword/enforcement behavior, example schemas containing `const` and `$ref`.【F:src/main/java/com/maiconjh/schemacr/integration/SkriptSyntaxRegistration.java†L14-L22】【F:src/main/java/com/maiconjh/schemacr/integration/EffValidateData.java†L57-L63】【F:src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java†L115-L116】【F:src/main/resources/examples/schemas/conditional-validation.schema.json†L35-L84】【F:src/main/resources/examples/schemas/player-with-address.schema.json†L24-L36】
+### 1.4 References and Metadata
+
+| Field | Description |
+|-------|-------------|
+| `ref` | `$ref` reference for external schemas |
+| `version` | Schema version |
+| `compatibility` | Compatibility (e.g., "1.21", "1.20") |
 
 ---
 
-## Phase 3 — Reconstructed examples (step-by-step)
+## 2. Supported Schema Types
 
-All steps below use currently implemented Skript syntax and executable file paths.
+The library supports the following types defined in the [`SchemaType`](src/main/java/com/maiconjh/schemacr/schemes/SchemaType.java:6) enum:
 
-## Example A: Basic object + array validation (JSON schema and YAML data)
+- `OBJECT` - Object/Map
+- `ARRAY` - Array/List
+- `STRING` - String/Text
+- `NUMBER` - Number (integer or decimal)
+- `INTEGER` - Integer
+- `BOOLEAN` - Boolean (true/false)
+- `NULL` - Null
+- `ANY` - Any type (always passes)
 
-### Schema (`player-profile.schema.json`)
+---
+
+## 3. Validation Flow
+
+### 3.1 Validator Dispatch
+
+The [`ValidatorDispatcher`](src/main/java/com/maiconjh/schemacr/validation/ValidatorDispatcher.java) selects the correct validator based on schema type:
+
+- `OBJECT` → [`ObjectValidator`](src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java)
+- `ARRAY` → [`ArrayValidator`](src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java)
+- Other types → [`PrimitiveValidator`](src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java)
+
+### 3.2 Object Validation Order
+
+1. Resolve `$ref` (only if `SchemaRefResolver` is present)
+2. Verify value is a `Map`
+3. Apply `allOf`, `anyOf`, `oneOf`, `not`, `if/then/else`
+4. Check required fields
+5. Validate declared properties that are present
+6. For unknown keys, try `patternProperties`; if no match and `additionalProperties: false`, fail
+
+### 3.3 Primitive Validation
+
+- `ANY` always passes
+- `INTEGER` accepts integral values (Integer, Long, Short, Byte or numbers with no decimal part)
+- `enum` takes precedence: when present, other primitive constraints are not evaluated
+- Unknown formats pass (don't cause failure)
+
+### 3.4 Array Validation
+
+- Value must be a `List`
+- `items` is applied recursively per element
+- `minItems`, `maxItems`, `uniqueItems` are **not enforced** currently
+
+---
+
+## 4. Supported Formats
+
+The library supports the following formats through [`FormatValidator`](src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java:32):
+
+### Standard JSON Schema Formats
+
+| Format | Description |
+|--------|-------------|
+| `date-time` | RFC 3339 date-time |
+| `date` | RFC 3339 full-date (YYYY-MM-DD) |
+| `time` | RFC 3339 full-time (HH:MM:SS) |
+| `duration` | ISO 8601 duration |
+| `email` | RFC 5322 email |
+| `idn-email` | Internationalized email |
+| `hostname` | RFC 1123 hostname |
+| `idn-hostname` | Internationalized hostname |
+| `ipv4` | IPv4 address |
+| `ipv6` | IPv6 address |
+| `uri` | Absolute URI |
+| `uri-reference` | Absolute or relative URI |
+| `uri-template` | RFC 6570 URI Template |
+| `json-pointer` | RFC 6901 JSON Pointer |
+| `relative-json-pointer` | Relative JSON Pointer |
+| `uuid` | UUID (RFC 4122) |
+| `regex` | ECMA 262 regular expression |
+
+### Minecraft-Specific Formats
+
+| Format | Description | Example |
+|--------|-------------|---------|
+| `minecraft-item` | Item ID (namespace:name) | `minecraft:diamond_sword` |
+| `minecraft-block` | Block ID | `minecraft:gold_ore` |
+| `minecraft-entity` | Entity ID | `minecraft:zombie` |
+| `minecraft-attribute` | Attribute ID | `minecraft:generic.max_health` |
+| `minecraft-effect` | Effect ID | `minecraft:speed` |
+| `minecraft-enchantment` | Enchantment ID | `minecraft:efficiency` |
+| `minecraft-biome` | Biome ID | `minecraft:plains` |
+| `minecraft-dimension` | Dimension ID | `minecraft:overworld` |
+| `minecraft-particle` | Particle ID | `minecraft:blockcrack_15232` |
+| `minecraft-sound` | Sound ID | `minecraft:block.gold_ore.break` |
+| `minecraft-potion` | Potion ID | `minecraft:strength` |
+| `minecraft-recipe` | Recipe ID | `minecraft:diamond_sword` |
+| `minecraft-tag` | Tag (#namespace:name) | `#minecraft:pickaxes` |
+
+---
+
+## 5. Practical Schema Building Examples
+
+### 5.1 Simple Object with Properties
 
 ```json
 {
@@ -135,159 +162,30 @@ All steps below use currently implemented Skript syntax and executable file path
 }
 ```
 
-Source file exists as-is.【F:src/main/resources/examples/schemas/player-profile.schema.json†L1-L11】
+Source: [`player-profile.schema.json`](src/main/resources/examples/schemas/player-profile.schema.json:1)
 
-### Skript command
+### 5.2 Strict Object (Closed Contract)
 
-```skript
-command /validateprofile:
-    trigger:
-        validate yaml "plugins/Schema-Validator/examples/profile.yml" using schema "plugins/Schema-Validator/examples/schemas/player-profile.schema.json"
-        set {_errors::*} to last schema validation errors
-        if size of {_errors::*} is 0:
-            send "Profile is valid" to player
-        else:
-            loop {_errors::*}:
-                send "- %loop-value%" to player
-```
-
-### Expected behavior
-
-- Passes when YAML root is an object and field types match.
-- Fails with type errors when mismatched (for example `level: "ten"`).
-- Missing fields do **not** fail here because schema has no `required` list.
-
-Behavior source: object/property/type rules and no required enforcement without `required`.【F:src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java†L188-L216】【F:src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java†L22-L43】
-
-## Example B: Required + enum + format + numeric constraints
-
-Use `simple-block-schema.json` and `simple-block-example.yml`.
-
-### Why this is useful
-
-This pair demonstrates these enforced rules together:
-
-- `required`
-- nested `properties`
-- `enum`
-- `format: minecraft-block`
-- numeric `minimum`
-
-Sources: schema and format validator entries.【F:src/main/resources/examples/schemas/simple-block-schema.json†L1-L59】【F:src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java†L148-L157】
-
-### Skript command
-
-```skript
-validate yaml "plugins/Schema-Validator/examples/simple-block-example.yml" using schema "plugins/Schema-Validator/examples/schemas/simple-block-schema.json"
-set {_errors::*} to last schema validation errors
-```
-
-### Expected output profile
-
-- Empty error list for the provided sample.
-- If `verification.block-type` is malformed (for example `diamond_ore` without namespace), expect a format error.
-- If `info.category` is outside enum, expect enum error.
-
-Enforcement source: primitive enum/format and required traversal logic.【F:src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java†L46-L138】【F:src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java†L188-L204】
-
-## Example C: Advanced string formats and `multipleOf`
-
-Use `data-types-formats.schema.json` with `formats-valid-examples.yml` and `formats-invalid-examples.yml`.
-
-### Command
-
-```skript
-validate yaml "plugins/Schema-Validator/examples/formats-valid-examples.yml" using schema "plugins/Schema-Validator/examples/schemas/data-types-formats.schema.json"
-set {_errors::*} to last schema validation errors
-```
-
-### What to observe
-
-- Required keys: `playerId`, `email`, `website`, `registeredAt`, `ipAddress`.
-- `multipleOf` is enforced for decimal and integer values.
-- Unknown format names are ignored (for example `unix-time` does not fail format by itself in current implementation).
-
-Sources: example schema includes `unix-time`; validator default for unknown format is pass.【F:src/main/resources/examples/schemas/data-types-formats.schema.json†L58-L66】【F:src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java†L254-L259】
-
-## Example D: Conditional composition (`oneOf`, `not`, `if/then/else`) and caveats
-
-Use `conditional-validation.schema.json`.
-
-### Command
-
-```skript
-validate yaml "plugins/Schema-Validator/examples/conditional-valid-examples.yml" using schema "plugins/Schema-Validator/examples/schemas/conditional-validation.schema.json"
-set {_errors::*} to last schema validation errors
-```
-
-### Important caveat (must know)
-
-This schema uses `const` inside `oneOf` branches, but `const` is not enforced by current validators. So branches that rely on `const` as discriminator may behave differently than standard JSON Schema expectations.
-
-Sources: schema includes `const`; `const` only appears in keyword registry (no validator enforcement).【F:src/main/resources/examples/schemas/conditional-validation.schema.json†L35-L84】【F:src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java†L115-L116】【F:src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java†L52-L186】
-
-## Example E: `patternProperties` architecture for dynamic keys
-
-Use `custom-block-schema.json` and `complete-custom-block-example.yml`.
-
-### Why this architecture matters
-
-It validates objects where top-level keys are dynamic (like block IDs) by regex instead of fixed property names.
-
-### Command
-
-```skript
-validate yaml "plugins/Schema-Validator/examples/complete-custom-block-example.yml" using schema "plugins/Schema-Validator/examples/schemas/custom-block-schema.json"
-set {_errors::*} to last schema validation errors
-```
-
-### Expected behavior
-
-- Top-level key names are checked against regex patterns.
-- Matching keys are validated against nested object schema.
-- Non-matching unknown keys fail when `additionalProperties: false`.
-
-Source: `patternProperties` matching and fallback to `additionalProperties` in `ObjectValidator`.【F:src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java†L218-L251】【F:src/main/resources/examples/schemas/custom-block-schema.json†L1-L8】
-
-## Example F: `$ref` schema composition (Java service path only)
-
-Use `player-with-address.schema.json`.
-
-### What works
-
-- The loader parses `definitions` and `$ref`.
-- Resolution works when validation uses `ValidationService(SchemaRefResolver)`.
-
-### What does not work through Skript effect
-
-- The effect uses `new ValidationService()` (without resolver), so `$ref` remains unresolved there.
-
-Sources: resolver-aware constructor vs effect constructor call.【F:src/main/java/com/maiconjh/schemacr/core/ValidationService.java†L22-L36】【F:src/main/java/com/maiconjh/schemacr/integration/EffValidateData.java†L60-L63】【F:src/main/resources/examples/schemas/player-with-address.schema.json†L24-L36】
-
----
-
-## Schema construction cookbook (by architecture)
-
-## 1) Strict object contract
-
-Use when you want fully known keys.
+Use when you want fully known keys:
 
 ```json
 {
   "type": "object",
-  "required": ["id"],
+  "required": ["id", "name"],
   "additionalProperties": false,
   "properties": {
-    "id": {"type": "string"}
+    "id": {"type": "string"},
+    "name": {"type": "string", "minLength": 2, "maxLength": 32},
+    "level": {"type": "integer", "minimum": 1, "maximum": 100}
   }
 }
 ```
 
-Effect: unknown keys fail immediately at object level.【F:src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java†L245-L251】
+**Effect**: Unknown keys fail immediately at the object level.
 
-## 2) Dynamic-key map contract
+### 5.3 Dynamic Key Map
 
-Use `patternProperties` + `additionalProperties: false` for map-like structures keyed by naming convention.
+Use `patternProperties` + `additionalProperties: false` for map-like structures:
 
 ```json
 {
@@ -299,9 +197,7 @@ Use `patternProperties` + `additionalProperties: false` for map-like structures 
 }
 ```
 
-Mechanics are implemented in unknown-field pass of `ObjectValidator`.【F:src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java†L218-L251】
-
-## 3) Homogeneous list contract
+### 5.4 Homogeneous List
 
 ```json
 {
@@ -310,43 +206,399 @@ Mechanics are implemented in unknown-field pass of `ObjectValidator`.【F:src/ma
 }
 ```
 
-Each element is validated recursively through dispatcher.【F:src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java†L30-L33】
+Each element is validated recursively through the dispatcher.
 
-## 4) Nullable/any payload contract
+### 5.5 Nullable/Any Payload
 
 ```json
 {"type": "any"}
 ```
 
-`any` always succeeds in primitive validator.【F:src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java†L21-L24】
+**Always passes** - useful for optional fields that accept any value.
 
-## 5) Boolean / null / integer specifics
+### 5.6 Boolean, Null, and Integer Types
 
-- `{"type":"boolean"}` requires a Java boolean value.
-- `{"type":"null"}` requires actual null.
-- `{"type":"integer"}` allows `3` and `3.0`, but not `3.2`.
+```json
+{"type": "boolean"}   // Requires Java boolean value
+{"type": null}       // Requires null value
+{"type": "integer"}   // Accepts 3 and 3.0, but not 3.2
+```
 
-Source: primitive type switch + integer helper logic.【F:src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java†L26-L43】【F:src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java†L147-L170】
+### 5.7 Enum and Format
+
+```json
+{
+  "type": "object",
+  "required": ["playerType"],
+  "properties": {
+    "playerType": {
+      "type": "string",
+      "enum": ["warrior", "mage", "rogue", "healer"]
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "blockId": {
+      "type": "string",
+      "format": "minecraft-block"
+    }
+  }
+}
+```
+
+### 5.8 Numeric Constraints
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "health": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000
+    },
+    "coins": {
+      "type": "integer",
+      "multipleOf": 10
+    },
+    "discount": {
+      "type": "number",
+      "multipleOf": 0.05,
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}
+```
+
+### 5.9 Conditional Validation (if/then/else)
+
+```json
+{
+  "type": "object",
+  "required": ["playerType", "name", "stats"],
+  "additionalProperties": false,
+  "properties": {
+    "playerType": {
+      "type": "string",
+      "enum": ["warrior", "mage", "rogue", "healer", "merchant", "quest-giver"]
+    },
+    "name": {"type": "string", "minLength": 2, "maxLength": 32},
+    "level": {"type": "number", "minimum": 1, "maximum": 100},
+    "stats": {"type": "object"}
+  },
+  "if": {
+    "properties": {
+      "playerType": {"enum": ["warrior", "mage", "rogue", "healer"]}
+    },
+    "required": ["level"]
+  },
+  "then": {
+    "properties": {
+      "level": {"type": "number", "minimum": 1, "maximum": 100}
+    }
+  },
+  "else": {
+    "properties": {
+      "level": {"type": "number", "minimum": 0, "maximum": 10}
+    }
+  }
+}
+```
+
+Source: [`conditional-validation.schema.json`](src/main/resources/examples/schemas/conditional-validation.schema.json:1)
+
+### 5.10 oneOf (Exactly One)
+
+```json
+{
+  "type": "object",
+  "required": ["itemType", "id", "name"],
+  "additionalProperties": false,
+  "properties": {
+    "itemType": {
+      "type": "string",
+      "enum": ["weapon", "armor", "tool", "consumable"]
+    },
+    "id": {"type": "string"},
+    "name": {"type": "string"}
+  },
+  "oneOf": [
+    {
+      "required": ["damage"],
+      "properties": {
+        "itemType": {"const": "weapon"},
+        "damage": {"type": "number", "minimum": 1}
+      }
+    },
+    {
+      "required": ["defense"],
+      "properties": {
+        "itemType": {"const": "armor"},
+        "defense": {"type": "number", "minimum": 1}
+      }
+    }
+  ]
+}
+```
+
+### 5.11 allOf (All Schemas)
+
+```json
+{
+  "type": "object",
+  "allOf": [
+    {
+      "properties": {
+        "id": {"type": "string"}
+      }
+    },
+    {
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1}
+      }
+    }
+  ]
+}
+```
+
+### 5.12 not (Negation)
+
+```json
+{
+  "type": "object",
+  "not": {
+    "properties": {
+      "playerType": {"const": "banned"}
+    }
+  }
+}
+```
+
+### 5.13 Complete Game Item Schema
+
+This example demonstrates various combined features:
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Game Item Schema",
+  "description": "Game item with conditional validation",
+  "type": "object",
+  "required": ["id", "type"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_:]+$"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["weapon", "armor", "tool", "consumable"]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "damage": {"type": "number", "minimum": 1},
+    "defense": {"type": "number", "minimum": 0},
+    "durability": {"type": "number", "minimum": 1},
+    "healing": {"type": "number", "minimum": 0}
+  },
+  "oneOf": [
+    {
+      "required": ["damage"],
+      "properties": {"type": {"const": "weapon"}, "damage": {"type": "number", "minimum": 1}}
+    },
+    {
+      "required": ["defense"],
+      "properties": {"type": {"const": "armor"}, "defense": {"type": "number", "minimum": 1}}
+    },
+    {
+      "required": ["durability"],
+      "properties": {"type": {"const": "tool"}, "durability": {"type": "number", "minimum": 1}}
+    },
+    {
+      "required": ["healing"],
+      "properties": {"type": {"const": "consumable"}, "healing": {"type": "number", "minimum": 1}}
+    }
+  ],
+  "not": {
+    "properties": {"id": {"pattern": "^banned:.*"}}
+  },
+  "if": {
+    "properties": {"type": {"const": "weapon"}}
+  },
+  "then": {
+    "required": ["damage", "durability"],
+    "properties": {
+      "damage": {"type": "number", "minimum": 1},
+      "durability": {"type": "number", "minimum": 10}
+    }
+  }
+}
+```
+
+Source: [`item.schema.json`](src/main/resources/schemas/item.schema.json:1)
 
 ---
 
-## Reproducibility and execution checklist
+## 6. Java API Usage
 
-To reproduce examples reliably:
+### 6.1 Basic Validation
 
-1. Ensure schema/data files are object-root documents for Skript effect path.
-2. Use exact registered syntax:
-   - `validate yaml %string% using schema %string%`
-   - `validate json %string% using schema %string%`
-3. Always inspect `last schema validation errors` right after each validation call.
+```java
+import com.maiconjh.schemacr.core.ValidationService;
+import com.maiconjh.schemacr.schemes.Schema;
+import com.maiconjh.schemacr.schemes.FileSchemaLoader;
+import java.util.Map;
 
-Sources: syntax registration, data loader root type, expression registration.【F:src/main/java/com/maiconjh/schemacr/integration/SkriptSyntaxRegistration.java†L14-L22】【F:src/main/java/com/maiconjh/schemacr/integration/DataFileLoader.java†L24-L26】
+// Load schema
+FileSchemaLoader loader = new FileSchemaLoader();
+Schema schema = loader.load("schemas/player.schema.json");
 
-## Source mapping index (quick links)
+// Data to validate
+Map<String, Object> playerData = Map.of(
+    "name", "PlayerOne",
+    "level", 50,
+    "class", "warrior"
+);
 
-- Parsing and defaults: `FileSchemaLoader`, `Schema`.
-- Runtime validation: `ValidationService`, `ValidatorDispatcher`, `ObjectValidator`, `ArrayValidator`, `PrimitiveValidator`, `FormatValidator`.
-- Skript integration: `SkriptSyntaxRegistration`, `EffValidateData`, `ExprLastValidationErrors`, `DataFileLoader`.
-- Example assets: `src/main/resources/examples/**`.
+// Validate
+ValidationService service = new ValidationService();
+var result = service.validate(playerData, schema);
+
+if (result.isSuccess()) {
+    System.out.println("Validation passed!");
+} else {
+    result.getErrors().forEach(e -> System.out.println(e));
+}
+```
+
+### 6.2 Validation with $ref Support
+
+```java
+import com.maiconjh.schemacr.core.ValidationService;
+import com.maiconjh.schemacr.schemes.Schema;
+import com.maiconjh.schemacr.schemes.SchemaRefResolver;
+import com.maiconjh.schemacr.schemes.FileSchemaLoader;
+
+// Load schema with references
+FileSchemaLoader loader = new FileSchemaLoader();
+Schema schema = loader.load("schemas/player-with-address.schema.json");
+
+// Create resolver
+SchemaRefResolver resolver = new SchemaRefResolver(loader.getDefinitions());
+
+// Validate with $ref support
+ValidationService service = new ValidationService(resolver);
+var result = service.validate(data, schema);
+```
+
+### 6.3 Batch Validation
+
+```java
+List<Map<String, Object>> players = // ... list of players
+ValidationService service = new ValidationService();
+List<ValidationResult> results = service.validateBatch(players, schema);
+```
+
+---
+
+## 7. Skript Usage
+
+### 7.1 Registered Syntax
+
+The library provides the following Skript effects:
+
+```
+validate yaml <string> using schema <string>
+validate json <string> using schema <string>
+```
+
+### 7.2 Complete Example
+
+```skript
+command /validateplayer:
+    trigger:
+        # Validate YAML file against schema
+        validate yaml "plugins/Schema-Validator/examples/player.yml" using schema "plugins/Schema-Validator/examples/schemas/player.schema.json"
+        
+        # Get validation errors
+        set {_errors::*} to last schema validation errors
+        
+        # Check result
+        if size of {_errors::*} is 0:
+            send "✓ Valid data!" to player
+            send "Player validated successfully!" to player
+        else:
+            send "✗ Invalid data!" to player
+            send "Errors found:" to player
+            loop {_errors::*}:
+                send "- %loop-value%" to player
+```
+
+Source: [`validate-simple-example.sk`](src/main/resources/examples/validate-simple-example.sk:1)
+
+---
+
+## 8. Supported Keywords
+
+### 8.1 Enforced at Validation Time
+
+- `type`
+- `properties`
+- `patternProperties`
+- `required`
+- `additionalProperties`
+- `items`
+- `enum`
+- `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`
+- `minLength`, `maxLength`, `pattern`, `format`
+- `allOf`, `anyOf`, `oneOf`, `not`
+- `if`, `then`, `else`
+
+### 8.2 Parsed but Not Enforced
+
+- `version`, `compatibility` (stored only)
+- `definitions`, `$defs`
+- `minItems`, `maxItems`, `uniqueItems` (recognized but not enforced)
+- `const` (recognized but not enforced)
+- `dependencies`, `minProperties`, `maxProperties`
+
+---
+
+## 9. Known Limitations
+
+1. **$ref via Skript**: The Skript effect uses `new ValidationService()` without resolver, so `$ref` doesn't work in the effect path.
+2. **Root types**: Data loaded by the Skript effect is typed as `Map<String,Object>`, so root-level arrays or scalars are not supported in that path.
+3. **Not enforced keywords**: `const`, `minItems`, `maxItems`, `uniqueItems` are recognized but don't cause validation failures.
+4. **Unknown format**: Unknown formats pass (don't cause failure) - see [`FormatValidator.java:222`](src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java:222)
+
+---
+
+## 10. Source File Reference
+
+| Component | File |
+|-----------|------|
+| Schema Model | [`Schema.java`](src/main/java/com/maiconjh/schemacr/schemes/Schema.java) |
+| Schema Types | [`SchemaType.java`](src/main/java/com/maiconjh/schemacr/schemes/SchemaType.java) |
+| Object Validator | [`ObjectValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java) |
+| Array Validator | [`ArrayValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java) |
+| Primitive Validator | [`PrimitiveValidator.java`](src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java) |
+| Format Validator | [`FormatValidator.java`](src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java) |
+| Conditional Validator | [`ConditionalValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ConditionalValidator.java) |
+| Validation Service | [`ValidationService.java`](src/main/java/com/maiconjh/schemacr/core/ValidationService.java) |
+| Keywords Registry | [`SupportedKeywordsRegistry.java`](src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java) |
+
+---
 
 [← Previous](validation-behavior.md) | [Next →](config-reference.md) | [Home](../../README.md)
