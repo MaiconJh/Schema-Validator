@@ -14,18 +14,8 @@ This section contains conceptual documentation that explains **why** the system 
 
 The Schema-Validator validation process follows a structured flow:
 
-```
-┌─────────────────┐      ┌─────────────────┐     ┌─────────────────┐      ┌─────────────────┐
-│  Plugin Load    │────▶│  Skript Event   │────▶│  Load Schema    │────▶│  Run Validation │
-│   (Startup)     │      │   (Trigger)     │     │   & Data        │      │    Engine       │
-└─────────────────┘      └─────────────────┘     └─────────────────┘      └─────────────────┘
-                                                                                  │
-                                                                                  ▼
-                                                                           ┌─────────────────┐
-                                                                           │ Return Result   │
-                                                                           │ & Errors        │
-                                                                           └─────────────────┘
-```
+[]
+
 
 ### Flow Components
 
