@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Documentação - Schema Validator</title>
+  <style>
+    /* Estilo Dark GitHub */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+      background-color: #0d1117;
+      color: #c9d1d9;
+      margin: 0;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3 {
+      color: #f0f6fc;
+      margin-top: 2rem;
+    }
+
+    a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      margin: 2rem 0;
+    }
+
+    .nav-buttons a {
+      padding: 8px 16px;
+      background-color: #21262d;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .nav-buttons a:hover {
+      background-color: #30363d;
+    }
+
+    img.diagram {
+      display: block;
+      max-width: 100%;
+      margin: 2rem auto;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      background-color: #0d1117;
+      padding: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+    }
+
+    th, td {
+      border: 1px solid #30363d;
+      padding: 8px 12px;
+    }
+
+    th {
+      background-color: #161b22;
+      color: #f0f6fc;
+    }
+
+    td {
+      background-color: #0d1117;
+    }
+  </style>
+</head>
+<body>
+  <h1>Schema Validator Documentation</h1>
+
+  <div class="nav-buttons">
+    <a href="previous.html">← Previous</a>
+    <a href="index.html">Home</a>
+    <a href="next.html">Next →</a>
+  </div>
+
+  <h2>Validation Flow Overview</h2>
+  <img class="diagram" src="assets/Validation_Flow_Overview.svg" alt="Validation Flow Diagram">
+
+  <h3>Flow Components</h3>
+  <table>
+    <tr>
+      <th>Step</th>
+      <th>Description</th>
+    </tr>
+    <tr>
+      <td>Plugin Load</td>
+      <td>Plugin loads configuration, registers schemas, and initializes static context</td>
+    </tr>
+    <tr>
+      <td>Skript Event</td>
+      <td>A Skript script triggers validation using `validate yaml/json ... using schema ...`</td>
+    </tr>
+    <tr>
+      <td>Load Schema & Data</td>
+      <td>System loads the JSON schema and data file (YAML or JSON)</td>
+    </tr>
+    <tr>
+      <td>Run Validation Engine</td>
+      <td>Validators process data according to schema rules</td>
+    </tr>
+    <tr>
+      <td>Return Result & Errors</td>
+      <td>Validation result and any errors are returned</td>
+    </tr>
+  </table>
+
+  <div class="nav-buttons">
+    <a href="previous.html">← Previous</a>
+    <a href="index.html">Home</a>
+    <a href="next.html">Next →</a>
+  </div>
+</body>
+</html>
