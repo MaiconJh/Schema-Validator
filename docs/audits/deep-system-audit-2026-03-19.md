@@ -1,212 +1,294 @@
-# Deep System Audit → Verified Implementation Status (2026-03-19)
+# Deep System Audit — Estado Verificado da Implementação (revalidação em 2026-03-21)
 
-> ⚠️ **ATENÇÃO**: Este arquivo foi verificado e corrigido em 2026-03-20. 
-> O arquivo `deep-system-audit-2026-03-20.md` contém informações INCORRETAS que não foram verificadas contra o código fonte.
-> **Não siga como fonte da verdade** - use este documento como referência verificada.
-
-## 🧾 VERIFICATION NOTES (Added 2026-03-20)
-
-### Cross-Check Results
-
-| Issue | Audit 2026-03-20 Claim | Actual Code Status | Verified |
-|-------|----------------------|-------------------|----------|
-| Root dispatch | ✅ FIXED | ✅ **VERIFIED - Uses ValidatorDispatcher** | ✅ Yes |
-| minItems/maxItems/uniqueItems | ✅ FIXED | ❌ **NOT IMPLEMENTED** | ❌ No |
-| minProperties/maxProperties | ✅ FIXED | ❌ **NOT IMPLEMENTED** | ❌ No |
-| multipleOf | ✅ FIXED | ✅ **VERIFIED** | ✅ Yes |
-| format | ✅ FIXED | ✅ **VERIFIED** | ✅ Yes |
-| oneOf/not/if-then-else | ✅ FIXED | ✅ **VERIFIED** | ✅ Yes |
-
-### Evidence for Incorrect Claims in 2026-03-20
-
-1. **ArrayValidator.java (lines 1-36)**: NÃO contém implementação de minItems, maxItems ou uniqueItems
-   - Search result: 0 matches for these keywords
-
-2. **ObjectValidator.java**: NÃO contém implementação de minProperties ou maxProperties  
-   - Search result: 0 matches for these keywords
-
-3. **Schema.java**: NÃO contém campos para minProperties ou maxProperties
-   - Search result: 0 matches for these keywords
-
-4. **Example schemas using unimplemented features**:
-   - `complex-item.schema.json` uses `minItems: 1` but it's NOT validated
+> **Objetivo desta revisão:** revalidar integralmente o conteúdo do relatório de 2026-03-19 contra o código-fonte atual, removendo suposições e corrigindo drift documental.
+>
+> **Critério de verdade adotado:** somente comportamento observável no código em `src/main/java` e contratos ativos em `src/main/resources`.
 
 ---
 
-## 🧾 SYSTEM STATE SUMMARY (Original 2026-03-19)
+## 1) Metodologia de verificação cruzada
 
-Schema-Validator has a stable core for object-focused validation (`properties`, `required`, `items`, `enum`, numeric/string bounds, `allOf`, `anyOf`) but suffers from **contract drift** between `/docs` and runtime behavior. The immediate production risks are correctness defects (root dispatch), silent under-validation (documented but unsupported keywords), and integration mismatch (Skript error object contract).
+### 1.1 Processo executado
+1. Leitura integral do documento anterior (`deep-system-audit-2026-03-19.md`).
+2. Extração de cada afirmação, hipótese, seção e conclusão.
+3. Mapeamento direto de cada item para evidência concreta no código (classe, método, fluxo de execução).
+4. Classificação por status:
+   - **Válido**: implementado e consistente com execução atual.
+   - **Parcial**: há implementação, mas incompleta ou com restrições não documentadas.
+   - **Inválido**: contradiz implementação atual.
+   - **Não verificável**: não foi possível confirmar por ausência de artefato executável/contratual correspondente.
 
-Current maturity by area:
-- **Core validation engine:** usable but object-centric and tightly coupled.
-- **Schema language support:** partial subset of documented JSON Schema.
-- **Skript integration:** functional for basic usage, inconsistent with documented structured errors.
-- **Operational contract (docs/config/API):** inconsistent; needs authoritative contract versioning.
-
----
-
-## ❌ ISSUE BREAKDOWN (DETAILED)
-
-### ✅ Issue 1: Root validator dispatch - VERIFIED RESOLVED
-- **Name:** Root validator bypasses schema-type dispatch
-- **Category:** Runtime Bug
-- **Severity:** CRITICAL
-- **Root cause:** `ValidationService` always delegates to `ObjectValidator` at root instead of selecting validator by root schema type.
-- **Surface impact:** Root array/primitive schemas fail with object-type errors.
-- **Verification (2026-03-20):** ✅ **RESOLVED**
-  - **Evidence:** `ValidationService.java` lines 40-50 now use `ValidatorDispatcher.forSchema(schema)`
-  - Code: `Validator validator = ValidatorDispatcher.forSchema(schema);`
-  - Comment confirms: "Use dispatcher to get the appropriate validator based on schema type"
-
-### ❌ Issue 2: Silent under-validation for documented keywords - PARTIALLY RESOLVED
-- **Name:** Docs advertise keywords that parser/validators do not enforce
-- **Category:** Contract Violation
-- **Severity:** CRITICAL
-- **Status (2026-03-20):** MIXED - Some keywords fixed, others still broken
-
-#### Keywords Status:
-| Keyword | Audit 2026-03-20 | Actual Implementation | Verified |
-|---------|-----------------|---------------------|----------|
-| `oneOf` | ✅ FIXED | ✅ IMPLEMENTED in ObjectValidator.java:114-155 | ✅ Yes |
-| `not` | ✅ FIXED | ✅ IMPLEMENTED in ObjectValidator.java:157-172 | ✅ Yes |
-| `if/then/else` | ✅ FIXED | ✅ IMPLEMENTED in ObjectValidator.java:174-195 | ✅ Yes |
-| `format` | ✅ FIXED | ✅ IMPLEMENTED in FormatValidator.java + PrimitiveValidator.java:136-143 | ✅ Yes |
-| `multipleOf` | ✅ FIXED | ✅ IMPLEMENTED in PrimitiveValidator.java:89-103 | ✅ Yes |
-| `minItems` | ✅ FIXED | ❌ NOT IMPLEMENTED in ArrayValidator.java | ❌ No |
-| `maxItems` | ✅ FIXED | ❌ NOT IMPLEMENTED in ArrayValidator.java | ❌ No |
-| `uniqueItems` | ✅ FIXED | ❌ NOT IMPLEMENTED in ArrayValidator.java | ❌ No |
-| `minProperties` | ✅ FIXED | ❌ NOT IMPLEMENTED in ObjectValidator.java | ❌ No |
-| `maxProperties` | ✅ FIXED | ❌ NOT IMPLEMENTED in ObjectValidator.java | ❌ No |
-
-> ⚠️ **CRITICAL**: The audit 2026-03-20 incorrectly claims minItems, maxItems, uniqueItems, minProperties, and maxProperties are implemented. This is FALSE - they are NOT in the code.
-
-### ✅ Issue 3: Skript error model mismatch - IMPROVED
-- **Name:** Expression returns String[] while docs promise structured ValidationError objects
-- **Category:** Contract Violation  
-- **Severity:** LOW (Improved)
-- **Verification (2026-03-20):** ✅ **IMPROVED**
-  - Added `getMessage()` method in ValidationError.java
-  - Added `toCompactString()` method for Skript display
-  - Updated ExprLastValidationErrors to use compact format
-
-### ⚠️ Issue 4: $ref and definitions support - PARTIALLY RESOLVED
-- **Name:** Reference support is partial relative to JSON Schema spec
-- **Category:** Feature Gap
-- **Severity:** MEDIUM
-- **Status (2026-03-20):** PARTIAL
-  - ✅ definitions parsing: EXISTS in FileSchemaLoader.java:92-99
-  - ✅ $defs parsing: EXISTS in FileSchemaLoader.java:101-109
-  - ❌ Resolution to definitions: NOT WORKING (Schema doesn't store definitions)
-  - Root cause: FileSchemaLoader extracts definitions to local Map that is lost after Schema creation
-
-### Issue 5: Config contract mismatch
-- **Name:** Config documentation format diverges from actual config.yml
-- **Category:** Contract Violation
-- **Severity:** MEDIUM
-- **Status:** Needs verification
-
-### Issue 6: API reference signature drift
-- **Name:** Docs list methods/overloads not present in implementation
-- **Category:** Contract Violation
-- **Severity:** MEDIUM
-
-### Issue 7: Path resolution split-brain
-- **Name:** Auto-load uses different path resolution than effect-time validation
-- **Category:** Architecture
-- **Severity:** MEDIUM
-
-### Issue 8: Composition logic object-validator bound
-- **Name:** allOf/anyOf execution lives in ObjectValidator instead of shared layer
-- **Category:** Architecture
-- **Severity:** MEDIUM
-
-### Issue 9: Global mutable last-result bridge
-- **Name:** Static shared lastResult has no scope partitioning
-- **Category:** Architecture
-- **Severity:** LOW
+### 1.2 Fontes rastreáveis utilizadas
+- `src/main/java/com/maiconjh/schemacr/core/ValidationService.java`
+- `src/main/java/com/maiconjh/schemacr/validation/{ObjectValidator,ArrayValidator,PrimitiveValidator,FormatValidator,ValidatorDispatcher,ValidationError}.java`
+- `src/main/java/com/maiconjh/schemacr/schemes/{Schema,FileSchemaLoader,SchemaRefResolver,SupportedKeywordsRegistry}.java`
+- `src/main/java/com/maiconjh/schemacr/integration/{EffValidateData,ExprLastValidationErrors,SkriptValidationBridge,DataFileLoader}.java`
+- `src/main/java/com/maiconjh/schemacr/config/PluginConfig.java`
+- `src/main/resources/config.yml`
+- `docs/CONTRACT.md` e `docs/api-reference.md` (apenas para detectar drift, não como fonte primária de comportamento).
 
 ---
 
-## 🔗 DEPENDENCY GRAPH (Updated 2026-03-20)
+## 2) Matriz de verificação — afirmações do documento anterior
 
-### Priority Fix Order (Based on Code Analysis)
+## 2.1 Dispatch do validador raiz
 
-1. **IMMEDIATE**: Fix incorrect audit claims about minItems/maxItems/minProperties/maxProperties
-2. **HIGH**: Implement missing array cardinality validators (minItems, maxItems, uniqueItems)
-3. **HIGH**: Implement missing object cardinality validators (minProperties, maxProperties)
-4. **MEDIUM**: Complete $ref resolution (definitions/$defs storage in Schema)
+**Afirmação anterior:** bug crítico de dispatch na raiz foi resolvido.
+
+**Status:** ✅ **Válido**.
+
+**Evidência:** `ValidationService.validate(...)` usa `ValidatorDispatcher.forSchema(schema)` antes de validar (`ValidationService.java`, método `validate`, linhas 40–50), portanto o tipo raiz não está mais rigidamente preso a `ObjectValidator`.
+
+**Estado real atual:** schemas raiz de tipo `array` e primitivos passam pelo validador apropriado via dispatcher.
+
+**Comentário técnico da alteração**
+- **O que foi alterado no documento:** removida a narrativa de risco ativo para dispatch raiz e reclassificado como corrigido e ativo.
+- **Por que foi necessário:** a versão anterior ainda mantinha trechos legados que induziam interpretação parcialmente conflitante com o fluxo atual.
+- **Evidência da correção:** chamada explícita a `ValidatorDispatcher.forSchema(schema)` no caminho de execução principal.
+- **Estado real:** dispatch raiz dinâmico está implementado.
+
+## 2.2 `minItems`, `maxItems`, `uniqueItems`
+
+**Afirmação anterior:** não implementados (com menção de correção incorreta em outro audit).
+
+**Status:** ✅ **Válido (continuam não implementados)**.
+
+**Evidência:** `ArrayValidator.validate(...)` apenas verifica tipo lista e valida `items` elemento a elemento; não há qualquer checagem de cardinalidade/unicidade.
+
+**Estado real atual:** schemas contendo essas keywords podem ser parseados, mas tais restrições não são aplicadas em runtime.
+
+**Comentário técnico da alteração**
+- **O que foi alterado no documento:** mantida a conclusão de não implementação e adicionada explicação do efeito prático (subvalidação silenciosa).
+- **Por que foi necessário:** reforçar consequência operacional e evitar falsa sensação de cobertura JSON Schema.
+- **Evidência da correção:** ausência de regras no `ArrayValidator`.
+- **Estado real:** apenas `items` é efetivamente validado em arrays.
+
+## 2.3 `minProperties`, `maxProperties`
+
+**Afirmação anterior:** não implementados.
+
+**Status:** ✅ **Válido (continuam não implementados)**.
+
+**Evidência:** `ObjectValidator` valida `required`, `properties`, `patternProperties`, `additionalProperties`, composição (`allOf/anyOf/oneOf/not/if-then-else`) e `$ref`, mas não há contagem mínima/máxima de propriedades.
+
+**Estado real atual:** cardinalidade de campos do objeto não é imposta.
+
+**Comentário técnico da alteração**
+- **O que foi alterado no documento:** reforçada distinção entre “objeto validado estruturalmente” e “cardinalidade de propriedades”.
+- **Por que foi necessário:** remover ambiguidade entre suporte a `required` e suporte a limites de quantidade.
+- **Evidência da correção:** inexistência de lógica de `minProperties/maxProperties` no validador de objeto.
+- **Estado real:** limites de quantidade de propriedades seguem ausentes.
+
+## 2.4 `multipleOf`
+
+**Afirmação anterior:** implementado.
+
+**Status:** ✅ **Válido**.
+
+**Evidência:** `PrimitiveValidator` executa divisão pelo divisor e valida integralidade do resultado (`multipleOf`) para `number`/`integer`.
+
+**Estado real atual:** `multipleOf` está ativo para tipos numéricos.
+
+## 2.5 `format`
+
+**Afirmação anterior:** implementado.
+
+**Status:** ✅ **Válido**.
+
+**Evidência:** `PrimitiveValidator` chama `FormatValidator.isValid(...)` quando `schema.hasFormat()`; falha gera `ValidationError`.
+
+**Estado real atual:** validação de formato está em modo “hard fail” (erro de validação, não aviso).
+
+## 2.6 `oneOf`, `not`, `if/then/else`
+
+**Afirmação anterior:** implementados.
+
+**Status:** ✅ **Válido**.
+
+**Evidência:** blocos dedicados em `ObjectValidator.validate(...)` para `oneOf`, `not` e condicional `if/then/else`.
+
+**Estado real atual:** composição condicional e exclusão lógica funcionam no validador de objeto.
+
+## 2.7 Modelo de erro Skript
+
+**Afirmação anterior:** havia mismatch e foi “improved”.
+
+**Status:** ✅ **Parcialmente válido**.
+
+**Evidência:**
+- `ValidationError` possui `getMessage()` e `toCompactString()`.
+- `ExprLastValidationErrors` retorna `String[]` com `toCompactString()`.
+
+**Estado real atual:** a integração Skript continua textual (strings), não objeto estruturado exposto em expressão Skript.
+
+**Comentário técnico da alteração**
+- **O que foi alterado no documento:** clarificação de que houve melhoria de serialização, mas não mudança do contrato de tipo de retorno.
+- **Por que foi necessário:** evitar leitura equivocada de “resolvido” quando a limitação fundamental permanece.
+- **Evidência da correção:** assinatura de `ExprLastValidationErrors extends SimpleExpression<String>`.
+- **Estado real:** saída compacta em string, sem objeto rico no lado Skript.
+
+## 2.8 `$ref`, `definitions`, `$defs`
+
+**Afirmação anterior:** suporte parcial.
+
+**Status:** ✅ **Válido (com ressalvas importantes)**.
+
+**Evidência:**
+- `FileSchemaLoader` extrai `definitions` e `$defs` em mapa interno.
+- `Schema` não armazena árvore de `definitions/$defs`.
+- `SchemaRefResolver.navigateTo(...)` navega apenas por `properties` e `items`; não navega por `definitions/$defs`.
+
+**Estado real atual:** parsing de blocos de definição existe, mas resolução por JSON Pointer para `#/definitions/...`/`#/$defs/...` não está completa de ponta a ponta.
+
+## 2.9 “Issue 5: Config contract mismatch” (sem verificação no texto antigo)
+
+**Status:** ❌ **Não segue como fonte da verdade**.
+
+**Análise crítica e evidências:**
+- O documento antigo deixava “Needs verification”, sem conclusão validada.
+- Hoje é possível confirmar drift documental objetivo:
+  - `config.yml` inclui `strict-mode` e define `validation-on-load: false` por padrão.
+  - `PluginConfig` lê `strict-mode` e default interno de `validation-on-load` como `true` (usado quando chave faltar).
+  - `docs/CONTRACT.md` lista `validation-on-load: true` e omite `strict-mode` na tabela de contrato.
+
+**Estado real atual:** existe desalinhamento entre documentação contratual e configuração real distribuída.
+
+## 2.10 “Issue 6: API reference signature drift”
+
+**Status:** ⚠️ **Parcial / requer recorte temporal**.
+
+**Evidência:** `docs/api-reference.md` está majoritariamente alinhado com assinaturas atuais de `FileSchemaLoader`, `SchemaRegistrationService` e `ValidationService`.
+
+**Estado real atual:** o drift histórico indicado no audit não se sustenta integralmente no estado presente; há alinhamento significativo na referência de API.
+
+**Comentário técnico da alteração**
+- **O que foi alterado no documento:** rebaixado de problema ativo generalizado para observação histórica com revisão pontual contínua.
+- **Por que foi necessário:** conclusão antiga estava genérica e não refletia o estado atual dos métodos públicos.
+- **Evidência da correção:** comparação direta entre `docs/api-reference.md` e assinaturas em código.
+- **Estado real:** referência de API atual está próxima do código.
+
+## 2.11 “Issue 7: Path resolution split-brain”
+
+**Status:** ✅ **Válido**.
+
+**Evidência:**
+- `SchemaValidatorPlugin.autoLoadSchemas()` usa diretório de configuração (`PluginConfig#getSchemaDirectory()`).
+- `EffValidateData` valida usando `Path.of(schemaFile)` e `Path.of(dataFile)` recebidos diretamente no efeito Skript.
+
+**Estado real atual:** coexistem dois modos de resolução de caminho (auto-load configurado vs caminho explícito em runtime de efeito).
+
+## 2.12 “Issue 8: Composition logic object-validator bound”
+
+**Status:** ✅ **Válido**.
+
+**Evidência:** blocos de `allOf`, `anyOf`, `oneOf`, `not`, `if/then/else` estão implementados no `ObjectValidator`, não numa camada transversal compartilhada.
+
+**Estado real atual:** composição está acoplada ao fluxo de validação de objeto, ainda que sub-schemas sejam despachados por tipo.
+
+## 2.13 “Issue 9: Global mutable last-result bridge”
+
+**Status:** ✅ **Válido**.
+
+**Evidência:** `SkriptValidationBridge` mantém `private static volatile ValidationResult lastResult` único e global no processo.
+
+**Estado real atual:** não há escopo por jogador/evento/contexto; o último resultado é global.
+
+## 2.14 Registro de keywords suportadas
+
+**Status:** ❌ **Não segue como fonte da verdade** (quando interpretado literalmente como suporte completo).
+
+**Análise crítica e evidências:**
+- `SupportedKeywordsRegistry` marca `minItems`, `maxItems`, `uniqueItems`, `minProperties`, `maxProperties`, `dependencies` como suportadas.
+- Validadores (`ArrayValidator`/`ObjectValidator`) não implementam enforcement dessas regras.
+
+**Estado real atual:** o registry funciona mais como whitelist de parsing/documentação do que prova de enforcement real.
+
+## 2.15 Restrição de raiz descrita em documentação canônica
+
+**Status:** ❌ **Não segue como fonte da verdade**.
+
+**Análise crítica e evidências:**
+- `docs/CONTRACT.md` afirma que `ValidationService()` impõe raiz objeto por usar `ObjectValidator` fixo.
+- `ValidationService.validate(...)` usa dispatcher por tipo do schema raiz.
+
+**Estado real atual:** essa restrição de raiz não representa mais o comportamento vigente.
 
 ---
 
-## 🛠️ CORRECTED IMPLEMENTATION UNITS
+## 3) Estado atual consolidado (somente fatos validados)
 
-### ✅ Unit 1 - Root Dispatch (COMPLETE)
-- **Feature/Issue:** Root validator dispatch bug
-- **Strategy:** Use `ValidatorDispatcher.forSchema(schema)` at validation entrypoint.
-- **Files/components affected:** `ValidationService`
-- **Status:** ✅ **COMPLETE - VERIFIED**
+### 3.1 Funcionalidades comprovadamente implementadas
+- Dispatch por tipo no nó raiz (`object`, `array`, primitivos).
+- Validação de objeto: `properties`, `required`, `patternProperties`, `additionalProperties`, `allOf`, `anyOf`, `oneOf`, `not`, `if/then/else`.
+- Validação de array: `items`.
+- Validação primitiva: `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`, `minLength`, `maxLength`, `pattern`, `format`, `enum`.
+- Expressão Skript de erros com retorno textual (`String[]`) e formatação compacta.
 
-### ❌ Unit 2 - Array Cardinality (NOT COMPLETE)
-- **Feature/Issue:** minItems, maxItems, uniqueItems
-- **Status:** ❌ **NOT IMPLEMENTED** despite audit claims
-- **Required work:**
-  - Add minItems, maxItems, uniqueItems fields to Schema.java
-  - Parse these in FileSchemaLoader
-  - Implement validation in ArrayValidator
+### 3.2 Funcionalidades ausentes ou parciais
+- Não implementado: `minItems`, `maxItems`, `uniqueItems`.
+- Não implementado: `minProperties`, `maxProperties`.
+- Parcial: `$ref` com `definitions/$defs` (extração existe; resolução de ponteiro local não percorre esses nós no modelo atual).
+- Limitação arquitetural: resultado de validação global compartilhado na integração Skript.
 
-### ❌ Unit 3 - Object Cardinality (NOT COMPLETE)
-- **Feature/Issue:** minProperties, maxProperties
-- **Status:** ❌ **NOT IMPLEMENTED** despite audit claims
-- **Required work:**
-  - Add minProperties, maxProperties fields to Schema.java
-  - Parse these in FileSchemaLoader  
-  - Implement validation in ObjectValidator
-
-### Unit 4 - $ref Resolution (IN PROGRESS)
-- **Feature/Issue:** definitions/$defs resolution
-- **Status:** ⚠️ **PARTIAL** - parsing exists, resolution needs architecture change
-- **Plan:** See docs/new-architecture-plan.md
+### 3.3 Divergências documentais críticas
+- `docs/CONTRACT.md` contém pelo menos duas divergências de alto impacto:
+  1. afirma restrição de raiz objeto que não condiz com o código atual;
+  2. descreve contrato de erro Skript como `toString()` quando implementação usa `toCompactString()`.
+- Contrato de configuração na documentação não acompanha integralmente `config.yml`/`PluginConfig` (ex.: `strict-mode`).
 
 ---
 
-## 📋 ACTION PLAN
+## 4) Plano de ação técnico detalhado
 
-### Immediate Actions Required:
+## 4.1 Inconsistências identificadas e impacto
+1. **Keywords declaradas vs enforcement real (array/object cardinality).**
+   - **Impacto:** falsa confiança de validação; dados inválidos podem ser aceitos silenciosamente.
+2. **$ref parcial para `definitions/$defs`.**
+   - **Impacto:** schemas com referências internas padrão podem falhar ou validar de forma incompleta.
+3. **Drift em documentação canônica (`CONTRACT.md`).**
+   - **Impacto:** integradores tomam decisões erradas sobre capacidades e limitações do runtime.
+4. **`lastResult` global no bridge Skript.**
+   - **Impacto:** risco de sobreposição de contexto entre execuções concorrentes/eventos.
+5. **Path resolution com semânticas diferentes (auto-load vs efeito).**
+   - **Impacto:** comportamento não uniforme entre operação automática e validação ad hoc.
 
-1. **CORRECT AUDIT** - Mark minItems/maxItems/uniqueItems/minProperties/maxProperties as ❌ NOT IMPLEMENTED
-2. **ADD IMPLEMENTATIONS** - Implement the missing validators:
-   - ArrayValidator: add minItems, maxItems, uniqueItems
-   - ObjectValidator: add minProperties, maxProperties  
-   - Schema: add corresponding fields
-   - FileSchemaLoader: parse these keywords
+## 4.2 Metodologias utilizadas na verificação
+- Inspeção estática de fluxo principal de execução (caminho de entrada → parser → dispatcher → validadores).
+- Validação semântica por leitura de métodos responsáveis por enforcement de constraints.
+- Comparação de contrato documental versus assinatura/uso real das classes públicas.
+- Análise de acoplamento arquitetural (estado global, resolução de referências, fronteiras de integração).
 
-### Verification Methodology Used:
+## 4.3 Critérios adotados para validação da verdade
+- **Código executável prevalece** sobre documentação textual.
+- **Implementado** significa “há parser + modelo + enforcement no runtime” (não apenas keyword reconhecida).
+- **Parcial** quando existe parte do pipeline, mas sem fechamento funcional.
+- **Não verificável** quando não há artefato de execução ou evidência concreta suficiente.
 
-1. Read source code files directly
-2. Search for keyword implementations using search_files tool
-3. Check Schema.java for model fields
-4. Check validators for validation logic
-5. Compare example schemas to actual capabilities
+## 4.4 Próximos passos concretos (ordem recomendada)
+1. Corrigir `docs/CONTRACT.md` para refletir comportamento real de dispatch raiz, tipo de saída Skript e chaves de configuração atuais.
+2. Implementar `minItems/maxItems/uniqueItems` (modelo `Schema`, parser `FileSchemaLoader`, enforcement `ArrayValidator`).
+3. Implementar `minProperties/maxProperties` (modelo + parser + enforcement em `ObjectValidator`).
+4. Revisar arquitetura de `$ref` para suportar navegação em `definitions/$defs` no modelo em memória.
+5. Revisar `SupportedKeywordsRegistry` para distinguir claramente:
+   - keywords **reconhecidas**;
+   - keywords **enforced**.
+6. Avaliar escopo contextual para `SkriptValidationBridge` (por evento/jogador/tópico) para eliminar estado global compartilhado.
+7. Unificar estratégia de resolução de paths entre auto-load e validação via efeito Skript (ou documentar explicitamente o dualismo).
 
 ---
 
-## 🧠 FINAL STRATEGY (Updated)
+## 5) Registro de reestruturação deste documento
 
-### What Was Verified as DONE
-1. ✅ Root dispatch correctness fix
-2. ✅ oneOf/not/if-then-else composition
-3. ✅ multipleOf validation
-4. ✅ format validation (25 formats)
+### 5.1 O que foi reestruturado
+- Documento foi reorganizado de narrativa mista para trilha auditável: **metodologia → matriz de verificação → estado consolidado → plano de ação**.
+- Cada seção passou a conter status explícito e evidência concreta no código.
+- Seções incorretas/obsoletas/não conclusivas receberam marcação formal obrigatória.
 
-### What Is NOT Done (Despite Audit Claims)
-1. ❌ minItems/maxItems/uniqueItems - NOT implemented
-2. ❌ minProperties/maxProperties - NOT implemented
+### 5.2 Por que a reestruturação foi necessária
+- A versão anterior misturava estado histórico, conclusões parciais e itens “a verificar”, reduzindo confiabilidade como fonte operacional.
+- Faltava hierarquia lógica para leitura progressiva e tomada de decisão técnica.
 
-### What Needs Architecture Change
-1. $ref/definitions full resolution (see new-architecture-plan.md)
+### 5.3 Resultado
+- Este arquivo passa a representar apenas informações verificadas no estado atual do sistema.
+- Itens sem validação forte foram explicitamente tratados como não fonte da verdade.
 
----
-
-*Last Updated: 2026-03-20 22:15 UTC*
-*Verification performed against source code*
-*This document corrects false claims in deep-system-audit-2026-03-20.md*
