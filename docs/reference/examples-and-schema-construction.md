@@ -6,7 +6,7 @@ This document provides a complete reference for building validation schemas usin
 
 ## 1. Schema Model
 
-The Schema-Validator library uses the [`Schema`](src/main/java/com/maiconjh/schemacr/schemes/Schema.java:13) class to represent schema nodes. This class contains the following main fields:
+The Schema-Validator library uses the [`Schema`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/schemes/Schema.java) class to represent schema nodes. This class contains the following main fields:
 
 ### 1.1 Structure and Type
 
@@ -53,7 +53,7 @@ The Schema-Validator library uses the [`Schema`](src/main/java/com/maiconjh/sche
 
 ## 2. Supported Schema Types
 
-The library supports the following types defined in the [`SchemaType`](src/main/java/com/maiconjh/schemacr/schemes/SchemaType.java:6) enum:
+The library supports the following types defined in the [`SchemaType`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/schemes/SchemaType.java) enum:
 
 - `OBJECT` - Object/Map
 - `ARRAY` - Array/List
@@ -70,11 +70,11 @@ The library supports the following types defined in the [`SchemaType`](src/main/
 
 ### 3.1 Validator Dispatch
 
-The [`ValidatorDispatcher`](src/main/java/com/maiconjh/schemacr/validation/ValidatorDispatcher.java) selects the correct validator based on schema type:
+The [`ValidatorDispatcher`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/ValidatorDispatcher.java) selects the correct validator based on schema type:
 
-- `OBJECT` → [`ObjectValidator`](src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java)
-- `ARRAY` → [`ArrayValidator`](src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java)
-- Other types → [`PrimitiveValidator`](src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java)
+- `OBJECT` → [`ObjectValidator`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java)
+- `ARRAY` → [`ArrayValidator`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java)
+- Other types → [`PrimitiveValidator`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java)
 
 ### 3.2 Object Validation Order
 
@@ -102,7 +102,7 @@ The [`ValidatorDispatcher`](src/main/java/com/maiconjh/schemacr/validation/Valid
 
 ## 4. Supported Formats
 
-The library supports the following formats through [`FormatValidator`](src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java:32):
+The library supports the following formats through [`FormatValidator`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java):
 
 ### Standard JSON Schema Formats
 
@@ -162,7 +162,7 @@ The library supports the following formats through [`FormatValidator`](src/main/
 }
 ```
 
-Source: [`player-profile.schema.json`](src/main/resources/examples/schemas/player-profile.schema.json:1)
+Source: [`player-profile.schema.json`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/resources/examples/schemas/player-profile.schema.json)
 
 ### 5.2 Strict Object (Closed Contract)
 
@@ -312,7 +312,7 @@ Each element is validated recursively through the dispatcher.
 }
 ```
 
-Source: [`conditional-validation.schema.json`](src/main/resources/examples/schemas/conditional-validation.schema.json:1)
+Source: [`conditional-validation.schema.json`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/resources/examples/schemas/conditional-validation.schema.json)
 
 ### 5.10 oneOf (Exactly One)
 
@@ -447,7 +447,7 @@ This example demonstrates various combined features:
 }
 ```
 
-Source: [`item.schema.json`](src/main/resources/schemas/item.schema.json:1)
+Source: [`item.schema.json`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/resources/schemas/item.schema.json)
 
 ---
 
@@ -546,7 +546,7 @@ command /validateplayer:
                 send "- %loop-value%" to player
 ```
 
-Source: [`validate-simple-example.sk`](src/main/resources/examples/validate-simple-example.sk:1)
+Source: [`validate-simple-example.sk`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/resources/examples/validate-simple-example.sk)
 
 ---
 
@@ -581,7 +581,7 @@ Source: [`validate-simple-example.sk`](src/main/resources/examples/validate-simp
 1. **$ref via Skript**: The Skript effect uses `new ValidationService()` without resolver, so `$ref` doesn't work in the effect path.
 2. **Root types**: Data loaded by the Skript effect is typed as `Map<String,Object>`, so root-level arrays or scalars are not supported in that path.
 3. **Not enforced keywords**: `const`, `minItems`, `maxItems`, `uniqueItems` are recognized but don't cause validation failures.
-4. **Unknown format**: Unknown formats pass (don't cause failure) - see [`FormatValidator.java:222`](src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java:222)
+4. **Unknown format**: Unknown formats pass (don't cause failure) - see [`FormatValidator.java`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java)
 
 ---
 
@@ -589,15 +589,15 @@ Source: [`validate-simple-example.sk`](src/main/resources/examples/validate-simp
 
 | Component | File |
 |-----------|------|
-| Schema Model | [`Schema.java`](src/main/java/com/maiconjh/schemacr/schemes/Schema.java) |
-| Schema Types | [`SchemaType.java`](src/main/java/com/maiconjh/schemacr/schemes/SchemaType.java) |
-| Object Validator | [`ObjectValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java) |
-| Array Validator | [`ArrayValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java) |
-| Primitive Validator | [`PrimitiveValidator.java`](src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java) |
-| Format Validator | [`FormatValidator.java`](src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java) |
-| Conditional Validator | [`ConditionalValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ConditionalValidator.java) |
-| Validation Service | [`ValidationService.java`](src/main/java/com/maiconjh/schemacr/core/ValidationService.java) |
-| Keywords Registry | [`SupportedKeywordsRegistry.java`](src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java) |
+| Schema Model | [`Schema.java`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/schemes/Schema.java) |
+| Schema Types | [`SchemaType.java`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/schemes/SchemaType.java) |
+| Object Validator | [`ObjectValidator.java`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java) |
+| Array Validator | [`ArrayValidator.java`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java) |
+| Primitive Validator | [`PrimitiveValidator.java`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java) |
+| Format Validator | [`FormatValidator.java`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java) |
+| Conditional Validator | [`ConditionalValidator.java`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/validation/ConditionalValidator.java) |
+| Validation Service | [`ValidationService.java`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/core/ValidationService.java) |
+| Keywords Registry | [`SupportedKeywordsRegistry.java`](https://github.com/MaiconJh/Schema-Validator/blob/main/src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java) |
 
 ---
 
