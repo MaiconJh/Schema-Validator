@@ -1,23 +1,74 @@
----
-title: Validation behavior
-section: Reference
-description: Learn how validation executes, aggregates errors, and returns final status.
----
-
-## Evaluation order
-
-Validation generally proceeds from structure checks to leaf constraints, collecting failures along the way.
-
-## Error aggregation model
-
-- Collects multiple failures in one pass where feasible.
-- Preserves path context to identify offending fields.
-- Exposes errors for downstream Skript handling.
-
-## Conditional branches
-
-Conditional validators apply branch logic and report which branch failed when mismatches occur.
-
-## Next step
-
-Explore [Examples](examples.html).
+<!doctype html>
+<html lang="en" data-color-mode="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Validation behavior · Schema Validator Docs</title>
+  <meta name="description" content="Learn how validation executes, aggregates errors, and returns final status.">
+  <link rel="stylesheet" href="assets/css/github-docs.css">
+  <script defer src="assets/js/docs.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  
+<header class="ghd-header" role="banner">
+  <a class="ghd-logo" href="index.html" aria-label="Schema Validator Docs home">
+    <span aria-hidden="true">◆</span>
+    <span>Schema Validator Docs</span>
+  </a>
+  <div class="ghd-header-controls">
+    <label class="ghd-search-wrap" for="search-input">
+      <span class="sr-only">Search documentation pages</span>
+      <input id="search-input" type="search" placeholder="Search docs pages" autocomplete="off" aria-label="Search docs pages">
+    </label>
+    <button id="theme-toggle" class="ghd-btn" type="button" aria-label="Toggle dark mode">Toggle theme</button>
+    <button id="sidebar-toggle" class="ghd-btn mobile-only" type="button" aria-controls="sidebar" aria-expanded="false">Menu</button>
+  </div>
+</header>
+  <div class="ghd-shell">
+    
+<nav id="sidebar" class="ghd-sidebar" aria-label="Documentation sidebar">
+  <p class="ghd-sidebar-title">Documentation</p>
+  <ul class="ghd-nav-list" id="page-index">
+    <li><a href="index.html">Overview</a></li>
+    <li><a href="getting-started.html">Getting started</a></li>
+    <li><a href="installation.html">Installation</a></li>
+    <li><a href="quickstart.html">Quickstart</a></li>
+    <li><a href="configuration.html">Configuration</a></li>
+    <li><a href="schema-keywords.html">Schema keywords</a></li>
+    <li><a href="validation-behavior.html">Validation behavior</a></li>
+    <li><a href="examples.html">Examples</a></li>
+    <li><a href="architecture.html">Architecture</a></li>
+  </ul>
+</nav>
+    <main id="content" class="ghd-content" tabindex="-1">
+      <nav class="ghd-breadcrumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="index.html">Docs</a></li>
+          <li>Reference</li>
+          <li aria-current="page">Validation behavior</li>
+        </ol>
+      </nav>
+      <article>
+        <header class="ghd-article-header">
+          <h1>Validation behavior</h1>
+          <p class="lead">Learn how validation executes, aggregates errors, and returns final status.</p>
+        </header>
+        <div class="ghd-layout">
+          <div class="ghd-markdown" id="article-body">
+            
+<h2>Evaluation order</h2><p>Validation executes structural checks first, then deeper field-level constraints.</p>
+<h2>Error aggregation model</h2><ul><li>Collects multiple failures in one pass where possible.</li><li>Preserves path context to pinpoint problematic fields.</li><li>Exposes errors for downstream scripting decisions.</li></ul>
+<h2>Conditional branches</h2><p>Conditional validators evaluate branch logic and report branch mismatch points.</p>
+<h2>Next step</h2><p>Explore <a href="examples.html">Examples</a>.</p>
+          </div>
+          <aside class="ghd-toc" aria-label="Table of contents">
+            <h2>In this article</h2>
+            <nav id="toc"></nav>
+          </aside>
+        </div>
+      </article>
+    </main>
+  </div>
+</body>
+</html>
