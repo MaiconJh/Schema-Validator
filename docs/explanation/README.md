@@ -14,7 +14,7 @@ This section contains conceptual documentation that explains **why** the system 
 
 The Schema-Validator validation process follows a structured flow:
 
-<img src="./Validation_Flow_Overview.svg" width="900"/>
+<img src="./Validation_Flow_Overview.svg" width="1200"/>
 
 ### Flow Components
 
