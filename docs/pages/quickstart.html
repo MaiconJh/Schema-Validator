@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Overview · Schema Validator Docs</title>
-  <meta name="description" content="Learn how Schema Validator is organized and how to navigate this documentation set.">
+  <title>Quickstart · Schema Validator Docs</title>
+  <meta name="description" content="Execute your first successful and failing validation in minutes.">
   <link rel="stylesheet" href="assets/css/github-docs.css">
   <script defer src="assets/js/docs.js"></script>
 </head>
@@ -45,47 +45,30 @@
       <nav class="ghd-breadcrumbs" aria-label="Breadcrumb">
         <ol>
           <li><a href="index.html">Docs</a></li>
-          <li>Documentation</li>
-          <li aria-current="page">Overview</li>
+          <li>Setup</li>
+          <li aria-current="page">Quickstart</li>
         </ol>
       </nav>
       <article>
         <header class="ghd-article-header">
-          <h1>Overview</h1>
-          <p class="lead">Learn how Schema Validator is organized and how to navigate this documentation set.</p>
+          <h1>Quickstart</h1>
+          <p class="lead">Execute your first successful and failing validation in minutes.</p>
         </header>
         <div class="ghd-layout">
           <div class="ghd-markdown" id="article-body">
             
-<h2>Documentation map</h2>
-<p>Use this documentation in sequence for the smoothest journey:</p>
-<ol>
-  <li><strong>Getting started</strong> for product context and supported capabilities.</li>
-  <li><strong>Installation</strong> and <strong>Quickstart</strong> to run your first validation.</li>
-  <li><strong>Configuration</strong> and <strong>Schema keywords</strong> for implementation details.</li>
-  <li><strong>Validation behavior</strong>, <strong>Examples</strong>, and <strong>Architecture</strong> for advanced reasoning and troubleshooting.</li>
-</ol>
-<h2>What Schema Validator does</h2>
-<p>Schema Validator evaluates YAML/JSON data against schema rules and returns structured validation results for plugin and Skript workflows.</p>
-<h2>Recommended paths</h2>
-<h3>New users</h3>
-<ul>
-  <li><a href="getting-started.html">Getting started</a></li>
-  <li><a href="installation.html">Installation</a></li>
-  <li><a href="quickstart.html">Quickstart</a></li>
-</ul>
-<h3>Production users</h3>
-<ul>
-  <li><a href="configuration.html">Configuration</a></li>
-  <li><a href="schema-keywords.html">Schema keywords</a></li>
-  <li><a href="validation-behavior.html">Validation behavior</a></li>
-</ul>
-<h2>Related pages</h2>
-<ul>
-  <li><a href="examples.html">Examples</a></li>
-  <li><a href="architecture.html">Architecture</a></li>
-  <li><a href="PAGES_ARCHITECTURE.md">Design decisions</a></li>
-</ul>
+<h2>First validation</h2>
+<ol><li>Create a minimal schema.</li><li>Create matching YAML/JSON data.</li><li>Trigger validation through integration syntax.</li><li>Inspect result status and errors.</li></ol>
+<h2>Minimal schema pattern</h2>
+<pre><code>{
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string" }
+  }
+}</code></pre>
+<h2>Expected outcomes</h2><h3>Success case</h3><p>Data contains all required fields with valid types.</p><h3>Failure case</h3><p>Validation fails and reports one or more actionable errors.</p>
+<h2>Next step</h2><p>Read <a href="configuration.html">Configuration</a>.</p>
           </div>
           <aside class="ghd-toc" aria-label="Table of contents">
             <h2>In this article</h2>

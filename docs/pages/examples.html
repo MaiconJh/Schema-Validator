@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Overview · Schema Validator Docs</title>
-  <meta name="description" content="Learn how Schema Validator is organized and how to navigate this documentation set.">
+  <title>Examples · Schema Validator Docs</title>
+  <meta name="description" content="Practical examples for common schema patterns and debugging workflows.">
   <link rel="stylesheet" href="assets/css/github-docs.css">
   <script defer src="assets/js/docs.js"></script>
 </head>
@@ -45,47 +45,23 @@
       <nav class="ghd-breadcrumbs" aria-label="Breadcrumb">
         <ol>
           <li><a href="index.html">Docs</a></li>
-          <li>Documentation</li>
-          <li aria-current="page">Overview</li>
+          <li>Practice</li>
+          <li aria-current="page">Examples</li>
         </ol>
       </nav>
       <article>
         <header class="ghd-article-header">
-          <h1>Overview</h1>
-          <p class="lead">Learn how Schema Validator is organized and how to navigate this documentation set.</p>
+          <h1>Examples</h1>
+          <p class="lead">Practical examples for common schema patterns and debugging workflows.</p>
         </header>
         <div class="ghd-layout">
           <div class="ghd-markdown" id="article-body">
             
-<h2>Documentation map</h2>
-<p>Use this documentation in sequence for the smoothest journey:</p>
-<ol>
-  <li><strong>Getting started</strong> for product context and supported capabilities.</li>
-  <li><strong>Installation</strong> and <strong>Quickstart</strong> to run your first validation.</li>
-  <li><strong>Configuration</strong> and <strong>Schema keywords</strong> for implementation details.</li>
-  <li><strong>Validation behavior</strong>, <strong>Examples</strong>, and <strong>Architecture</strong> for advanced reasoning and troubleshooting.</li>
-</ol>
-<h2>What Schema Validator does</h2>
-<p>Schema Validator evaluates YAML/JSON data against schema rules and returns structured validation results for plugin and Skript workflows.</p>
-<h2>Recommended paths</h2>
-<h3>New users</h3>
-<ul>
-  <li><a href="getting-started.html">Getting started</a></li>
-  <li><a href="installation.html">Installation</a></li>
-  <li><a href="quickstart.html">Quickstart</a></li>
-</ul>
-<h3>Production users</h3>
-<ul>
-  <li><a href="configuration.html">Configuration</a></li>
-  <li><a href="schema-keywords.html">Schema keywords</a></li>
-  <li><a href="validation-behavior.html">Validation behavior</a></li>
-</ul>
-<h2>Related pages</h2>
-<ul>
-  <li><a href="examples.html">Examples</a></li>
-  <li><a href="architecture.html">Architecture</a></li>
-  <li><a href="PAGES_ARCHITECTURE.md">Design decisions</a></li>
-</ul>
+<h2>Basic object validation</h2><p>Use object schemas with required keys and type checks for profile data.</p>
+<h2>Nested address schemas</h2><p>Compose nested objects to validate complex game entity structures.</p>
+<h2>Conditional examples</h2><p>Use <code>if</code> / <code>then</code> / <code>else</code> for context-aware constraints.</p>
+<h2>Debug loop</h2><ol><li>Run validation.</li><li>Inspect error list.</li><li>Fix schema or input.</li><li>Re-run and compare results.</li></ol>
+<h2>Next step</h2><p>See <a href="architecture.html">Architecture</a>.</p>
           </div>
           <aside class="ghd-toc" aria-label="Table of contents">
             <h2>In this article</h2>
