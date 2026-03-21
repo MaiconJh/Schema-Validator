@@ -41,4 +41,4 @@
 4. Array flow: `ArrayValidator.validate()`.  
 5. Result model: `ValidationResult`, `ValidationError`.
 
-[← Previous](schema-keywords.md) | [Next →](config-reference.md) | [Home](../../README.md)
+[← Previous](schema-keywords.md) | [Next →](examples-and-schema-construction.md) | [Home](../../README.md)

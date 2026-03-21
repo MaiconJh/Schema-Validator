@@ -14,4 +14,4 @@
 2. Load/access methods: `PluginConfig.load()` and getters.  
 3. Runtime usage: `SchemaValidatorPlugin.onEnable()`, `SchemaRegistry`, `FileSchemaLoader`.
 
-[← Previous](validation-behavior.md) | [Next →](../explanation/README.md) | [Home](../../README.md)
+[← Previous](examples-and-schema-construction.md) | [Next →](../explanation/README.md) | [Home](../../README.md)
