@@ -1,0 +1,21 @@
+---
+layout: null
+permalink: /search.json
+---
+[
+{% assign docs_pages = site.pages | where: "layout", "default" %}
+{% assign first = true %}
+{% for item in docs_pages %}
+  {% if item.search_exclude != true and item.nav_exclude != true %}
+    {% unless first %},{% endunless %}
+    {
+      "title": {{ item.title | default: "" | jsonify }},
+      "url": {{ item.url | relative_url | jsonify }},
+      "description": {{ item.description | default: "" | strip_html | strip_newlines | jsonify }},
+      "doc_type": {{ item.doc_type | default: "" | jsonify }},
+      "content": {{ item.content | markdownify | strip_html | replace: "\n", " " | replace: "\r", " " | replace: "  ", " " | jsonify }}
+    }
+    {% assign first = false %}
+  {% endif %}
+{% endfor %}
+]
