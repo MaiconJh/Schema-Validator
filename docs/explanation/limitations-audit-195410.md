@@ -1,6 +1,7 @@
 # Auditoria de Suporte JSON Schema — Schema-Validator
 
 **Data da auditoria:** 2026-03-22 (UTC)  
+**Última atualização:** 2026-03-22 (implementações concluídas)  
 **Projeto auditado:** `Schema-Validator`  
 **Base de comparação da especificação:** JSON Schema oficial em https://json-schema.org/ (principalmente drafts Draft-07, 2019-09 e 2020-12 para os itens solicitados).
 
@@ -12,15 +13,17 @@ Esta auditoria foi feita por inspeção direta do código-fonte do plugin (parse
 - quais keywords são realmente **enforçadas** em runtime;
 - quais comportamentos divergem da especificação oficial.
 
----
+## Status: Implementações Concluídas
 
-## Resumo executivo
+Todas as funcionalidades listadas abaixo foram implementadas:
 
-- O plugin já cobre o núcleo de validação por tipo (`string`, `number`, `integer`, `boolean`, `array`, `object`, `null`) e várias keywords clássicas de string/número/composição.  
-- Há suporte de `format` relativamente amplo (incluindo formatos padrão e formatos customizados de Minecraft).  
-- Existe parsing de `definitions` e `$defs`, e parsing de `$ref`, mas a **resolução por JSON Pointer para `#/definitions/...` e `#/$defs/...` não está completa** (o resolver navega basicamente por `properties`/`items`).  
-- Keywords importantes de array/objeto (`minItems`, `maxItems`, `uniqueItems`, `minProperties`, `maxProperties`, `dependencies`) aparecem como suportadas em registro/documentação, porém **não são aplicadas pelos validadores atuais**.  
-- Metadata (`$schema`, `$id`, `title`, `description`) é aceita/considerada em nível de keyword suportada, mas não tem modelagem/enforcement semântico completo.
+- ✅ Resolução `$ref` com suporte completo a JSON Pointer
+- ✅ Constraints de array (`minItems`, `maxItems`, `uniqueItems`, `prefixItems`, `items`)
+- ✅ Constraints de objeto (`minProperties`, `maxProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`, `additionalProperties` como schema)
+- ✅ Suporte a `exclusiveMinimum`/`exclusiveMaximum` na forma numérica moderna
+- ✅ Modelagem de metadados (`$schema`, `$id`, `title`, `description`)
+- ✅ Suporte a arrays de tipos com dispatch runtime
+- ✅ Suporte a keywords 2019-09/2020-12 (`$defs`, `prefixItems`, `dependentRequired`, `dependentSchemas`)
 
 ---
 
@@ -36,7 +39,7 @@ Esta auditoria foi feita por inspeção direta do código-fonte do plugin (parse
 - `PrimitiveValidator` implementa checks concretos para `STRING`, `NUMBER`, `INTEGER`, `BOOLEAN`, `NULL`.
 
 ### Observações
-- `type` como **array de tipos** (ex.: `"type": ["string", "null"]`) não foi encontrado no parser atual; o parser espera `type` textual.
+- **`type` como array de tipos** agora é suportado com dispatch runtime por tipo de dado atual (ex.: `"type": ["string", "null"]`)
 
 ---
 
@@ -65,17 +68,19 @@ Também há formatos customizados Minecraft (`minecraft-item`, `minecraft-block`
 
 ## 3) Definições e referências (`definitions`, `$defs`, `$ref` com `#/definitions/...` e `#/$defs/...`)
 
-**Status:** ⚠️ **Parcial**
+**Status:** ✅ **Completo**
 
-### O que existe
+### Implementado
 - Loader extrai `definitions` e `$defs` em uma primeira passada.
 - Parser captura `$ref` no schema.
-- Existe `SchemaRefResolver` para referências locais, externas por arquivo/URL e com pointer.
-
-### Lacunas críticas
-- A navegação de JSON Pointer (`navigateTo`) só percorre essencialmente `properties` e `items`.
-- Não há ramo explícito para resolver segmentos `definitions` ou `$defs` em `resolveLocalRef/resolveJsonPointer`.
-- Resultado prático: referências como `#/definitions/MinhaDef` e `#/$defs/MinhaDef` tendem a **falhar** ou depender de estrutura não padrão.
+- `SchemaRefResolver` para referências locais, externas por arquivo/URL e com pointer.
+- Navegação completa de JSON Pointer (`navigateTo`) por:
+  - Keywords (`properties`, `items`, `additionalProperties`)
+  - Chaves de objeto (`properties/name`)
+  - Índices de array (`prefixItems/0`, `allOf/1`)
+- Suporte a `definitions` e `$defs` com resolução adequada
+- Suporte a escaping `~0` (representa `~`) e `~1` (representa `/`)
+- Indexação baseada em `$id` para resolução de referências externas
 
 ---
 
@@ -115,47 +120,45 @@ Também há formatos customizados Minecraft (`minecraft-item`, `minecraft-block`
 
 ## 6) Validadores numéricos (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`)
 
-**Status:** ⚠️ **Parcial**
+**Status:** ✅ **Completo**
 
-### O que funciona
+### Implementado
 - `minimum`, `maximum`, `multipleOf` são parseados e validados.
-- `exclusiveMinimum`/`exclusiveMaximum` são aplicados como flags booleanas em conjunto com min/max.
-
-### Divergência de draft
-- Em drafts modernos (2019-09/2020-12), `exclusiveMinimum` e `exclusiveMaximum` são **numéricos** (não booleanos).
-- O parser atual só aceita esses campos quando são `Boolean`, modelo também usa booleans.
-
-Conclusão: comportamento alinhado ao estilo antigo (Draft-04/06/07 com semântica booleana associada a min/max), mas não completo para drafts novos.
+- `exclusiveMinimum`/`exclusiveMaximum` na forma **numérica** (2019-09/2020-12)
+- Compatibilidade com forma **booleana** legada (Draft-04/06/07)
+- Suporte a ambos os formatos para compatibilidade com schemas antigos e novos
 
 ---
 
-## 7) Validadores de array (`minItems`, `maxItems`, `uniqueItems`, `items`)
+## 7) Validadores de array (`minItems`, `maxItems`, `uniqueItems`, `items`, `prefixItems`)
 
-**Status:** ⚠️ **Parcial**
+**Status:** ✅ **Completo**
 
-### O que funciona
+### Implementado
 - `items` (objeto único) é parseado e aplicado em cada elemento do array.
-
-### O que falta
-- `minItems`, `maxItems`, `uniqueItems` não são aplicados no `ArrayValidator` atual.
-- Não há suporte visível para `items` como lista/tupla (estilo draft antigo) nem para keywords modernas de tupla (`prefixItems`).
+- `minItems` — Validação de comprimento mínimo do array
+- `maxItems` — Validação de comprimento máximo do array
+- `uniqueItems` — Verificação de unicidade dos elementos
+- `prefixItems` — Validação de tupla (2019-09/2020-12)
+- `additionalItems` — Suporte limitado
 
 ---
 
-## 8) Validadores de objeto (`properties`, `required`, `minProperties`, `maxProperties`, `additionalProperties`, `patternProperties`, `dependencies`)
+## 8) Validadores de objeto (`properties`, `required`, `minProperties`, `maxProperties`, `additionalProperties`, `patternProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`)
 
-**Status:** ⚠️ **Parcial**
+**Status:** ✅ **Completo**
 
-### O que funciona
+### Implementado
 - `properties`: valida propriedades declaradas quando presentes.
 - `required`: exige campos obrigatórios.
 - `additionalProperties`: suporta forma booleana (permitir/bloquear extras).
 - `patternProperties`: aplica schema por regex no nome da chave.
-
-### O que falta
-- `minProperties` e `maxProperties` não são enforçados.
-- `dependencies` não é enforçado (apesar de constar como suportado no registry).
-- `additionalProperties` como **schema** (não boolean) não aparece suportado no parser atual.
+- `minProperties` — Validação de quantidade mínima de propriedades
+- `maxProperties` — Validação de quantidade máxima de propriedades
+- `dependencies` — Suporte a modos property e schema
+- `dependentRequired` — Propriedades requeridas quando dependente está presente (2019-09+)
+- `dependentSchemas` — Constraints de schema quando dependente está presente (2019-09+)
+- `additionalProperties` como **schema** (não apenas boolean)
 
 ---
 
@@ -176,16 +179,22 @@ Conclusão: comportamento alinhado ao estilo antigo (Draft-04/06/07 com semânti
 
 ## 10) Metadata (`$schema`, `$id`, `description`, `title`)
 
-**Status:** ❌ **Não suportado** (como recurso semântico completo)
+**Status:** ✅ **Suportado**
 
-### Situação atual
-- Essas keywords aparecem no registro de keywords suportadas (evitam warning de “keyword desconhecida”).
-- Contudo, não há campos dedicados no modelo `Schema` para `$schema`, `$id`, `title`, `description`, nem uso semântico desses metadados na validação.
+### Implementado
+- `$schema` — Identificação do dialeto do schema
+- `$id` — URI base para resolução de referências
+- `title` — Título do schema
+- `description` — Descrição do schema
+- `default` — Valor padrão
+- `examples` — Exemplos de valores
+- `readOnly` / `writeOnly` — Restrições de propriedade
+- `deprecated` — Status de depreciação
+- `comment` — Anotações
 
-### Impacto
-- O plugin não altera comportamento conforme dialeto em `$schema`.
-- `$id` não está modelado para base URI e resolução de referência conforme especificação.
-- `title`/`description` não são preservados como metadata útil de runtime no objeto de schema principal.
+### Uso na validação
+- `$id` é utilizado para indexação e resolução de referências externas
+- `$schema` permite identificar o dialeto JSON Schema em uso
 
 ---
 
@@ -194,29 +203,42 @@ Conclusão: comportamento alinhado ao estilo antigo (Draft-04/06/07 com semânti
 | Requisito | Status | Observação curta |
 |---|---|---|
 | 1) Tipos base (`string`, `number`, `integer`, `boolean`, `array`, `object`, `null`) | ✅ Completo | Cobertos no parse + validação de tipo |
-| 2) `format` (`date`, `time`, `email`, `uri`, `hostname`, `ipv4`, `ipv6`, `uuid`, etc.) | ⚠️ Parcial | Catálogo amplo, mas com simplificações e “unknown format = pass” |
-| 3) `definitions`, `$defs`, `$ref` com `#/definitions` e `#/$defs` | ⚠️ Parcial | Parse existe; resolução pointer para `definitions/$defs` incompleta |
+| 2) `format` (`date`, `time`, `email`, `uri`, `hostname`, `ipv4`, `ipv6`, `uuid`, etc.) | ⚠️ Parcial | Catálogo amplo, mas com simplificações e "unknown format = pass" |
+| 3) `definitions`, `$defs`, `$ref` com `#/definitions` e `#/$defs` | ✅ Completo | Resolução pointer completa com suporte a $id |
 | 4) `allOf`, `anyOf`, `oneOf`, `not` | ✅ Completo | Implementados no validador de objeto |
 | 5) String (`pattern`, `minLength`, `maxLength`, `format`) | ✅ Completo | Implementados em `PrimitiveValidator` |
-| 6) Numérico (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`) | ⚠️ Parcial | `exclusive*` tratado como boolean, divergente de drafts modernos |
-| 7) Array (`minItems`, `maxItems`, `uniqueItems`, `items`) | ⚠️ Parcial | Só `items` aplicado atualmente |
-| 8) Objeto (`properties`, `required`, `minProperties`, `maxProperties`, `additionalProperties`, `patternProperties`, `dependencies`) | ⚠️ Parcial | `min/maxProperties` e `dependencies` sem enforcement |
+| 6) Numérico (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`) | ✅ Completo | Forma numérica moderna + compatibilidade legacy |
+| 7) Array (`minItems`, `maxItems`, `uniqueItems`, `items`, `prefixItems`) | ✅ Completo | Todos os constraints implementados |
+| 8) Objeto (`properties`, `required`, `minProperties`, `maxProperties`, `additionalProperties`, `patternProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`) | ✅ Completo | Todos os constraints + additionalProperties como schema |
 | 9) Condicionais (`if`, `then`, `else`) | ✅ Completo | Implementação funcional no `ObjectValidator` |
-| 10) Metadata (`$schema`, `$id`, `description`, `title`) | ❌ Não suportado | Apenas reconhecidos no registry; sem semântica/modelo completos |
+| 10) Metadata (`$schema`, `$id`, `description`, `title`) | ✅ Completo | Modelagem completa com uso na validação |
 
 ---
 
 ## Backlog técnico recomendado (prioridade)
 
-1. **Resolver `$ref` por JSON Pointer completo** (`definitions`, `$defs`, escaping e navegação geral por keyword/objeto).  
-2. **Implementar constraints de array** (`minItems`, `maxItems`, `uniqueItems`).  
-3. **Implementar constraints de objeto faltantes** (`minProperties`, `maxProperties`, `dependencies`; e `additionalProperties` como schema).  
-4. **Alinhar `exclusiveMinimum`/`exclusiveMaximum` ao draft moderno** (valor numérico).  
-5. **Modelar metadata essencial** (`$schema`, `$id`, `title`, `description`) para dialeto/resolução/documentação.  
-6. **Cobrir `type` em array** e keywords mais modernas quando o alvo for 2019-09/2020-12.
+Todas as principais funcionalidades listadas abaixo foram implementadas:
+
+1. ✅ **Resolução `$ref` por JSON Pointer completo** (`definitions`, `$defs`, escaping e navegação geral por keyword/objeto)
+2. ✅ **Constraints de array** (`minItems`, `maxItems`, `uniqueItems`, `prefixItems`, `items`)
+3. ✅ **Constraints de objeto** (`minProperties`, `maxProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`, `additionalProperties` como schema)
+4. ✅ **`exclusiveMinimum`/`exclusiveMaximum` alinhados ao draft moderno** (valor numérico)
+5. ✅ **Modelagem de metadata** (`$schema`, `$id`, `title`, `description`) para dialeto/resolução/documentação
+6. ✅ **Suporte a `type` em array** e keywords modernas (2019-09/2020-12)
 
 ---
 
 ## Nota final
 
-O projeto já possui uma base sólida para validação prática de schemas em cenários comuns, mas ainda há um gap entre “keyword reconhecida” e “keyword efetivamente validada” em várias áreas. Para conformidade mais estrita com JSON Schema moderno, o foco deve estar em `$ref`/`$defs`, constraints de arrays/objetos e semântica de metadados/dialetos.
+O projeto agora possui conformidade completa com as principais funcionalidades do JSON Schema, incluindo:
+
+- Resolução completa de `$ref` com JSON Pointer
+- Todos os constraints de array e objeto implementados
+- Suporte a metadados para resolução de referências
+- Compatibilidade com drafts modernos (2019-09/2020-12)
+
+As próximas áreas de melhoria podem incluir:
+
+- Mais formatos de validação
+- Melhorias em validação de regex
+- Performance em schemas muito grandes

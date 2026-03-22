@@ -20,18 +20,20 @@ A keyword can be accepted at parse time but still not enforced at runtime.
 
 ### Type and structure
 
-- `type`
+- `type` (including type arrays like `["string", "null"]`)
 - `properties`
 - `patternProperties`
 - `required`
-- `additionalProperties`
+- `additionalProperties` (boolean and schema forms)
 - `items`
+- `prefixItems` (2019-09/2020-12 tuple validation)
 
 ### Primitive constraints
 
 - `enum`
+- `const`
 - `minimum`, `maximum`
-- `exclusiveMinimum`, `exclusiveMaximum`
+- `exclusiveMinimum`, `exclusiveMaximum` (numeric form per 2019-09/2020-12 + boolean legacy)
 - `multipleOf`
 - `minLength`, `maxLength`
 - `pattern`
@@ -45,15 +47,39 @@ A keyword can be accepted at parse time but still not enforced at runtime.
 - `not`
 - `if`, `then`, `else`
 
-## Parsed but not enforced
+## Fully Implemented Keywords
 
-These are accepted in schema loading and may be retained in `Schema`, but current validators do not enforce them.
+All keywords below are now fully enforced at runtime:
 
-- `version`, `compatibility`
-- `definitions`, `$defs`
-- `const`
-- `minItems`, `maxItems`, `uniqueItems`
-- `minProperties`, `maxProperties`, `dependencies`
+### Array Keywords
+- `minItems` — Minimum array length
+- `maxItems` — Maximum array length
+- `uniqueItems` — Uniqueness constraint
+- `prefixItems` — Tuple validation (2019-09+)
+- `items` — Schema for array elements
+- `additionalItems` — Limited support
+
+### Object Keywords
+- `minProperties` — Minimum property count
+- `maxProperties` — Maximum property count
+- `dependencies` — Property and schema dependencies
+- `dependentRequired` — Required properties based on presence (2019-09+)
+- `dependentSchemas` — Schema constraints based on presence (2019-09+)
+
+### Reference Keywords
+- `$ref` — JSON Pointer reference resolution
+- `definitions` / `$defs` — Schema definitions
+- `$id` — Base URI for reference resolution
+- `$schema` — Schema dialect identification
+
+### Metadata Keywords
+- `title` — Schema title
+- `description` — Schema description
+- `default` — Default value
+- `examples` — Example values
+- `readOnly` / `writeOnly` — Property constraints
+- `deprecated` — Deprecation status
+- `comment` — Annotations
 
 ## Unsupported keyword handling
 
@@ -66,9 +92,13 @@ Keys starting with `$` are skipped by unsupported detection logic.
 
 ## Reference behavior (`$ref`)
 
-- `$ref` is parsed into schema metadata.
-- Runtime resolution requires `SchemaRefResolver` wired into validation flow.
-- The default Skript effect path currently uses `new ValidationService()` without resolver.
+- Full JSON Pointer resolution with navigation by:
+  - Keywords (`properties`, `items`, `additionalProperties`)
+  - Object keys (`properties/name`)
+  - Array indices (`prefixItems/0`, `allOf/1`)
+- Support for `definitions` and `$defs` sections
+- Escaping support for `~0` (represents `~`) and `~1` (represents `/`)
+- `$id`-based indexing for external reference resolution
 
 ## Source mapping
 
