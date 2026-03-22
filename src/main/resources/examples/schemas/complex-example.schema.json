@@ -1,274 +1,369 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/complex-example.schema.json",
-  "title": "Complex Example Schema",
-  "description": "Comprehensive schema demonstrating all implemented JSON Schema features including $ref, array constraints, object constraints, type arrays, and 2019-09/2020-12 keywords.",
+  "$id": "https://example.com/schemas/minecraft-player.schema.json",
+  "title": "Minecraft Player Data Schema",
+  "description": "Comprehensive schema for validating Minecraft player data with all implemented JSON Schema features.",
   "$defs": {
-    "Address": {
-      "$id": "https://example.com/schemas/address.schema.json",
+    "Position": {
+      "$id": "https://example.com/schemas/position.schema.json",
       "type": "object",
       "properties": {
-        "street": {
-          "type": "string",
-          "title": "Street Address",
-          "description": "The street address including number"
+        "world": {
+          "type": "string"
         },
-        "city": {
-          "type": "string",
-          "minLength": 2
+        "x": {
+          "type": "number"
         },
-        "zipCode": {
-          "type": "string",
-          "pattern": "^[0-9]{5}-[0-9]{3}$"
+        "y": {
+          "type": "number",
+          "minimum": -64,
+          "maximum": 320
         },
-        "country": {
+        "z": {
+          "type": "number"
+        },
+        "dimension": {
           "type": "string",
-          "enum": ["Brazil", "United States", "Canada", "United Kingdom"]
+          "enum": ["minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"]
         }
       },
-      "required": ["street", "city", "country"],
+      "required": ["world", "x", "y", "z", "dimension"],
       "additionalProperties": false
     },
-    "Person": {
+    "PlayerProfile": {
       "type": "object",
       "properties": {
-        "name": {
+        "username": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 100
+          "maxLength": 16
         },
         "age": {
           "type": ["integer", "null"],
-          "minimum": 0,
-          "maximum": 150
+          "minimum": 0
         },
         "email": {
           "type": "string",
           "format": "email"
-        },
-        "phone": {
-          "type": "string"
         }
       },
-      "required": ["name", "email"],
-      "dependentRequired": {
-        "phone": ["name"]
-      },
-      "dependentSchemas": {
-        "age": {
-          "properties": {
-            "age": {},
-            "birthCertificate": {
-              "type": "string"
-            }
-          },
-          "required": ["birthCertificate"]
-        }
-      }
+      "required": ["username", "email"],
+      "additionalProperties": false
     },
-    "Product": {
+    "ItemStack": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^PROD-[0-9]{4}$"
+          "pattern": "^minecraft:[a-z_]+$"
         },
-        "name": {
-          "type": "string",
-          "minLength": 3
-        },
-        "price": {
-          "type": "number",
-          "minimum": 0,
-          "exclusiveMaximum": 10000
-        },
-        "quantity": {
+        "damage": {
           "type": "integer",
           "minimum": 0
         },
-        "category": {
-          "type": "string",
-          "enum": ["electronics", "clothing", "food", "books"]
-        },
-        "tags": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 10,
-          "uniqueItems": true,
-          "items": {
-            "type": "string"
-          }
-        },
-        "dimensions": {
-          "type": "object",
-          "properties": {
-            "width": {
-              "type": "number",
-              "minimum": 0
-            },
-            "height": {
-              "type": "number",
-              "minimum": 0
-            },
-            "depth": {
-              "type": "number",
-              "minimum": 0
-            }
-          },
-          "required": ["width", "height", "depth"],
-          "minProperties": 2,
-          "maxProperties": 3
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
         }
       },
-      "required": ["id", "name", "price", "quantity"],
-      "dependencies": {
-        "dimensions": ["name"]
-      }
+      "required": ["id", "damage", "count"],
+      "additionalProperties": false
     },
-    "OrderItem": {
+    "InventorySlot": {
       "type": "object",
       "properties": {
-        "productId": {
-          "type": "string"
-        },
-        "quantity": {
+        "slot": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 0,
+          "maximum": 35
         },
-        "unitPrice": {
-          "type": "number",
-          "minimum": 0
+        "item": {
+          "$ref": "#/$defs/ItemStack"
         }
       },
-      "required": ["productId", "quantity", "unitPrice"]
+      "required": ["slot", "item"],
+      "additionalProperties": false
+    },
+    "PotionEffect": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^minecraft:[a-z_]+$"
+        },
+        "amplifier": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": ["id", "amplifier", "duration"],
+      "additionalProperties": false
+    },
+    "Attribute": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^minecraft:generic\\.[a-z_]+$"
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0
+        },
+        "modifier": {
+          "type": "number"
+        }
+      },
+      "required": ["name", "value", "modifier"],
+      "additionalProperties": false
     }
   },
   "type": "object",
   "properties": {
-    "orderId": {
+    "playerId": {
       "type": "string",
-      "pattern": "^ORD-[0-9]{8}$"
+      "pattern": "^player-[0-9]+$"
     },
-    "customer": {
-      "$ref": "#/$defs/Person"
+    "player": {
+      "$ref": "#/$defs/PlayerProfile"
     },
-    "billingAddress": {
-      "$ref": "#/$defs/Address"
+    "homeLocation": {
+      "$ref": "#/$defs/Position"
     },
-    "shippingAddress": {
-      "$ref": "#/$defs/Address"
+    "spawnPoint": {
+      "$ref": "#/$defs/Position"
     },
-    "items": {
+    "inventory": {
       "type": "array",
-      "minItems": 1,
-      "maxItems": 50,
-      "uniqueItems": false,
+      "minItems": 0,
+      "maxItems": 36,
+      "uniqueItems": true,
       "prefixItems": [
         {
-          "$ref": "#/$defs/OrderItem"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "giftWrap": {
-              "type": "boolean"
-            }
-          }
+          "$ref": "#/$defs/InventorySlot"
         }
       ],
       "items": {
-        "$ref": "#/$defs/OrderItem"
+        "$ref": "#/$defs/InventorySlot"
       }
     },
-    "totalAmount": {
+    "enderChest": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 27,
+      "uniqueItems": false,
+      "items": {
+        "$ref": "#/$defs/InventorySlot"
+      }
+    },
+    "balance": {
       "type": "number",
       "minimum": 0,
       "multipleOf": 0.01
     },
-    "discount": {
+    "xpLevel": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 100
+    },
+    "gameMode": {
+      "type": "string",
+      "enum": ["survival", "creative", "adventure", "spectator"]
+    },
+    "health": {
       "type": "number",
       "minimum": 0,
-      "maximum": 100,
-      "exclusiveMaximum": true
+      "exclusiveMaximum": 1000
     },
-    "status": {
-      "type": "string",
-      "enum": ["pending", "processing", "shipped", "delivered", "cancelled"]
+    "foodLevel": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20
     },
-    "createdAt": {
+    "joinedAt": {
       "type": "string",
       "format": "date-time"
     },
-    "notes": {
-      "type": ["string", "null"]
+    "lastSeen": {
+      "type": ["string", "null"],
+      "format": "date-time"
     },
-    "metadata": {
+    "statistics": {
       "type": "object",
       "properties": {
-        "source": {
-          "type": "string"
+        "blocksMined": {
+          "type": "integer",
+          "minimum": 0
         },
-        "campaign": {
-          "type": "string"
+        "entitiesKilled": {
+          "type": "integer",
+          "minimum": 0
         },
-        "referralCode": {
-          "type": "string",
-          "pattern": "^[A-Z0-9]{6}$"
+        "itemsCrafted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "distanceTravelled": {
+          "type": "number",
+          "minimum": 0
         }
       },
+      "required": ["blocksMined"],
+      "minProperties": 1,
+      "maxProperties": 10,
       "additionalProperties": {
-        "type": "string"
+        "type": ["integer", "number"]
       }
     },
-    "alternatives": {
+    "effects": {
       "type": "array",
+      "minItems": 0,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/PotionEffect"
+      }
+    },
+    "attributes": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/Attribute"
+      }
+    },
+    "recipes": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 100,
+      "uniqueItems": true,
       "items": {
         "type": "object",
         "properties": {
-          "optionId": {
-            "type": "string"
+          "id": {
+            "type": "string",
+            "pattern": "^minecraft:[a-z_]+$"
           },
-          "description": {
+          "count": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": ["id", "count"],
+        "additionalProperties": false
+      }
+    },
+    "advancements": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 200,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^minecraft:[a-z/]+$"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^#minecraft:[a-z_]+$"
+      }
+    },
+    "party": {
+      "type": ["object", "null"],
+      "properties": {
+        "leader": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "uniqueItems": true,
+          "items": {
             "type": "string"
           }
+        }
+      },
+      "required": ["leader", "members"],
+      "dependentRequired": {
+        "members": ["leader"]
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "properties": {
+        "isOp": {
+          "type": "boolean"
+        },
+        "isFlying": {
+          "type": "boolean"
+        },
+        "canBuild": {
+          "type": "boolean"
+        }
+      },
+      "minProperties": 1,
+      "maxProperties": 5,
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "dependentSchemas": {
+        "isOp": {
+          "properties": {
+            "isOp": {},
+            "permissionsLevel": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4
+            }
+          },
+          "required": ["permissionsLevel"]
         }
       }
     }
   },
   "required": [
-    "orderId",
-    "customer",
-    "items",
-    "totalAmount",
-    "status"
+    "playerId",
+    "player",
+    "gameMode"
   ],
-  "minProperties": 4,
-  "maxProperties": 20,
+  "minProperties": 3,
+  "maxProperties": 30,
   "allOf": [
     {
       "properties": {
-        "status": {
-          "enum": ["shipped", "delivered"]
+        "gameMode": {
+          "enum": ["creative"]
         }
       },
-      "required": ["billingAddress"]
+      "required": ["inventory"]
     }
   ],
   "anyOf": [
     {
       "properties": {
-        "status": {
-          "enum": ["cancelled"]
+        "gameMode": {
+          "enum": ["survival", "adventure"]
         }
       },
-      "required": ["notes"]
+      "required": ["health", "foodLevel"]
     },
     {
-      "not": {
-        "properties": {
-          "status": {
-            "enum": ["cancelled"]
-          }
+      "properties": {
+        "gameMode": {
+          "enum": ["creative", "spectator"]
         }
       }
     }
@@ -276,38 +371,40 @@
   "oneOf": [
     {
       "properties": {
-        "discount": {
-          "minimum": 50
+        "gameMode": {
+          "enum": ["survival"]
         }
-      }
+      },
+      "required": ["statistics"]
     },
     {
       "properties": {
-        "discount": {
-          "maximum": 0
+        "gameMode": {
+          "enum": ["creative"]
         }
       }
     }
   ],
   "if": {
     "properties": {
-      "status": {
-        "enum": ["pending"]
+      "gameMode": {
+        "enum": ["survival"]
       }
     }
   },
   "then": {
     "properties": {
-      "createdAt": {
-        "format": "date-time"
+      "health": {
+        "type": "number",
+        "minimum": 0
       }
     },
-    "required": ["createdAt"]
+    "required": ["health", "foodLevel", "inventory"]
   },
   "else": {
     "properties": {
-      "status": {
-        "enum": ["processing", "shipped", "delivered", "cancelled"]
+      "gameMode": {
+        "enum": ["creative", "adventure", "spectator"]
       }
     }
   },

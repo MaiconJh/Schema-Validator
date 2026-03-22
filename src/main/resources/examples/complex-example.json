@@ -1,43 +1,124 @@
 {
-  "orderId": "ORD-12345678",
-  "customer": {
-    "name": "John Doe",
-    "age": 30,
-    "email": "john.doe@example.com"
+  "playerId": "player-12345",
+  "player": {
+    "username": "Steve",
+    "age": null,
+    "email": "steve@example.com"
   },
-  "billingAddress": {
-    "street": "123 Main Street",
-    "city": "New York",
-    "zipCode": "12345-678",
-    "country": "United States"
+  "homeLocation": {
+    "world": "world",
+    "x": 100,
+    "y": 64,
+    "z": -250,
+    "dimension": "minecraft:overworld"
   },
-  "shippingAddress": {
-    "street": "456 Oak Avenue",
-    "city": "Los Angeles",
-    "zipCode": "90210-123",
-    "country": "United States"
+  "spawnPoint": {
+    "world": "world",
+    "x": 0,
+    "y": 64,
+    "z": 0,
+    "dimension": "minecraft:overworld"
   },
-  "items": [
+  "inventory": [
     {
-      "productId": "PROD-0001",
-      "quantity": 2,
-      "unitPrice": 29.99
+      "slot": 0,
+      "item": {
+        "id": "minecraft:diamond_sword",
+        "damage": 0,
+        "count": 1
+      }
     },
     {
-      "productId": "PROD-0002",
-      "quantity": 1,
-      "unitPrice": 49.99
+      "slot": 1,
+      "item": {
+        "id": "minecraft:torch",
+        "damage": 0,
+        "count": 64
+      }
+    },
+    {
+      "slot": 2,
+      "item": {
+        "id": "minecraft:cobblestone",
+        "damage": 0,
+        "count": 32
+      }
     }
   ],
-  "totalAmount": 109.97,
-  "discount": 0,
-  "status": "processing",
-  "createdAt": "2026-03-22T10:30:00Z",
-  "notes": null,
-  "metadata": {
-    "source": "website",
-    "campaign": "spring_sale",
-    "referralCode": "ABC123"
+  "enderChest": [
+    {
+      "slot": 0,
+      "item": {
+        "id": "minecraft:diamond_block",
+        "damage": 0,
+        "count": 1
+      }
+    }
+  ],
+  "balance": 1000.50,
+  "xpLevel": 25,
+  "gameMode": "survival",
+  "health": 20.0,
+  "foodLevel": 20,
+  "joinedAt": "2026-03-22T10:30:00Z",
+  "lastSeen": null,
+  "statistics": {
+    "blocksMined": 1542,
+    "entitiesKilled": 89,
+    "itemsCrafted": 567,
+    "distanceTravelled": 25430.5
   },
-  "alternatives": []
+  "effects": [
+    {
+      "id": "minecraft:speed",
+      "amplifier": 1,
+      "duration": 1200
+    },
+    {
+      "id": "minecraft:strength",
+      "amplifier": 0,
+      "duration": 600
+    }
+  ],
+  "attributes": [
+    {
+      "name": "minecraft:generic.max_health",
+      "value": 20.0,
+      "modifier": 0.0
+    },
+    {
+      "name": "minecraft:generic.movement_speed",
+      "value": 0.10000000149011612,
+      "modifier": 0.0
+    },
+    {
+      "name": "minecraft:generic.attack_damage",
+      "value": 2.0,
+      "modifier": 1.5
+    }
+  ],
+  "recipes": [
+    {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1
+    }
+  ],
+  "advancements": [
+    "minecraft:story/root",
+    "minecraft:adventure/root",
+    "minecraft:end/root"
+  ],
+  "tags": [
+    "#minecraft:wool",
+    "#minecraft:logs"
+  ],
+  "party": {
+    "leader": "Notch",
+    "members": ["Steve", "Alex", "Herobrine"]
+  },
+  "permissions": {
+    "isOp": false,
+    "isFlying": false,
+    "canBuild": true
+  }
 }
