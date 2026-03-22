@@ -5,7 +5,6 @@
   "description": "Comprehensive schema for validating Minecraft player data with all implemented JSON Schema features.",
   "$defs": {
     "Position": {
-      "$id": "https://example.com/schemas/position.schema.json",
       "type": "object",
       "properties": {
         "world": {
@@ -143,7 +142,7 @@
       "type": "array",
       "minItems": 0,
       "maxItems": 36,
-      "uniqueItems": true,
+      "uniqueItems": false,
       "prefixItems": [
         {
           "$ref": "#/$defs/InventorySlot"
@@ -225,7 +224,7 @@
       "type": "array",
       "minItems": 0,
       "maxItems": 32,
-      "uniqueItems": true,
+      "uniqueItems": false,
       "items": {
         "$ref": "#/$defs/PotionEffect"
       }
@@ -234,7 +233,7 @@
       "type": "array",
       "minItems": 0,
       "maxItems": 20,
-      "uniqueItems": true,
+      "uniqueItems": false,
       "items": {
         "$ref": "#/$defs/Attribute"
       }
@@ -297,9 +296,7 @@
         }
       },
       "required": ["leader", "members"],
-      "dependentRequired": {
-        "members": ["leader"]
-      }
+      "additionalProperties": false
     },
     "permissions": {
       "type": "object",
@@ -318,19 +315,6 @@
       "maxProperties": 5,
       "additionalProperties": {
         "type": "boolean"
-      },
-      "dependentSchemas": {
-        "isOp": {
-          "properties": {
-            "isOp": {},
-            "permissionsLevel": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 4
-            }
-          },
-          "required": ["permissionsLevel"]
-        }
       }
     }
   },
@@ -341,16 +325,6 @@
   ],
   "minProperties": 3,
   "maxProperties": 30,
-  "allOf": [
-    {
-      "properties": {
-        "gameMode": {
-          "enum": ["creative"]
-        }
-      },
-      "required": ["inventory"]
-    }
-  ],
   "anyOf": [
     {
       "properties": {
@@ -364,23 +338,6 @@
       "properties": {
         "gameMode": {
           "enum": ["creative", "spectator"]
-        }
-      }
-    }
-  ],
-  "oneOf": [
-    {
-      "properties": {
-        "gameMode": {
-          "enum": ["survival"]
-        }
-      },
-      "required": ["statistics"]
-    },
-    {
-      "properties": {
-        "gameMode": {
-          "enum": ["creative"]
         }
       }
     }
@@ -400,13 +357,6 @@
       }
     },
     "required": ["health", "foodLevel", "inventory"]
-  },
-  "else": {
-    "properties": {
-      "gameMode": {
-        "enum": ["creative", "adventure", "spectator"]
-      }
-    }
   },
   "additionalProperties": false
 }
