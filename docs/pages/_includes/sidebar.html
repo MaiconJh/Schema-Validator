@@ -1,5 +1,5 @@
 {% assign type_order = "tutorial|Tutorials,how-to|How-to Guides,reference|Reference,explanation|Explanation" | split: "," %}
-{% assign docs_pages = site.pages | where: "layout", "default" | where_exp: "item", "item.doc_type and item.nav_exclude != true" | sort: "order" %}
+{% assign docs_pages = site.pages | where: "layout", "default" | sort: "order" %}
 
 <nav id="sidebar" class="sidebar" aria-label="Documentation sidebar">
   <div id="page-index">
@@ -7,15 +7,22 @@
       {% assign parts = type_entry | split: "|" %}
       {% assign type_key = parts[0] %}
       {% assign type_label = parts[1] %}
-      {% assign grouped_pages = docs_pages | where: "doc_type", type_key %}
-      {% if grouped_pages.size > 0 %}
+      {% assign has_group_items = false %}
+      {% for item in docs_pages %}
+        {% if item.doc_type == type_key and item.nav_exclude != true %}
+          {% assign has_group_items = true %}
+        {% endif %}
+      {% endfor %}
+      {% if has_group_items %}
       <section class="sidebar-section">
         <p class="sidebar-title">{{ type_label }}</p>
         <ul class="sidebar-nav">
-          {% for item in grouped_pages %}
-          <li class="sidebar-nav-item">
-            <a class="sidebar-nav-link" href="{{ item.url | relative_url }}">{{ item.title }}</a>
-          </li>
+          {% for item in docs_pages %}
+            {% if item.doc_type == type_key and item.nav_exclude != true %}
+            <li class="sidebar-nav-item">
+              <a class="sidebar-nav-link" href="{{ item.url | relative_url }}">{{ item.title }}</a>
+            </li>
+            {% endif %}
           {% endfor %}
         </ul>
       </section>
