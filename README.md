@@ -1,39 +1,45 @@
-# Schema-Validator
+﻿# Schema-Validator
 
-Schema-Validator is a Paper/Skript add-on that validates JSON or YAML data files against a schema file from Skript code.
+Schema-Validator is a Paper/Skript add-on that validates JSON or YAML data files against schema files.
 
-This documentation was reconstructed from source code in this repository (not from prior docs). If behavior in docs and code diverge, code is authoritative.
+If documentation and code diverge, code is authoritative.
 
-## Start here
+## Documentation Home
 
-- [Quickstart](docs/quickstart.md)
-- [Installation](docs/installation.md)
-- [Configuration](docs/configuration.md)
-- [Guides](docs/guides/README.md)
-- [Reference](docs/reference/README.md)
-- [Explanation](docs/explanation/README.md)
+### Guided docs (for non-technical users)
 
-## What the plugin actually exposes
+- Online docs home: [Schema Validator Docs](https://maiconjh.github.io/Schema-Validator/)
+- Guided start page in repository: [docs/pages/index.md](docs/pages/index.md)
 
-- Skript effect: `validate yaml %string% using schema %string%`
-- Skript effect: `validate json %string% using schema %string%`
-- Skript expression: `last schema validation errors`
-- Automatic schema loading from a configured folder during plugin startup
-- Validation engine for object, array, and primitive schema types with composition/conditional keywords and selected constraints
+Recommended guided sequence:
 
-## Runtime constraints you should know
+1. [Getting started](docs/pages/getting-started.md)
+2. [Installation](docs/pages/installation.md)
+3. [Quickstart](docs/pages/quickstart.md)
+4. [Configuration](docs/pages/configuration.md)
 
-- The Skript validation effect loads data files as `Map<String, Object>` roots; top-level arrays/scalars are not supported in that path.
-- `$ref` resolution is implemented but the Skript effect path uses `new ValidationService()` (without resolver wiring), so `$ref` is not resolved there.
-- Array size/uniqueness keywords (`minItems`, `maxItems`, `uniqueItems`) are recognized as supported keywords metadata, but are not enforced by `ArrayValidator`.
+### Developer and reference docs
 
-## Source mapping
+- [Schema keywords](docs/pages/schema-keywords.md)
+- [Validation behavior](docs/pages/validation-behavior.md)
+- [Architecture](docs/pages/architecture.md)
+- [Authoring guide (internal)](docs/pages/dev-guide.md)
 
-1. Plugin bootstrap, auto-load, config wiring: `SchemaValidatorPlugin.onEnable()`, `autoLoadSchemas()`.  
-2. Skript syntax registration: `SkriptSyntaxRegistration.register()`.  
-3. Skript effect + expression behavior: `EffValidateData`, `ExprLastValidationErrors`, `SkriptValidationBridge`.  
-4. Data loading root type: `DataFileLoader.load()` uses `TypeReference<Map<String, Object>>`.  
-5. `$ref` mechanism and resolver-aware path: `ObjectValidator.validate()` + `ValidationService(SchemaRefResolver)` constructor.  
-6. Array enforcement scope: `ArrayValidator.validate()`.
+## Exposed Skript API
 
-[← Previous](README.md) | [Next →](docs/README.md) | [Home](README.md)
+- Effect: `validate yaml %string% using schema %string%`
+- Effect: `validate json %string% using schema %string%`
+- Expression: `last schema validation errors`
+
+## Important runtime constraints
+
+- Skript validation loads data as `Map<String, Object>` root values.
+- `$ref` in Skript effect path is not resolver-wired by default.
+- `minItems`, `maxItems`, and `uniqueItems` are parsed but not enforced by `ArrayValidator`.
+
+## Project docs layout
+
+- Site source: `docs/pages/`
+- Shared layout: `docs/pages/_layouts/default.html`
+- Shared includes: `docs/pages/_includes/`
+- Styles and scripts: `docs/pages/assets/`
