@@ -1,0 +1,11 @@
+{% assign docs_ver = site.docs_version | default: "" %}
+{% assign latest_ver = site.latest_docs_version | default: docs_ver %}
+{% assign latest_url = site.latest_docs_url | default: "/" %}
+
+{% if docs_ver != "" and latest_ver != "" and docs_ver != latest_ver %}
+<aside class="version-banner" role="note" aria-label="Documentation version warning">
+  <span class="version-banner-label">Older docs version</span>
+  <span class="version-banner-text">You are reading docs v{{ docs_ver }}. Latest available is v{{ latest_ver }}.</span>
+  <a class="version-banner-link" href="{{ latest_url }}">Go to latest docs</a>
+</aside>
+{% endif %}

@@ -87,6 +87,21 @@ Permalinks preserve historical routes:
 - `/examples.html`
 - `/architecture.html`
 
+## Version signaling
+
+Global version settings are defined in `_config.yml`:
+
+- `docs_version`
+- `latest_docs_version`
+- `latest_docs_url`
+- `plugin_version_range`
+
+UI behavior:
+
+- Header shows current docs version badge.
+- Article header shows `Applies to` plugin range.
+- A warning banner appears only when `docs_version` is different from `latest_docs_version`.
+
 ## Accessibility baseline
 
 - Skip link to main content

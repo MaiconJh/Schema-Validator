@@ -49,6 +49,7 @@ For procedural pages:
 - `docs/pages/*.md` is the source of truth for published docs pages.
 - `_layouts/default.html` and `_includes/*` control shared UI and navigation.
 - Sidebar grouping is generated from front matter metadata.
+- Docs and plugin version labels are controlled by `docs/pages/_config.yml` version keys.
 
 ## External guidance
 

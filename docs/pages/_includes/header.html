@@ -8,7 +8,10 @@
           <path d="M2 12l10 5 10-5"/>
         </svg>
       </span>
-      <span>Schema Validator</span>
+      <span class="header-logo-text">Schema Validator</span>
+      {% if site.docs_version %}
+      <span class="docs-version-badge">Docs v{{ site.docs_version }}</span>
+      {% endif %}
     </a>
 
     <div class="header-controls">
