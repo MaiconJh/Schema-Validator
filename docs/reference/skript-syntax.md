@@ -1,24 +1,34 @@
-# Reference: Skript syntax
+# Reference: Skript Syntax
 
-## Registered effect patterns
+## Registered Effect Patterns
 
 1. `validate yaml %string% using schema %string%`
 2. `validate json %string% using schema %string%`
 
-## Registered expression pattern
+## Registered Expression Pattern
 
 - `last schema validation errors`
 
-## Runtime behavior
+## Runtime Semantics
 
-- Effect loads data path and schema path from the two string expressions.
-- Effect stores `ValidationResult` into global bridge (`SkriptValidationBridge`).
-- Expression returns `String[]`; empty array when no result or success.
+- `matchedPattern == 0` means YAML mode in `EffValidateData.init()`.
+- Data and schema paths are converted with `Path.of(...)` and used as-is.
+- Effect loads schema and registers it into registry under schema file name (including extension).
+- Result is stored in static bridge (`SkriptValidationBridge`).
 
-## Source mapping
+## Error Behavior
 
-1. Registration: `SkriptSyntaxRegistration.register()`.  
-2. Effect init/execute: `EffValidateData.init()`, `EffValidateData.execute()`.  
-3. Expression retrieval: `ExprLastValidationErrors.get()`.
+- On validation failure, the effect logs full `ValidationError.toString()` lines.
+- On exception, the bridge receives one synthetic error at path `$`.
+- Expression returns empty array when no result or when validation succeeded.
 
-[← Previous](README.md) | [Next →](schema-keywords.md) | [Home](../../README.md)
+## Code Mapping
+
+- Registration: `SkriptSyntaxRegistration.register()`
+- Effect: `EffValidateData`
+- Expression: `ExprLastValidationErrors`
+- Bridge: `SkriptValidationBridge`
+
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

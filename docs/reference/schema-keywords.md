@@ -1,42 +1,43 @@
-# Reference: Schema keyword support
+# Reference: Schema Keyword Support
 
-This table reflects implemented parsing + enforcement behavior.
+This page distinguishes parsed keywords from enforced behavior.
 
-## Enforced at validation time
+## Enforced At Runtime
 
-- `type`
-- `properties`
-- `patternProperties`
-- `required`
-- `additionalProperties`
-- `items`
-- `enum`
-- `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`
-- `minLength`, `maxLength`, `pattern`, `format`
-- `allOf`, `anyOf`, `oneOf`, `not`
-- `if`, `then`, `else`
+- Type checks: `type`
+- Object structure: `properties`, `patternProperties`, `required`, `additionalProperties`
+- Array structure: `items`
+- String constraints: `minLength`, `maxLength`, `pattern`, `format`
+- Numeric constraints: `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`
+- Enumerations: `enum`
+- Composition: `allOf`, `anyOf`, `oneOf`, `not`
+- Conditional: `if`, `then`, `else`
 
-## Parsed but not enforced (current implementation)
+## Parsed But Not Enforced
 
-- `version`, `compatibility` (stored only)
-- `definitions`, `$defs` (parsed for loader definitions map)
-- `minItems`, `maxItems`, `uniqueItems`, `dependencies`, `const`, many metadata keywords listed in `SupportedKeywordsRegistry`
+- `minItems`, `maxItems`, `uniqueItems`, `dependencies`, `const`
+- Metadata and compatibility fields such as `version`, `compatibility`
+- Registry-listed metadata keywords (`title`, `description`, `examples`, etc.)
 
-## Unsupported-keyword handling
+## `$ref` Support
 
-- Unknown keywords are logged as warnings by default.
-- In strict mode (`failFastMode=true`), unknown keywords throw `IllegalArgumentException` during schema parsing.
+- `$ref` is parsed into `Schema.ref`.
+- Runtime resolution only happens if validator uses `SchemaRefResolver`.
+- Startup self-check path (`validation-on-load`) wires resolver.
+- Skript effect path currently uses `new ValidationService()` without resolver.
 
-## `$ref`
+## Unsupported Keywords
 
-- Parsed into `Schema.ref`.
-- Resolved only if validator path has a `SchemaRefResolver` wired into `ObjectValidator`.
+- Non-listed keys trigger warning logs by default.
+- With `strict-mode: true`, unsupported keywords throw `IllegalArgumentException` during load.
 
-## Source mapping
+## Code Mapping
 
-1. Parsing: `FileSchemaLoader.toSchema()`.  
-2. Unsupported-keyword detection: `FileSchemaLoader.detectUnsupportedKeywords()`, `SupportedKeywordsRegistry`.  
-3. Enforcement: `ObjectValidator`, `ArrayValidator`, `PrimitiveValidator`, `FormatValidator`.  
-4. `$ref` support path: `ObjectValidator.validate()`, `ValidationService(SchemaRefResolver)`.
+- Parser: `FileSchemaLoader.toSchema()`
+- Keyword registry: `SupportedKeywordsRegistry`
+- Unsupported detection: `FileSchemaLoader.detectUnsupportedKeywords()`
+- Runtime validators: `ObjectValidator`, `ArrayValidator`, `PrimitiveValidator`
 
-[← Previous](skript-syntax.md) | [Next →](validation-behavior.md) | [Home](../../README.md)
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

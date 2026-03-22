@@ -1,44 +1,49 @@
-# Reference: Validation behavior
+# Reference: Validation Behavior
 
-## Dispatch model
+## Dispatch Model
 
-- `OBJECT` schemas use `ObjectValidator`.
-- `ARRAY` schemas use `ArrayValidator`.
-- Everything else uses `PrimitiveValidator`.
+`ValidatorDispatcher.forSchema(schema)` routes by schema type:
 
-## Object validation order
+- `OBJECT` -> `ObjectValidator`
+- `ARRAY` -> `ArrayValidator`
+- all others -> `PrimitiveValidator`
 
-1. `$ref` resolution (if resolver available)
-2. Type check (`Map` required)
-3. `allOf` / `anyOf` / `oneOf` / `not` / conditional (`if/then/else`)
-4. Required fields
-5. Declared property validation
-6. Unknown-field handling through `patternProperties` and `additionalProperties`
+## Object Validation Order
 
-## Primitive behavior
+1. Resolve `$ref` if resolver exists.
+2. Require input data to be `Map<?, ?>`.
+3. Evaluate `allOf`, `anyOf`, `oneOf`, `not`, `if/then/else`.
+4. Enforce `required` keys.
+5. Validate declared `properties` that are present.
+6. Evaluate unknown keys with `patternProperties` and `additionalProperties`.
 
-- `number` accepts any `Number`.
-- `integer` accepts integral numeric values (including decimal numeric types without fractional part).
-- `enum` short-circuits further primitive constraint checks when enum fails/succeeds.
-- Unknown `format` values are treated as pass (no error).
-
-## Array behavior
+## Array Validation
 
 - Data must be `List<?>`.
-- If schema has `items`, each element is validated recursively.
-- If schema has no `items`, no per-item checks are performed.
+- If `items` exists, each element is validated recursively.
+- If `items` is absent, array passes without per-item checks.
 
-## Result and error model
+## Primitive Validation
 
-- Validation returns `ValidationResult` with immutable error list.
-- `ValidationError` contains path, expected facet/type, actual value/type, and description.
+- `any` always passes.
+- `integer` accepts integral numeric values (including `3.0`).
+- `enum` short-circuits remaining primitive constraints.
+- Unknown `format` values pass (`default -> true` in `FormatValidator`).
 
-## Source mapping
+## Result Model
 
-1. Dispatcher: `ValidatorDispatcher.forSchema()`.  
-2. Object flow: `ObjectValidator.validate()`.  
-3. Primitive flow: `PrimitiveValidator.validate()`.  
-4. Array flow: `ArrayValidator.validate()`.  
-5. Result model: `ValidationResult`, `ValidationError`.
+- `ValidationResult` wraps immutable error list.
+- `ValidationError` has path, expected, actual, and description.
+- Compact output for scripts uses `ValidationError.toCompactString()`.
 
-[← Previous](schema-keywords.md) | [Next →](examples-and-schema-construction.md) | [Home](../../README.md)
+## Code Mapping
+
+- Dispatcher: `ValidatorDispatcher`
+- Object: `ObjectValidator`
+- Array: `ArrayValidator`
+- Primitive: `PrimitiveValidator`
+- Result types: `ValidationResult`, `ValidationError`
+
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

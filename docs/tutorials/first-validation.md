@@ -1,47 +1,56 @@
-# Tutorial: First validation workflow
+# Tutorial: First Validation Workflow
 
-Goal: run one end-to-end schema validation and inspect the produced errors.
+Goal: run one end-to-end validation and inspect failure output.
 
 ## Prerequisites
 
-- Plugin and Skript installed
-- One schema file and one data file
+- Plugin + Skript installed.
+- One schema file and one data file.
 
-## Step 1 — Use a schema with object properties
-
-Use `player-profile.schema.json` example structure:
+## 1. Create a schema
 
 ```json
 {
   "type": "object",
+  "required": ["id", "level"],
   "properties": {
-    "id": {"type": "string"},
-    "level": {"type": "number"},
-    "active": {"type": "boolean"}
-  }
+    "id": { "type": "string" },
+    "level": { "type": "integer", "minimum": 1 }
+  },
+  "additionalProperties": false
 }
 ```
 
-## Step 2 — Run validation effect in Skript
+## 2. Create intentionally invalid data
 
-```skript
-validate yaml "examples/simple-block-example.yml" using schema "examples/schemas/simple-block-schema.json"
-set {_errors::*} to last schema validation errors
+```yaml
+id: "player-01"
+level: 0
+extra: true
 ```
 
-## Step 3 — Interpret output
+## 3. Run the Skript effect
 
-- If `{_errors::*}` is empty, validation succeeded.
-- If not empty, each value is a compact message with path, expected facet, actual value/type, and detail.
+```skript
+validate yaml "plugins/Schema-Validator/data/player.yml" using schema "plugins/Schema-Validator/schemas/player.schema.json"
+set {_errors::*} to last schema validation errors
+loop {_errors::*}:
+    broadcast "%loop-value%"
+```
 
-## Step 4 — Trigger a failure deliberately
+## 4. Interpret output
 
-Set an invalid value in your data file (e.g., wrong type for a property), rerun, and inspect the error list.
+You should see failures for:
 
-## Source mapping
+- `minimum` on `level`
+- `additionalProperties` for `extra`
 
-1. Schema example source: `src/main/resources/examples/schemas/player-profile.schema.json`.  
-2. Skript usage example source: `src/main/resources/examples/validate-simple-example.sk`.  
-3. Error formatting: `ValidationError.toCompactString()`, `ExprLastValidationErrors.get()`.
+## Code Mapping
 
-[← Previous](README.md) | [Next →](../reference/README.md) | [Home](../../README.md)
+- Object rules: `ObjectValidator.validate()`
+- Primitive numeric rules: `PrimitiveValidator.validate()`
+- Compact message format: `ValidationError.toCompactString()`
+
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

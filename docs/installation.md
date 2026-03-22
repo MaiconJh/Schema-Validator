@@ -1,27 +1,34 @@
 # Installation
 
-## Build from source
+## Build
 
 ```bash
 ./gradlew build
 ```
 
-This project is configured for Java 21 toolchain and Paper/Skript compile-only APIs.
+The project uses Java 21 toolchain and compile-only Paper/Skript APIs.
 
-## Deploy
+## Deploy To Server
 
-1. Copy built JAR from `build/libs/` to your server `plugins/` folder.
-2. Ensure Skript is installed (hard dependency).
-3. Start server.
+1. Copy jar from `build/libs/` into `plugins/`.
+2. Ensure Skript is present (`depend: Skript` in `plugin.yml`).
+3. Start the server.
 
-## Verify load
+## Verify Startup
 
-On enable, plugin logs configuration and schema autoload summary.
+On enable, the plugin:
 
-## Source mapping
+- loads `config.yml`
+- creates schema registry and schema loader
+- optionally auto-loads schemas
+- registers Skript syntax
 
-1. Build settings and dependencies: `build.gradle`, `plugin.yml`.  
-2. Required dependency (`depend: Skript`): `src/main/resources/plugin.yml`.  
-3. Startup behavior/logs: `SchemaValidatorPlugin.onEnable()`, `PluginConfig.load()`.
+## Code Mapping
 
-[← Previous](quickstart.md) | [Next →](configuration.md) | [Home](../README.md)
+- Plugin lifecycle: `SchemaValidatorPlugin.onEnable()`
+- Dependency declaration: `src/main/resources/plugin.yml`
+- Build version: `build.gradle`
+
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

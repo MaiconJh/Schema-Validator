@@ -1,19 +1,23 @@
-# Documentation Home
+# Repository Documentation
 
-This documentation follows a Diátaxis-style split:
+This documentation covers `docs/**` except `docs/pages/**`.
 
-- **Tutorials**: learning by doing
-- **Guides**: task-focused procedures
-- **Reference**: exact behavior and interfaces
-- **Explanation**: architecture, design constraints, and reasoning
+## Audit Scope
 
-## Reading paths
+This set was rebuilt against practical guidance from Write the Docs:
 
-- New user: [Quickstart](quickstart.md) → [Tutorial: first validation](tutorials/first-validation.md)
-- Installing on server: [Installation](installation.md) → [Configuration](configuration.md)
-- Precise behavior lookup: [Reference index](reference/README.md)
+- audience-first writing
+- one page, one purpose
+- scannable structure
+- examples tied to real behavior
+- docs maintained as code
 
-## Sections
+## Intended Readers
+
+- Operators who install and run the plugin.
+- Contributors who need code-accurate behavior.
+
+## Structure
 
 - [Quickstart](quickstart.md)
 - [Installation](installation.md)
@@ -23,4 +27,19 @@ This documentation follows a Diátaxis-style split:
 - [Reference](reference/README.md)
 - [Explanation](explanation/README.md)
 
-[← Previous](../README.md) | [Next →](quickstart.md) | [Home](../README.md)
+## What Changed In This Audit
+
+- Removed stale navigation text and encoding artifacts.
+- Reduced duplicate content between guides, tutorials, and reference.
+- Corrected claims to match `src/main/java/com/maiconjh/schemacr/**`.
+- Added a mandatory metadata footer to every file in this doc tree.
+
+## Source Of Truth
+
+- Runtime behavior: `src/main/java/com/maiconjh/schemacr/**`
+- Default config values: `src/main/resources/config.yml`
+- User-facing published portal: `docs/pages/**`
+
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

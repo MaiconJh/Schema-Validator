@@ -1,33 +1,36 @@
-# Explanation: Runtime architecture
+# Explanation: Runtime Architecture
 
-## Main execution path
+## Startup Pipeline
 
-1. Plugin enables.
-2. Config is loaded.
-3. Registry + schema loader are created.
-4. Optional startup schema autoload runs.
-5. Skript syntaxes are registered.
-6. Static `PluginContext` is initialized for integration classes.
+1. `SchemaValidatorPlugin.onEnable()` saves default config and loads `PluginConfig`.
+2. Creates `SchemaRegistry` with 5-minute cache expiry.
+3. Creates `FileSchemaLoader` and applies strict-mode fail-fast setting.
+4. Runs auto-load flow when enabled.
+5. Registers Skript syntax and initializes `PluginContext`.
 
-## Validation subsystems
+## Request Pipeline (Skript Path)
 
-- `FileSchemaLoader`: parses JSON/YAML schema documents into `Schema` model.
-- `SchemaRegistry`: stores schemas by lowercase name with optional expiry behavior.
-- `ValidationService`: dispatches validation by schema type and returns `ValidationResult`.
-- Validators:
-  - `ObjectValidator`
-  - `ArrayValidator`
-  - `PrimitiveValidator`
+1. Skript effect receives data path + schema path.
+2. `DataFileLoader` reads data as object map.
+3. `FileSchemaLoader` parses schema.
+4. Schema is registered in `SchemaRegistry`.
+5. `ValidationService` runs validator dispatch.
+6. Result is stored in `SkriptValidationBridge`.
+7. Expression exposes compact errors to scripts.
 
-## Integration boundary
+## Core Components
 
-Skript integration is intentionally thin: it loads files, runs validation, then exposes the latest result through one global bridge.
+- `SchemaValidatorPlugin`: composition root for runtime services.
+- `PluginConfig`: config reading and typed access.
+- `SchemaRegistry`: schema storage + expiry behavior.
+- `FileSchemaLoader`: schema parsing and unsupported-keyword checks.
+- `ValidationService`: validation facade.
+- `Skript*` classes: integration boundary.
 
-## Source mapping
+## Why This Shape
 
-1. Plugin lifecycle + wiring: `SchemaValidatorPlugin`.  
-2. Context holder: `PluginContext`.  
-3. Integration classes: `EffValidateData`, `ExprLastValidationErrors`, `SkriptValidationBridge`.  
-4. Core schema/validation classes in `schemes/` and `validation/` packages.
+The current architecture favors minimal coupling to Skript and keeps validator logic in pure Java classes that can be tested independently.
 
-[← Previous](README.md) | [Next →](design-constraints.md) | [Home](../../README.md)
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

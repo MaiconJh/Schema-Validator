@@ -1,31 +1,33 @@
-# Guide: Validate a JSON file from Skript
+# Guide: Validate A JSON File From Skript
 
-Use this when your input file is JSON instead of YAML.
+Use this when your input data is JSON.
 
 ## Steps
 
-1. Place JSON data file on disk.
-2. Place schema file on disk (JSON or YAML schema extension is supported by loader).
-3. Run effect:
+1. Put your JSON data file on disk.
+2. Put your schema file (`.json`, `.yml`, or `.yaml`) on disk.
+3. Run the effect:
 
 ```skript
 validate json "plugins/Schema-Validator/data/player.json" using schema "plugins/Schema-Validator/schemas/player.schema.json"
 set {_errors::*} to last schema validation errors
 ```
 
-4. Branch on error list size.
+4. If `size of {_errors::*}` is `0`, validation passed.
 
-## Operational details
+## Behavior Details
 
-- The first `%string%` path is loaded with JSON `ObjectMapper` in `DataFileLoader`.
-- The schema path is always loaded by `FileSchemaLoader` using extension detection.
-- Result is stored globally as “last result” in `SkriptValidationBridge`.
+- JSON/YAML mode is selected by the parsed effect pattern in `EffValidateData.init()`.
+- Data is loaded by `DataFileLoader.load(path, yamlMode)`.
+- The current loader deserializes to `Map<String, Object>` root, so root arrays/scalars are not supported in this effect path.
 
-## Source mapping
+## Code Mapping
 
-1. Effect patterns: `SkriptSyntaxRegistration.register()`.  
-2. JSON vs YAML mode switch: `EffValidateData.init()` (`matchedPattern == 0` for YAML; JSON is the other pattern).  
-3. Data and schema loading: `DataFileLoader.load()`, `FileSchemaLoader.load()`.  
-4. Last-result bridge: `SkriptValidationBridge`.
+- Syntax patterns: `SkriptSyntaxRegistration.register()`
+- Effect mode and execution: `EffValidateData.init()`, `EffValidateData.execute()`
+- Data loader: `DataFileLoader.load()`
+- Result expression: `ExprLastValidationErrors.get()`
 
-[← Previous](README.md) | [Next →](schema-directory-workflow.md) | [Home](../../README.md)
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

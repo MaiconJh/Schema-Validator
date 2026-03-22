@@ -1,37 +1,20 @@
 # Explanation
 
-This section contains conceptual documentation that explains **why** the system behaves the way it does. Unlike tutorials (which teach step-by-step) or reference (which documents exact syntax), the Explanation section focuses on architecture, design decisions, and known constraints.
+Explanation pages describe why the system is shaped this way.
 
-## Available Sections
+## Pages
 
-| Section | Description | Purpose |
-|---------|-------------|---------|
-| [Runtime architecture](architecture.md) | Execution architecture overview | Understand how the plugin initializes and processes validations |
-| [Known design constraints](design-constraints.md) | Known limitations and constraints | Understand technical and behavioral limitations |
-| [Documentation audit](documentation-audit.md) | Audit and reconstruction report | Historical context for documentation decisions |
+- [Runtime architecture](architecture.md)
+- [Known design constraints](design-constraints.md)
+- [Documentation audit report](documentation-audit.md)
 
-## Validation Flow - Overview
+## Position In The Doc Set
 
-The Schema-Validator validation process follows a structured flow:
-
-![Validation Flow Overview](Validation_Flow_Overview.svg)
-
-### Flow Components
-
-| Step | Description |
-|------|-------------|
-| **Plugin Load** | Plugin loads configuration, registers schemas, and initializes static context |
-| **Skript Event** | A Skript script triggers validation using `validate yaml/json ... using schema ...` |
-| **Load Schema & Data** | System loads the JSON schema and data file (YAML or JSON) |
-| **Run Validation Engine** | Validators process data according to schema rules |
-| **Return Result & Errors** | Validation result and any errors are returned |
-
-## Why This Section Matters
-
-- **Architecture** helps developers understand how to integrate or extend the plugin
-- **Constraints** alerts about limitations that may impact specific use cases
-- **Audit** documents historical decisions and rationale behind current structure
+- Tutorials: learn by doing.
+- Guides: complete one task.
+- Reference: exact behavior and syntax.
+- Explanation: architecture and tradeoffs.
 
 ---
-
-[← Previous](../reference/config-reference.md) | [Next →](architecture.md) | [Home](../../README.md)
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

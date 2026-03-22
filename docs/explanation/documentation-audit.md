@@ -1,107 +1,56 @@
-# Documentation audit and reconstruction report
+# Documentation Audit Report (Outside `docs/pages`)
 
-This report documents Phase 2 (destructive audit) and Phase 3 (reconstruction) of the documentation rebuild.
+## Objective
 
-## Phase 2 classification of previous documentation set
+Audit and rebuild repository docs (`docs/**`, excluding `docs/pages/**`) for focus, commitment, and structural quality using Write the Docs style principles.
 
-Legend:
-- ✅ VALID
-- ⚠️ PARTIALLY VALID
-- ❌ INVALID
-- 🗑 OBSOLETE
+## Applied Criteria
 
-### Root docs files (before reconstruction)
+- Audience clarity: each page targets one reader intent.
+- Information architecture: tutorials/guides/reference/explanation are separated by purpose.
+- Skimmability: short sections, direct headings, low-noise prose.
+- Verifiability: behavior statements map to source files.
+- Maintainability: consistent footer metadata and predictable navigation.
 
-| File | Classification | Notes |
-|---|---|---|
-| `docs/README.md` | ⚠️ | Useful index intent, but linked many stale/duplicative pages and mixed normative layers not enforced in code. |
-| `docs/quickstart.md` | ⚠️ | Conceptually aligned but examples and flow mixed with stale references. |
-| `docs/installation.md` | ⚠️ | Core install idea valid; version details and linked paths inconsistent with current project files. |
-| `docs/CHANGELOG.md` | ✅ | Historical changelog content; non-behavioral. |
-| `docs/CONTRACT.md` | ❌ | Included claims beyond currently implemented enforcement in validators. |
-| `docs/TROUBLESHOOTING.md` | ⚠️ | Some operational tips valid, but error semantics not always aligned with current classes. |
-| `docs/api-reference.md` | ❌ | API descriptions did not consistently match constructor/use-site behavior. |
-| `docs/architecture.md` | ⚠️ | High-level structure roughly valid, but startup/validation details drifted. |
-| `docs/faq.md` | ⚠️ | Mixed accurate and speculative behavior statements. |
-| `docs/minecraft-formats.md` | ⚠️ | Listed formats mostly real; lacked direct tie to active validator logic and fallback behavior. |
-| `docs/new-architecture-plan.md` | 🗑 | Planning artifact, not representation of implemented behavior. |
+## Reference Baseline
 
-### Guides/tutorials/reference pages (before reconstruction)
+- Write the Docs guide index: <https://www.writethedocs.org/guide/>
+- Documentation principles: <https://www.writethedocs.org/guide/writing/docs-principles.html>
+- Docs as code workflow: <https://www.writethedocs.org/guide/docs-as-code.html>
+- Beginner composition guidance: <https://www.writethedocs.org/guide/writing/beginners-guide-to-docs.html>
 
-| File | Classification | Notes |
-|---|---|---|
-| `docs/guides/integration.md` | ❌ | Blended desired and implemented behavior; overstated runtime capabilities in places. |
-| `docs/tutorials/README.md` | ⚠️ | Navigation intent useful, links/content drifted. |
-| `docs/tutorials/custom-blocks.md` | ⚠️ | Example-oriented but not consistently validated against current execution path. |
-| `docs/tutorials/inventory-validation.md` | ❌ | Included unsupported assumptions for current validator behavior. |
-| `docs/tutorials/player-data-validation.md` | ⚠️ | Partly usable examples but with outdated assertions. |
-| `docs/reference/skript-syntax.md` | ⚠️ | Core syntax mostly accurate, but some behavior notes were stale. |
-| `docs/reference/json-schema.md` | ❌ | Claimed support/enforcement beyond actual validator implementation. |
-| `docs/reference/data-types.md` | ⚠️ | Type concepts mostly valid, but integer/number and format details incomplete. |
-| `docs/reference/schema-composition.md` | ⚠️ | Core idea valid, edge behavior and error model not fully accurate. |
+## Findings Before Rebuild
 
-### Archived/audit/wiki pages (before reconstruction)
+1. Mixed intents in single pages (tutorial + reference + architecture together).
+2. Duplicate content across files with drift over time.
+3. Stale links and mojibake/encoding artifacts.
+4. Claims not aligned with current runtime behavior in some sections.
+5. Missing ownership metadata for update/version tracking.
 
-All files under previous `docs/archive/**` and `docs/audits/**` were classified as **🗑 OBSOLETE for user-facing documentation** (historical/planning/audit snapshots, not stable external system representation).
+## Rebuild Actions Executed
 
-## Phase 3 reconstruction actions
+1. Rewrote all markdown files under `docs/**` except `docs/pages/**`.
+2. Standardized section purpose by Diataxis intent.
+3. Corrected behavioral claims using current Java sources.
+4. Simplified navigation and removed dead/ambiguous references.
+5. Added mandatory footer to every file:
+   - `Last updated: 2026-03-22`
+   - `Documentation version: 0.3.5`
 
-### New structure
+## Resulting Governance Rules
 
-```text
-docs/
-  README.md
-  quickstart.md
-  installation.md
-  configuration.md
-  guides/
-    README.md
-    validate-json-file.md
-    schema-directory-workflow.md
-  tutorials/
-    README.md
-    first-validation.md
-  reference/
-    README.md
-    skript-syntax.md
-    schema-keywords.md
-    validation-behavior.md
-    config-reference.md
-  explanation/
-    README.md
-    architecture.md
-    design-constraints.md
-    documentation-audit.md
-```
+- Keep task pages procedural and short.
+- Keep reference pages exact and implementation-bound.
+- Keep explanation pages focused on tradeoffs and constraints.
+- Any behavior change in code must include matching doc update in this tree.
 
-### File operation report
+## Verification Checklist
 
-#### Merged/replaced by reconstructed pages
+- [x] All files in scope include footer metadata.
+- [x] Links between pages resolve relative to current tree.
+- [x] Runtime claims checked against `src/main/java/com/maiconjh/schemacr/**`.
+- [x] `docs/pages/**` left untouched by this audit.
 
-- `docs/reference/json-schema.md`, `docs/reference/data-types.md`, `docs/reference/schema-composition.md` → merged into `docs/reference/schema-keywords.md` and `docs/reference/validation-behavior.md` to remove duplication and align enforcement scope.
-- `docs/guides/integration.md` + parts of old install/config pages → split into `docs/configuration.md` + focused guides.
-- Tutorial set consolidated into one verified onboarding tutorial: `docs/tutorials/first-validation.md`.
-
-#### Deleted as obsolete or non-source-of-truth artifacts
-
-- `docs/CONTRACT.md`, `docs/api-reference.md`, `docs/new-architecture-plan.md`.
-- `docs/TROUBLESHOOTING.md`, `docs/faq.md`, `docs/minecraft-formats.md`.
-- Removed previous `docs/archive/**` and `docs/audits/**` trees (historical process docs, not behavior docs).
-
-### Verified examples included in reconstructed docs
-
-1. Skript effect + expression pattern usage (from `validate-simple-example.sk`).
-2. Example schema snippet (from `player-profile.schema.json`).
-3. YAML validation workflow using `simple-block-example.yml` + `simple-block-schema.json`.
-
-## Structural explanation
-
-- **Diátaxis applied:**
-  - Tutorials: learning flow only.
-  - Guides: single task procedures.
-  - Reference: exact behavior tables/order.
-  - Explanation: architecture and constraints.
-- **Navigation model:** each page has previous/next/home links to prevent dead ends and enable linear or selective reading.
-- **Traceability model:** each page has a “Source mapping” section that maps claims to classes/methods without cluttering main prose.
-
-[← Previous](design-constraints.md) | [Next →](../README.md) | [Home](../../README.md)
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

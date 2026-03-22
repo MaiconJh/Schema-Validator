@@ -2,25 +2,30 @@
 
 Schema-Validator reads `plugins/Schema-Validator/config.yml`.
 
-## Keys
+## Configuration Workflow
 
-- `schema-directory` (default: `schemas`)
-- `auto-load` (default: `true`)
-- `cache-enabled` (default: `true`)
-- `validation-on-load` (default: `false` in bundled config)
-- `strict-mode` (default: `false`)
+1. Set `schema-directory` for startup auto-load.
+2. Choose if `auto-load` should run on startup.
+3. Keep `cache-enabled` on unless you need immediate hard refresh behavior.
+4. Enable `validation-on-load` only when you want startup self-checking.
+5. Enable `strict-mode` to fail fast on unsupported keywords.
 
-## Behavior notes
+## Important Runtime Notes
 
-- `schema-directory` is resolved relative to plugin data folder via `Paths.get(pluginDataFolder, schema-directory)`.
-- `strict-mode` toggles FileSchemaLoader fail-fast handling for unsupported keywords.
-- `cache-enabled` controls expiration behavior in `SchemaRegistry` lookups.
+- `schema-directory` is resolved under plugin data folder by `PluginConfig.getSchemaDirectory()`.
+- The bundled config sets `validation-on-load: false`, but `PluginConfig` fallback default is `true` if the key is missing.
+- `strict-mode` controls `FileSchemaLoader.setFailFastMode(...)`.
 
-## Source mapping
+## Full Key Table
 
-1. Default values and comments: `src/main/resources/config.yml`.  
-2. Parsing and getters: `PluginConfig`.  
-3. Loader strict wiring: `SchemaValidatorPlugin.onEnable()`, `FileSchemaLoader.setFailFastMode()`.  
-4. Registry cache behavior: `SchemaRegistry.getSchema()`.
+See [Reference: Config](reference/config-reference.md).
 
-[← Previous](installation.md) | [Next →](guides/README.md) | [Home](../README.md)
+## Code Mapping
+
+- Config parsing: `PluginConfig.load()`
+- Startup wiring: `SchemaValidatorPlugin.onEnable()`
+- Default values file: `src/main/resources/config.yml`
+
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

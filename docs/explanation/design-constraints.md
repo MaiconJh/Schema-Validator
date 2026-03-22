@@ -1,26 +1,33 @@
-# Explanation: Known design constraints
+# Explanation: Known Design Constraints
 
-## 1) Last validation result is global
+## 1. Global Last Result
 
-`SkriptValidationBridge` stores one static volatile result. Concurrent validations overwrite prior results.
+`SkriptValidationBridge` keeps only one static `lastResult`. Parallel validations can overwrite each other.
 
-## 2) `$ref` support is path-dependent
+## 2. Root Data Shape In Skript Path
 
-Resolver infrastructure exists (`SchemaRefResolver`), but effect-based validation path currently constructs `ValidationService()` without resolver.
+`DataFileLoader.load(...)` deserializes to `Map<String, Object>`. Root arrays/primitives are not supported in this path.
 
-## 3) Registry cache expires by deletion
+## 3. `$ref` Is Path-Dependent
 
-When cache is enabled and a schema is older than expiry, `getSchema()` removes it and returns empty.
+`SchemaRefResolver` exists, but `EffValidateData` uses `new ValidationService()` without resolver wiring.
 
-## 4) Unsupported keyword semantics
+## 4. Registry Cache Is Time-Based Eviction On Read
 
-Keyword support metadata in `SupportedKeywordsRegistry` is broader than current enforcement. Some listed keywords are only recognized for warning/fail-fast filtering.
+`SchemaRegistry.getSchema()` removes entries when expired. No background refresh or warming exists.
 
-## Source mapping
+## 5. Keyword Registry Is Broader Than Enforcement
 
-1. Global result bridge: `SkriptValidationBridge`.  
-2. Effect path and service constructor usage: `EffValidateData.execute()`, `ValidationService`.  
-3. Expiry behavior: `SchemaRegistry.getSchema()`.  
-4. Keyword handling: `SupportedKeywordsRegistry`, `FileSchemaLoader.detectUnsupportedKeywords()`, validators.
+`SupportedKeywordsRegistry` lists many recognized keys, but runtime enforcement is limited to implemented validators.
 
-[← Previous](architecture.md) | [Next →](documentation-audit.md) | [Home](../../README.md)
+## 6. Auto-Load Failure Summary Is Incomplete
+
+`autoLoadSchemas()` logs `failedCount` but does not increment it.
+
+## Practical Impact
+
+When documenting or designing schemas, treat reference pages as the contract and treat unimplemented keywords as non-enforced until validators are extended.
+
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

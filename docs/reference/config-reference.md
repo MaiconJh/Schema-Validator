@@ -1,17 +1,27 @@
-# Reference: Config
+# Reference: Config Keys
 
-| Key | Type | Default | Effect |
-|---|---|---:|---|
-| `schema-directory` | string | `schemas` | Directory scanned for schema autoload on startup |
-| `auto-load` | boolean | `true` | Enables startup schema scan and registration |
-| `cache-enabled` | boolean | `true` | Enables expiry-based schema retrieval in registry |
-| `validation-on-load` | boolean | `false` (bundled file) | Runs self-check validation on loaded schemas |
-| `strict-mode` | boolean | `false` | Turns unsupported keyword warnings into parsing exceptions |
+Schema-Validator reads these keys from `config.yml`.
 
-## Source mapping
+| Key | Type | Bundled default | Fallback in code | Runtime effect |
+| --- | --- | --- | --- | --- |
+| `schema-directory` | string | `schemas` | `schemas` | Directory scanned on startup auto-load |
+| `auto-load` | boolean | `true` | `true` | Enables startup schema loading |
+| `cache-enabled` | boolean | `true` | `true` | Enables time-based cache eviction in registry |
+| `validation-on-load` | boolean | `false` | `true` | Enables startup schema self-check |
+| `strict-mode` | boolean | `false` | `false` | Fail-fast on unsupported keywords during parse |
 
-1. Config defaults in resource file: `src/main/resources/config.yml`.  
-2. Load/access methods: `PluginConfig.load()` and getters.  
-3. Runtime usage: `SchemaValidatorPlugin.onEnable()`, `SchemaRegistry`, `FileSchemaLoader`.
+## Additional Notes
 
-[← Previous](examples-and-schema-construction.md) | [Next →](../explanation/README.md) | [Home](../../README.md)
+- Registry cache expiry is hardcoded to 5 minutes in `SchemaValidatorPlugin` constructor wiring.
+- Expired entries are removed on read in `SchemaRegistry.getSchema()`.
+
+## Code Mapping
+
+- Config file: `src/main/resources/config.yml`
+- Parsing: `PluginConfig.load()`
+- Startup wiring: `SchemaValidatorPlugin.onEnable()`
+- Cache behavior: `SchemaRegistry`
+
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5

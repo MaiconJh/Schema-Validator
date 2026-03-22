@@ -1,20 +1,21 @@
 # Quickstart
 
-This quickstart validates one YAML file against one JSON schema from Skript.
+Use this path to run one validation in a few minutes.
 
-## 1) Place plugin JAR + dependency
+## Prerequisites
 
-- Install Schema-Validator in `plugins/`
-- Install Skript (required dependency)
+- Java 21 runtime on the server.
+- Paper server with Skript installed.
+- `Schema-Validator` jar in `plugins/`.
 
-## 2) Put schema and data files on disk
+## 1. Place a schema and a data file
 
-Use repository examples:
+Example files already bundled in this repository:
 
 - Schema: `src/main/resources/examples/schemas/simple-block-schema.json`
 - Data: `src/main/resources/examples/simple-block-example.yml`
 
-## 3) Add Skript snippet
+## 2. Run validation from Skript
 
 ```skript
 validate yaml "examples/simple-block-example.yml" using schema "examples/schemas/simple-block-schema.json"
@@ -26,15 +27,23 @@ else:
         broadcast "%loop-value%"
 ```
 
-## 4) Read result
+## 3. Read the result
 
-- No list items in `{_errors::*}` means success.
-- One or more list items means validation failed, with compact path/type/error text.
+- Empty `{_errors::*}` means success.
+- Non-empty list means failure; each item uses compact format from `ValidationError.toCompactString()`.
 
-## Source mapping
+## Code Mapping
 
-1. Syntax strings and registration: `SkriptSyntaxRegistration.register()`.  
-2. Validation execution and error storage: `EffValidateData.execute()`, `SkriptValidationBridge.setLastResult()`.  
-3. Error expression output format: `ExprLastValidationErrors.get()`, `ValidationError.toCompactString()`.
+- Syntax registration: `SkriptSyntaxRegistration.register()`
+- Effect execution: `EffValidateData.execute()`
+- Last-result bridge: `SkriptValidationBridge`
+- Error list expression: `ExprLastValidationErrors.get()`
 
-[← Previous](README.md) | [Next →](installation.md) | [Home](../README.md)
+## Next
+
+- [Installation](installation.md)
+- [Configuration](configuration.md)
+
+---
+Last updated: 2026-03-22  
+Documentation version: 0.3.5
