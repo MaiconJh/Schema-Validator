@@ -148,6 +148,8 @@
     ul.className = 'toc-list';
     
     const items = [];
+    let lockedHeadingId = null;
+    let lockReleaseAt = 0;
     
     headings.forEach((h) => {
       // Add ID if not present
@@ -190,17 +192,52 @@
       });
     }
 
+    function lockActiveHeading(id, durationMs = 900) {
+      lockedHeadingId = id;
+      lockReleaseAt = Date.now() + durationMs;
+      setActiveHeading(id);
+    }
+
+    function getHeaderOffset() {
+      const cssValue = getComputedStyle(document.documentElement).getPropertyValue('--header-height');
+      const parsed = Number.parseFloat(cssValue);
+      return Number.isFinite(parsed) ? parsed : 64;
+    }
+
+    function getActivationOffset() {
+      const fallback = getHeaderOffset() + Math.max(8, Math.min(window.innerHeight * 0.04, 24));
+      const sampleHeading = items[0] ? items[0].heading : null;
+      if (!sampleHeading) return fallback;
+
+      const scrollMarginTop = Number.parseFloat(getComputedStyle(sampleHeading).scrollMarginTop || '');
+      if (Number.isFinite(scrollMarginTop) && scrollMarginTop > 0) {
+        return scrollMarginTop;
+      }
+
+      return fallback;
+    }
+
     function updateActiveHeading() {
+      if (lockedHeadingId && Date.now() < lockReleaseAt) {
+        setActiveHeading(lockedHeadingId);
+        return;
+      }
+
+      if (lockedHeadingId && Date.now() >= lockReleaseAt) {
+        lockedHeadingId = null;
+      }
+
       const scrollTop = window.scrollY || window.pageYOffset || 0;
       const scrollBottom = scrollTop + window.innerHeight;
       const docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-      const activationOffset = Math.max(180, Math.min(window.innerHeight * 0.72, 680));
+      const activationOffset = getActivationOffset();
+      const topBoundary = scrollTop + activationOffset + 1;
       const bottomSnapThreshold = Math.max(20, Math.min(window.innerHeight * 0.06, 64));
 
       let activeItem = items[0];
       for (const item of items) {
         const headingTop = item.heading.getBoundingClientRect().top + scrollTop;
-        if (headingTop - activationOffset <= scrollTop) {
+        if (headingTop <= topBoundary) {
           activeItem = item;
         } else {
           break;
@@ -225,7 +262,19 @@
     }
 
     items.forEach((item) => {
-      item.link.addEventListener('click', () => setActiveHeading(item.heading.id));
+      item.link.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const scrollTop = window.scrollY || window.pageYOffset || 0;
+        const headingTop = item.heading.getBoundingClientRect().top + scrollTop;
+        const activationOffset = getActivationOffset();
+        const targetTop = Math.max(0, headingTop - activationOffset + 1);
+
+        lockActiveHeading(item.heading.id);
+        window.history.replaceState(null, '', `#${item.heading.id}`);
+        window.scrollTo({ top: targetTop, behavior: 'smooth' });
+      });
     });
 
     window.addEventListener('scroll', syncTOC, { passive: true });
