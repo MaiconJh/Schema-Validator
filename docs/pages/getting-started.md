@@ -1,53 +1,64 @@
 ---
 title: Getting started
-description: Build core mental models before installation so implementation decisions stay consistent.
+description: Build the mental model for how schemas are loaded, validated, and exposed to Skript.
 doc_type: tutorial
 order: 1
 sequence: 2
 permalink: /getting-started.html
 ---
 
-## Core concepts
+## What this plugin does
 
-Schema Validator checks data files against schema rules and reports structured errors.
+Schema Validator validates JSON or YAML data files against schema files and exposes the result to Skript.
 
-- Data file: JSON or YAML payload to validate.
-- Schema file: contract that defines allowed data shape and constraints.
-- Validation result: pass or list of errors with path and expected rule.
+At runtime, the flow is:
+
+1. A schema is loaded and parsed (`FileSchemaLoader`).
+2. Data is loaded (`DataFileLoader`).
+3. Validation dispatches by schema type (`ValidatorDispatcher`).
+4. Errors are stored in a bridge (`SkriptValidationBridge`).
+5. Skript reads compact errors with `last schema validation errors`.
+
+## Runtime building blocks
+
+- `SchemaValidatorPlugin`: plugin lifecycle and startup wiring.
+- `PluginConfig`: reads `config.yml` and exposes options.
+- `SchemaRegistry`: in-memory schema registry with optional cache expiration.
+- `ValidationService`: facade that runs validators and returns `ValidationResult`.
+- `EffValidateData` and `ExprLastValidationErrors`: Skript-facing API.
 
 ## Prerequisites
 
-- Java 21 runtime in your server environment.
+- Java 21 runtime.
 - Paper server with Skript installed.
-- Access to `plugins/Schema-Validator/` for schema and data files.
+- Write access to `plugins/Schema-Validator/`.
 
-## Learning objective
+> [!NOTE]
+> In the current Skript effect path, data is loaded as `Map<String, Object>`. That means root arrays and root primitive payloads are not supported through this effect.
 
-By the end of this tutorial, you should be able to:
+## Core terms
 
-- Recognize where schema parsing ends and runtime validation begins.
-- Understand where validation errors are captured in Skript.
-- Move from conceptual setup to a working run in [Quickstart](quickstart.html).
+### Schema type dispatch
 
-## Terminology baseline
-
-### Schema type
-
-The validator dispatches by schema type:
+The validator used depends on schema type:
 
 - `object` -> `ObjectValidator`
 - `array` -> `ArrayValidator`
-- primitive types -> `PrimitiveValidator`
+- primitive types (`string`, `number`, `integer`, `boolean`, `null`, `any`) -> `PrimitiveValidator`
 
 ### Error path
 
-Each validation error includes a path that identifies exactly where a rule failed, for example `player.inventory[2].material`.
+Every error includes a path, for example `$.player.inventory[2].material`.
 
-### Strict parsing
+### Strict mode
 
-Strict mode affects unsupported keyword handling at schema load time, not runtime data checks.
+`strict-mode` controls unsupported keyword handling during schema loading:
 
-## Continue
+- `false`: log warning and continue.
+- `true`: throw an exception and fail load.
 
-- Build and deploy with [Installation](installation.html)
-- Execute your first validation with [Quickstart](quickstart.html)
+## What to do next
+
+1. Deploy safely with [Installation](installation.html).
+2. Run your first end-to-end validation in [Quickstart](quickstart.html).
+3. Tune behavior in [Configuration](configuration.html).

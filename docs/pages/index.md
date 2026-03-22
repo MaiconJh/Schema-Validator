@@ -9,28 +9,36 @@ permalink: /index.html
 
 ## Documentation model
 
-This site is organized with the Diataxis model so each page has one primary purpose:
+This site uses Diataxis so each page has one clear purpose:
 
 - Tutorials: learn by doing.
-- How-to guides: solve a specific task.
-- Reference: look up exact behavior and interfaces.
-- Explanation: understand architecture and design decisions.
+- How-to guides: complete a specific operational task.
+- Reference: consult exact behavior and interfaces.
+- Explanation: understand architecture and design choices.
 
 ## Recommended reading paths
 
 ### First-time user
 
 1. [Getting started](getting-started.html)
-2. [Quickstart](quickstart.html)
-3. [Installation](installation.html)
+2. [Installation](installation.html)
+3. [Quickstart](quickstart.html)
 4. [Configuration](configuration.html)
 
-### Production setup
+### Production rollout
 
 1. [Installation](installation.html)
 2. [Configuration](configuration.html)
 3. [Schema keywords](schema-keywords.html)
 4. [Validation behavior](validation-behavior.html)
+5. [Skript API](skript-api.html)
+
+### Schema author / validator deep dive
+
+1. [Schema keywords](schema-keywords.html)
+2. [Format reference](format-reference.html)
+3. [Validation behavior](validation-behavior.html)
+4. [Examples](examples.html)
 
 ### Internal architecture review
 
@@ -55,6 +63,8 @@ This site is organized with the Diataxis model so each page has one primary purp
 
 - [Schema keywords](schema-keywords.html)
 - [Validation behavior](validation-behavior.html)
+- [Skript API](skript-api.html)
+- [Format reference](format-reference.html)
 
 ### Explanation
 

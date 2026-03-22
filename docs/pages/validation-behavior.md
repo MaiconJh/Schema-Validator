@@ -9,38 +9,70 @@ permalink: /validation-behavior.html
 
 ## Dispatch model
 
-- `OBJECT` schemas -> `ObjectValidator`
-- `ARRAY` schemas -> `ArrayValidator`
-- Primitive schemas -> `PrimitiveValidator`
+`ValidationService.validate(data, schema)` chooses validator by `SchemaType` using `ValidatorDispatcher`:
+
+- `OBJECT` -> `ObjectValidator`
+- `ARRAY` -> `ArrayValidator`
+- other types -> `PrimitiveValidator`
 
 ## Object validation order
 
-1. Resolve `$ref` when resolver is available.
-2. Confirm value type is `Map`.
+`ObjectValidator` evaluates in this order:
+
+1. Resolve `$ref` when schema is reference and resolver is wired.
+2. Ensure data is `Map<?, ?>`.
 3. Apply composition and conditionals (`allOf`, `anyOf`, `oneOf`, `not`, `if/then/else`).
 4. Validate required fields.
-5. Validate declared properties.
-6. Evaluate unknown properties using `patternProperties` and `additionalProperties`.
+5. Validate declared `properties` that exist in input.
+6. Validate unknown keys with `patternProperties`.
+7. If still unmatched, enforce `additionalProperties`.
 
-## Primitive behavior
+## Primitive validation details
+
+### Type checks
 
 - `number` accepts any Java `Number`.
-- `integer` accepts integral numeric values.
-- `enum` is evaluated before other primitive constraints.
-- Unknown formats currently pass.
+- `integer` accepts integral numbers (`Integer`, `Long`, etc., or decimal with zero fraction).
+- `null` requires `null` value.
+- `any` always passes.
 
-## Array behavior
+### Rule order
+
+1. Type check first.
+2. `enum` check next.
+3. If `enum` exists and fails, remaining primitive constraints are not evaluated.
+4. Numeric/string/format constraints run after successful type and enum checks.
+
+## Array validation details
 
 - Value must be `List<?>`.
-- `items` validates each element recursively.
+- `items` schema is applied recursively to each element.
 - If `items` is missing, per-item checks are skipped.
+- `minItems`, `maxItems`, `uniqueItems` are currently not enforced.
 
 ## Error model
 
-- Validation returns `ValidationResult`.
-- Errors are immutable `ValidationError` entries with path, expected rule, actual value/type, and detail.
+- Validators return `List<ValidationError>`.
+- `ValidationResult.from(errors)` marks success if list is empty.
+- Each `ValidationError` includes:
+  - `nodePath`
+  - `expectedType`
+  - `actualType`
+  - `description`
+
+Compact format returned to Skript expression:
+
+```text
+[nodePath] expectedType: actualType - description
+```
+
+## Known runtime constraints
+
+- The built-in Skript effect validates with `new ValidationService()` (no resolver), so `$ref` is not resolved in that path.
+- Data loader in Skript integration parses root as `Map<String, Object>`.
 
 ## Related pages
 
-- Keyword support details: [Schema keywords](schema-keywords.html)
-- Practical usage examples: [Examples](examples.html)
+- Keyword support scope: [Schema keywords](schema-keywords.html)
+- Syntax contract and path behavior: [Skript API](skript-api.html)
+- Practical recipes: [Examples](examples.html)

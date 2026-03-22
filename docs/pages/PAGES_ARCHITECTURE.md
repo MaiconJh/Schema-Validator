@@ -71,11 +71,12 @@ Optional keys:
 - Active nav detection with icon injection
 - TOC generation and active heading tracking
 - Sidebar link filtering by search query
-- Code block copy button enhancement
+- Code block copy button enhancement and language labels
+- GitHub-style markdown callout rendering (`[!NOTE]`, `[!TIP]`, etc.)
 
 ## URL stability
 
-Permalinks preserve historical routes:
+Permalinks preserve historical routes and add new reference pages:
 
 - `/index.html`
 - `/getting-started.html`
@@ -84,6 +85,8 @@ Permalinks preserve historical routes:
 - `/configuration.html`
 - `/schema-keywords.html`
 - `/validation-behavior.html`
+- `/skript-api.html`
+- `/format-reference.html`
 - `/examples.html`
 - `/architecture.html`
 
