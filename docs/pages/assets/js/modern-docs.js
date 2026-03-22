@@ -148,7 +148,7 @@
     
     const items = [];
     
-    headings.forEach((h, index) => {
+    headings.forEach((h) => {
       // Add ID if not present
       if (!h.id) {
         h.id = slugify(h.textContent);
@@ -182,25 +182,54 @@
     });
     
     toc.replaceChildren(ul);
-    
-    // Track active section with IntersectionObserver
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            items.forEach((item) => {
-              item.link.classList.toggle('active', item.heading.id === id);
-            });
-          }
-        });
-      }, { 
-        rootMargin: '-80px 0px -70% 0px', 
-        threshold: 0 
+
+    function setActiveHeading(id) {
+      items.forEach((item) => {
+        item.link.classList.toggle('active', item.heading.id === id);
       });
-      
-      headings.forEach((h) => observer.observe(h));
     }
+
+    function updateActiveHeading() {
+      const scrollTop = window.scrollY || window.pageYOffset || 0;
+      const scrollBottom = scrollTop + window.innerHeight;
+      const docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+      const activationOffset = 140;
+      const bottomSnapThreshold = 16;
+
+      let activeItem = items[0];
+      for (const item of items) {
+        const headingTop = item.heading.getBoundingClientRect().top + scrollTop;
+        if (headingTop - activationOffset <= scrollTop) {
+          activeItem = item;
+        } else {
+          break;
+        }
+      }
+
+      if (docHeight - scrollBottom <= bottomSnapThreshold) {
+        activeItem = items[items.length - 1];
+      }
+
+      setActiveHeading(activeItem.heading.id);
+    }
+
+    let rafPending = false;
+    function syncTOC() {
+      if (rafPending) return;
+      rafPending = true;
+      window.requestAnimationFrame(() => {
+        updateActiveHeading();
+        rafPending = false;
+      });
+    }
+
+    items.forEach((item) => {
+      item.link.addEventListener('click', () => setActiveHeading(item.heading.id));
+    });
+
+    window.addEventListener('scroll', syncTOC, { passive: true });
+    window.addEventListener('resize', syncTOC, { passive: true });
+    updateActiveHeading();
   }
 
   // --------------------------------------------------------------------------
