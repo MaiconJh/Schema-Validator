@@ -1316,6 +1316,9 @@ svg.heading-anchor-icon {
   box-shadow: var(--shadow-soft-depth);
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);
+  max-height: calc(100vh - var(--header-height) - var(--space-10));
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .toc-title {

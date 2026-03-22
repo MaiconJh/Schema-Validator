@@ -193,8 +193,8 @@
       const scrollTop = window.scrollY || window.pageYOffset || 0;
       const scrollBottom = scrollTop + window.innerHeight;
       const docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-      const activationOffset = 140;
-      const bottomSnapThreshold = 16;
+      const activationOffset = Math.max(180, Math.min(window.innerHeight * 0.72, 680));
+      const bottomSnapThreshold = Math.max(20, Math.min(window.innerHeight * 0.06, 64));
 
       let activeItem = items[0];
       for (const item of items) {
