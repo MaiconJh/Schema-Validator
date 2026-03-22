@@ -114,4 +114,4 @@ UI behavior:
 
 ## Documentation governance
 
-Editorial and structure standards are defined in [Writing guide](writing-guide.md).
+Editorial and structure standards are defined in [Writing guide](WRITING_GUIDE.md).
