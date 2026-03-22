@@ -1,24 +1,11 @@
-# Reference
+# Reference (Pointer)
 
-Reference pages describe exact behavior, not tutorials.
+This legacy file is kept only as a compatibility pointer.
 
-## Index
+- Source page: [docs/pages/index.md](../pages/index.md)
+- Published page: [https://maiconjh.github.io/Schema-Validator/index.html#reference](https://maiconjh.github.io/Schema-Validator/index.html#reference)
 
-- [Skript syntax](skript-syntax.md)
-- [Schema keyword support](schema-keywords.md)
-- [Validation behavior](validation-behavior.md)
-- [Examples and schema construction](examples-and-schema-construction.md)
-- [Configuration keys](config-reference.md)
-
-## Reading Order
-
-1. `skript-syntax.md`
-2. `schema-keywords.md`
-3. `validation-behavior.md`
-4. `config-reference.md`
-
-Use [Explanation](../explanation/README.md) for design rationale.
-
+The published source of truth is docs/pages/**.
 ---
 Last updated: 2026-03-22  
 Documentation version: 0.3.5

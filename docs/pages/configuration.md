@@ -3,7 +3,7 @@ title: Configuration
 description: Configure schema loading, cache behavior, and strictness safely.
 doc_type: how-to
 order: 2
-sequence: 5
+sequence: 9
 permalink: /configuration.html
 ---
 

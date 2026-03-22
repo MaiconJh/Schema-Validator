@@ -7,18 +7,18 @@ permalink: /writing-guide.html
 
 ## Purpose
 
-This guide defines the writing and structure standards for the Jekyll site in `docs/pages`.
+This guide defines writing standards for published docs in `docs/pages`.
 
 ## Information architecture
 
-Use the Diataxis model for every page:
+Use Diataxis for every page:
 
-- Tutorial: learning-oriented and step-by-step.
-- How-to guide: task-oriented and goal-driven.
-- Reference: exact facts, rules, and interfaces.
-- Explanation: conceptual and architectural reasoning.
+- Tutorial: learning-oriented and sequential.
+- How-to guide: task-oriented and outcome-driven.
+- Reference: exact behavior, values, and interfaces.
+- Explanation: architectural reasoning and tradeoffs.
 
-Each page must set front matter fields:
+Required front matter for navigable pages:
 
 - `title`
 - `description`
@@ -31,22 +31,22 @@ Each page must set front matter fields:
 
 For procedural pages:
 
-1. State goal and prerequisites before steps.
+1. State goal and prerequisites before commands.
 2. Use explicit numbered steps.
-3. Keep one action per step.
-4. Put expected result after commands.
-5. Prefer concrete examples over generic placeholders.
+3. Keep one primary action per step.
+4. Include expected result after critical steps.
+5. Prefer concrete examples over placeholders.
 
 ## Style baseline
 
 - Use direct language and short sentences.
-- Keep terminology consistent across pages.
-- Avoid mixing conceptual explanation into reference sections.
-- Prefer stable links and avoid duplicate pages for the same topic.
+- Keep terminology stable across pages.
+- Separate reference facts from explanation prose.
+- Avoid duplicate pages for the same behavior contract.
 
 ## Callouts and code blocks
 
-Use GitHub-style alert blocks to render colored callouts in the docs UI:
+Use GitHub-style alert blocks:
 
 ```md
 > [!NOTE]
@@ -64,14 +64,14 @@ Supported callout types:
 - `WARNING`
 - `CAUTION`
 
-For code blocks, always set a language in fenced blocks (for example `json`, `yaml`, `bash`, `powershell`, `java`). The UI uses this metadata to show language-specific accents and syntax colors.
+Always set code fence language (`json`, `yaml`, `bash`, `powershell`, `java`, etc.).
 
 ## Maintenance policy
 
-- `docs/pages/*.md` is the source of truth for published docs pages.
-- `_layouts/default.html` and `_includes/*` control shared UI and navigation.
-- Sidebar grouping is generated from front matter metadata.
-- Docs and plugin version labels are controlled by `docs/pages/_config.yml` version keys.
+- `docs/pages/*.md` is the source of truth for published docs.
+- Files outside `docs/pages/**` may exist as internal notes or compatibility pointers.
+- If runtime behavior changes, update matching docs page(s) in the same PR.
+- Keep permalinks stable unless a migration plan includes redirects or compatibility pointers.
 
 ## External guidance
 

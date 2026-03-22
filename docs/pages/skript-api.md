@@ -3,7 +3,7 @@ title: Skript API
 description: Reference for registered Skript syntax, path resolution, and error retrieval semantics.
 doc_type: reference
 order: 3
-sequence: 8
+sequence: 12
 permalink: /skript-api.html
 ---
 

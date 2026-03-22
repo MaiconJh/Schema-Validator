@@ -1,12 +1,11 @@
-# Guides
+# Guides (Pointer)
 
-Guides are task-focused docs for operators.
+This legacy file is kept only as a compatibility pointer.
 
-- [Validate a JSON file from Skript](validate-json-file.md)
-- [Use schema auto-load directory](schema-directory-workflow.md)
+- Source page: [docs/pages/index.md](../pages/index.md)
+- Published page: [https://maiconjh.github.io/Schema-Validator/index.html#how-to-guides](https://maiconjh.github.io/Schema-Validator/index.html#how-to-guides)
 
-If you are new, start with [Quickstart](../quickstart.md).
-
+The published source of truth is docs/pages/**.
 ---
 Last updated: 2026-03-22  
 Documentation version: 0.3.5

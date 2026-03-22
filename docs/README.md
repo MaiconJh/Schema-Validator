@@ -1,44 +1,22 @@
-# Repository Documentation
+# Documentation Pointer
 
-This documentation covers `docs/**` except `docs/pages/**`.
+Published documentation is now maintained in `docs/pages/`.
 
-## Audit Scope
+## Canonical published docs source
 
-This set was rebuilt against practical guidance from Write the Docs:
+- Markdown source: [`docs/pages/`](pages/)
+- Site home (GitHub Pages): <https://maiconjh.github.io/Schema-Validator/>
+- Repository start page: [`docs/pages/index.md`](pages/index.md)
 
-- audience-first writing
-- one page, one purpose
-- scannable structure
-- examples tied to real behavior
-- docs maintained as code
+## Internal docs outside `docs/pages`
 
-## Intended Readers
+Only internal or process documentation should stay outside `docs/pages`, for example:
 
-- Operators who install and run the plugin.
-- Contributors who need code-accurate behavior.
+- `docs/explanation/documentation-audit.md`
 
-## Structure
+## Compatibility pointers
 
-- [Quickstart](quickstart.md)
-- [Installation](installation.md)
-- [Configuration](configuration.md)
-- [Guides](guides/README.md)
-- [Tutorials](tutorials/README.md)
-- [Reference](reference/README.md)
-- [Explanation](explanation/README.md)
-
-## What Changed In This Audit
-
-- Removed stale navigation text and encoding artifacts.
-- Reduced duplicate content between guides, tutorials, and reference.
-- Corrected claims to match `src/main/java/com/maiconjh/schemacr/**`.
-- Added a mandatory metadata footer to every file in this doc tree.
-
-## Source Of Truth
-
-- Runtime behavior: `src/main/java/com/maiconjh/schemacr/**`
-- Default config values: `src/main/resources/config.yml`
-- User-facing published portal: `docs/pages/**`
+Files under `docs/tutorials/**`, `docs/guides/**`, `docs/reference/**`, and `docs/explanation/**` (except internal process docs) are retained as migration pointers to matching `docs/pages` routes.
 
 ---
 Last updated: 2026-03-22  

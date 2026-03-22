@@ -2,8 +2,8 @@
 title: Examples
 description: Practical schema and data examples for common validation workflows.
 doc_type: tutorial
-order: 3
-sequence: 10
+order: 4
+sequence: 6
 permalink: /examples.html
 ---
 

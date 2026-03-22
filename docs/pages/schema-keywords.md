@@ -3,7 +3,7 @@ title: Schema keywords
 description: Reference of parsed and enforced keyword behavior in the current implementation.
 doc_type: reference
 order: 1
-sequence: 6
+sequence: 10
 permalink: /schema-keywords.html
 ---
 

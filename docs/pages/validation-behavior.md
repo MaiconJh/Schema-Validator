@@ -3,7 +3,7 @@ title: Validation behavior
 description: Reference for dispatch order, rule evaluation, and error aggregation.
 doc_type: reference
 order: 2
-sequence: 7
+sequence: 11
 permalink: /validation-behavior.html
 ---
 

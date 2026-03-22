@@ -1,56 +1,11 @@
-# Tutorial: First Validation Workflow
+# First Validation (Pointer)
 
-Goal: run one end-to-end validation and inspect failure output.
+This legacy file is kept only as a compatibility pointer.
 
-## Prerequisites
+- Source page: [docs/pages/first-validation.md](../pages/first-validation.md)
+- Published page: [https://maiconjh.github.io/Schema-Validator/first-validation.html](https://maiconjh.github.io/Schema-Validator/first-validation.html)
 
-- Plugin + Skript installed.
-- One schema file and one data file.
-
-## 1. Create a schema
-
-```json
-{
-  "type": "object",
-  "required": ["id", "level"],
-  "properties": {
-    "id": { "type": "string" },
-    "level": { "type": "integer", "minimum": 1 }
-  },
-  "additionalProperties": false
-}
-```
-
-## 2. Create intentionally invalid data
-
-```yaml
-id: "player-01"
-level: 0
-extra: true
-```
-
-## 3. Run the Skript effect
-
-```skript
-validate yaml "plugins/Schema-Validator/data/player.yml" using schema "plugins/Schema-Validator/schemas/player.schema.json"
-set {_errors::*} to last schema validation errors
-loop {_errors::*}:
-    broadcast "%loop-value%"
-```
-
-## 4. Interpret output
-
-You should see failures for:
-
-- `minimum` on `level`
-- `additionalProperties` for `extra`
-
-## Code Mapping
-
-- Object rules: `ObjectValidator.validate()`
-- Primitive numeric rules: `PrimitiveValidator.validate()`
-- Compact message format: `ValidationError.toCompactString()`
-
+The published source of truth is docs/pages/**.
 ---
 Last updated: 2026-03-22  
 Documentation version: 0.3.5

@@ -49,7 +49,15 @@ Audit and rebuild repository docs (`docs/**`, excluding `docs/pages/**`) for foc
 - [x] All files in scope include footer metadata.
 - [x] Links between pages resolve relative to current tree.
 - [x] Runtime claims checked against `src/main/java/com/maiconjh/schemacr/**`.
-- [x] `docs/pages/**` left untouched by this audit.
+- [x] Initial audit scope excluded `docs/pages/**`; migration phase executed separately.
+
+## Migration phase (2026-03-22)
+
+A structural migration moved published content ownership to `docs/pages/**`.
+
+- Product and user documentation is now authored in `docs/pages/*.md`.
+- Legacy files under `docs/**` outside `docs/pages/**` were converted into compatibility pointers.
+- Internal process documentation can remain outside `docs/pages/**` when it is not part of the public docs flow.
 
 ---
 Last updated: 2026-03-22  

@@ -1,20 +1,11 @@
-# Explanation
+# Explanation (Pointer)
 
-Explanation pages describe why the system is shaped this way.
+This legacy file is kept only as a compatibility pointer.
 
-## Pages
+- Source page: [docs/pages/index.md](../pages/index.md)
+- Published page: [https://maiconjh.github.io/Schema-Validator/index.html#explanation](https://maiconjh.github.io/Schema-Validator/index.html#explanation)
 
-- [Runtime architecture](architecture.md)
-- [Known design constraints](design-constraints.md)
-- [Documentation audit report](documentation-audit.md)
-
-## Position In The Doc Set
-
-- Tutorials: learn by doing.
-- Guides: complete one task.
-- Reference: exact behavior and syntax.
-- Explanation: architecture and tradeoffs.
-
+The published source of truth is docs/pages/**.
 ---
 Last updated: 2026-03-22  
 Documentation version: 0.3.5

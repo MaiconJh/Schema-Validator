@@ -9,35 +9,35 @@ permalink: /pages-architecture.html
 
 ## Scope
 
-This architecture is isolated to `docs/pages/` and defines how the published docs site is built with Jekyll.
+This architecture defines how the published documentation site is authored and built from `docs/pages/`.
 
 ## Source of truth
 
-The published documentation pages are Markdown files in `docs/pages/*.md`.
+Published documentation content is authored in Markdown under `docs/pages/*.md`.
 
-Shared rendering and behavior are implemented by:
+Shared rendering and behavior:
 
 - `docs/pages/_layouts/default.html`
 - `docs/pages/_includes/*`
 - `docs/pages/assets/css/modern-docs.css`
 - `docs/pages/assets/js/modern-docs.js`
 
-Legacy static HTML pages are not source of truth.
+Legacy markdown files under `docs/**` outside `docs/pages/**` are compatibility pointers only and are not the published source.
 
 ## Information architecture (Diataxis)
 
-Navigation is grouped by `doc_type` metadata in page front matter:
+Navigation is grouped by `doc_type` front matter:
 
 - `tutorial`
 - `how-to`
 - `reference`
 - `explanation`
 
-Each page also defines `order` for stable sorting and `permalink` to preserve public URLs.
+Each navigable page also defines `order`, `sequence`, and `permalink`.
 
 ## Page metadata contract
 
-Each navigable page must declare:
+Required keys for navigable pages:
 
 - `title`
 - `description`
@@ -50,68 +50,56 @@ Optional keys:
 
 - `toc` (default `true`)
 - `nav_exclude` (default `false`)
+- `search_exclude` (default `false`)
 
 ## Layout model
 
 `_layouts/default.html` renders:
 
-1. Sticky header with search, theme toggle, and mobile sidebar toggle
-2. Left sidebar grouped by Diataxis sections
-3. Main article container with page title and lead
-4. Auto-generated TOC from `h2` and `h3`
-
-`_includes/sidebar.html` builds navigation from `site.pages` filtered by `doc_type`.
+1. Sticky header (search + theme + mobile menu)
+2. Left sidebar grouped by Diataxis
+3. Main article container
+4. Right TOC generated from `h2` and `h3`
 
 ## Client behavior model
 
 `modern-docs.js` provides:
 
-- Theme toggle (light/dark)
+- Theme toggle
 - Mobile sidebar open/close
-- Active nav detection with icon injection
+- Active sidebar nav state
 - TOC generation and active heading tracking
-- Sidebar link filtering by search query
-- Code block copy button enhancement and language labels
-- GitHub-style markdown callout rendering (`[!NOTE]`, `[!TIP]`, etc.)
+- Full-text search over `search.json` (title + description + content)
+- Code block copy buttons and language labels
+- Markdown callout rendering (`[!NOTE]`, `[!TIP]`, etc.)
 
 ## URL stability
 
-Permalinks preserve historical routes and add new reference pages:
+Use permanent `.html` routes for published pages, including:
 
 - `/index.html`
 - `/getting-started.html`
 - `/installation.html`
 - `/quickstart.html`
+- `/first-validation.html`
+- `/examples.html`
+- `/validate-json-file.html`
+- `/schema-directory-workflow.html`
 - `/configuration.html`
 - `/schema-keywords.html`
 - `/validation-behavior.html`
 - `/skript-api.html`
 - `/format-reference.html`
-- `/examples.html`
+- `/config-reference.html`
+- `/examples-and-schema-construction.html`
 - `/architecture.html`
-
-## Version signaling
-
-Global version settings are defined in `_config.yml`:
-
-- `docs_version`
-- `latest_docs_version`
-- `latest_docs_url`
-- `plugin_version_range`
-
-UI behavior:
-
-- Header shows current docs version badge.
-- Article header shows `Applies to` plugin range.
-- A warning banner appears only when `docs_version` is different from `latest_docs_version`.
-
-## Accessibility baseline
-
-- Skip link to main content
-- Semantic landmarks (`header`, `nav`, `main`, `article`, `aside`)
-- `aria-current="page"` for active nav item
-- Focus-visible styles and keyboard navigable controls
+- `/design-constraints.html`
 
 ## Documentation governance
 
-Editorial and structure standards are defined in [Writing guide](WRITING_GUIDE.md).
+- Published docs source: `docs/pages/**`
+- Internal process docs can remain outside `docs/pages/**`
+- Any code behavior change must update affected page(s) in the same PR
+- Keep compatibility pointers in `docs/**` when old links need continuity
+
+Editorial standards: [Writing guide](writing-guide.html).
