@@ -85,6 +85,8 @@ Formatting rules:
 
 - Start sections with `##`.
 - Use fenced blocks with language, for example `json`, `yaml`, `bash`, `skript`.
+- Use callouts with GitHub alert syntax when needed:
+  `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`.
 - Keep links relative, for example `[Installation](installation.html)`.
 
 ### 4. Decide if the page should be indexed
@@ -180,4 +182,3 @@ Behavior:
 - `docs/pages/_includes/nav-arrows.html`
 - `docs/pages/assets/js/modern-docs.js`
 - `docs/pages/assets/css/modern-docs.css`
-

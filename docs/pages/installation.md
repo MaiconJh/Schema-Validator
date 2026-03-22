@@ -13,6 +13,9 @@ permalink: /installation.html
 - Paper server
 - Skript plugin installed
 
+> [!NOTE]
+> Use matching Java and Paper versions from your production server to avoid class compatibility issues.
+
 ## Build artifact
 
 ```bash
@@ -39,6 +42,9 @@ After startup, confirm logs for:
 - Schema autoload summary
 
 ## Troubleshooting
+
+> [!TIP]
+> If the plugin fails to load after update, delete only the old plugin JAR and keep the config folder to preserve settings.
 
 ### Plugin does not load
 

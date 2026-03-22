@@ -44,6 +44,28 @@ For procedural pages:
 - Avoid mixing conceptual explanation into reference sections.
 - Prefer stable links and avoid duplicate pages for the same topic.
 
+## Callouts and code blocks
+
+Use GitHub-style alert blocks to render colored callouts in the docs UI:
+
+```md
+> [!NOTE]
+> Useful context before a step.
+
+> [!TIP]
+> Performance recommendation or shortcut.
+```
+
+Supported callout types:
+
+- `NOTE`
+- `TIP`
+- `IMPORTANT`
+- `WARNING`
+- `CAUTION`
+
+For code blocks, always set a language in fenced blocks (for example `json`, `yaml`, `bash`, `powershell`, `java`). The UI uses this metadata to show language-specific accents and syntax colors.
+
 ## Maintenance policy
 
 - `docs/pages/*.md` is the source of truth for published docs pages.

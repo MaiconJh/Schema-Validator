@@ -296,15 +296,127 @@
   }
 
   // --------------------------------------------------------------------------
+  // Callouts / Admonitions
+  // --------------------------------------------------------------------------
+  function parseCalloutMarker(text) {
+    if (!text) return null;
+    const match = text.trim().match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(.*)$/i);
+    if (!match) return null;
+    return { type: match[1].toLowerCase(), rest: match[2] || '' };
+  }
+
+  function resolveCalloutConfig(type) {
+    const map = {
+      note: { className: 'callout-info', title: 'Note', icon: 'info' },
+      tip: { className: 'callout-success', title: 'Tip', icon: 'zap' },
+      important: { className: 'callout-warning', title: 'Important', icon: 'star' },
+      warning: { className: 'callout-warning', title: 'Warning', icon: 'alert-triangle' },
+      caution: { className: 'callout-danger', title: 'Caution', icon: 'alert-triangle' }
+    };
+    return map[type] || map.note;
+  }
+
+  function initCallouts() {
+    if (!articleBody) return;
+
+    const blockquotes = [...articleBody.querySelectorAll('blockquote')];
+    blockquotes.forEach((quote) => {
+      if (!quote || quote.closest('.callout')) return;
+      const firstParagraph = quote.querySelector('p');
+      if (!firstParagraph) return;
+
+      const parsed = parseCalloutMarker(firstParagraph.textContent);
+      if (!parsed) return;
+
+      const config = resolveCalloutConfig(parsed.type);
+      const callout = document.createElement('div');
+      callout.className = `callout ${config.className}`;
+
+      const icon = document.createElement('span');
+      icon.className = 'callout-icon';
+      icon.innerHTML = getIcon(config.icon);
+
+      const content = document.createElement('div');
+      content.className = 'callout-content';
+
+      const title = document.createElement('strong');
+      title.className = 'callout-title';
+      title.textContent = config.title;
+      content.appendChild(title);
+
+      const restText = parsed.rest.trim();
+      if (restText) {
+        firstParagraph.textContent = restText;
+      } else if (!firstParagraph.textContent.replace(/\s/g, '')) {
+        firstParagraph.remove();
+      } else {
+        firstParagraph.textContent = '';
+        firstParagraph.remove();
+      }
+
+      while (quote.firstChild) {
+        content.appendChild(quote.firstChild);
+      }
+
+      callout.appendChild(icon);
+      callout.appendChild(content);
+      quote.replaceWith(callout);
+    });
+  }
+
+  // --------------------------------------------------------------------------
   // Code Block Enhancements
   // --------------------------------------------------------------------------
+  function normalizeLanguage(lang) {
+    const raw = (lang || 'code').toLowerCase();
+    const aliases = {
+      yml: 'yaml',
+      shell: 'bash',
+      sh: 'bash',
+      zsh: 'bash',
+      console: 'bash',
+      ps1: 'powershell',
+      pwsh: 'powershell',
+      text: 'plaintext',
+      txt: 'plaintext',
+      md: 'markdown',
+      js: 'javascript',
+      ts: 'typescript'
+    };
+    return aliases[raw] || raw;
+  }
+
+  function formatLanguageLabel(lang) {
+    const labels = {
+      javascript: 'JavaScript',
+      typescript: 'TypeScript',
+      plaintext: 'Text',
+      powershell: 'PowerShell',
+      bash: 'Bash',
+      yaml: 'YAML',
+      json: 'JSON',
+      xml: 'XML',
+      html: 'HTML',
+      css: 'CSS',
+      sql: 'SQL',
+      toml: 'TOML',
+      markdown: 'Markdown',
+      java: 'Java',
+      kotlin: 'Kotlin'
+    };
+
+    if (labels[lang]) return labels[lang];
+    if (lang.length <= 3) return lang.toUpperCase();
+    return lang.charAt(0).toUpperCase() + lang.slice(1);
+  }
+
   function extractLanguage(...nodes) {
     for (const node of nodes) {
       if (!node || !node.className || typeof node.className !== 'string') continue;
       const match = node.className.match(/language-([a-z0-9+-]+)/i);
-      if (match && match[1]) return match[1].toLowerCase();
+      if (match && match[1]) return normalizeLanguage(match[1]);
     }
-    return 'code';
+    return 'plaintext';
   }
 
   function resolveCodeBlockContainer(pre) {
@@ -353,6 +465,7 @@
       // Get language from class or header
       const code = pre.querySelector('code');
       const lang = extractLanguage(code, pre, block);
+      block.dataset.lang = lang;
       
       // Add header if not present
       if (!block.querySelector('.code-block-header')) {
@@ -361,7 +474,7 @@
         
         const langLabel = document.createElement('span');
         langLabel.className = 'code-block-lang';
-        langLabel.textContent = lang;
+        langLabel.textContent = formatLanguageLabel(lang);
         
         const copyBtn = document.createElement('button');
         copyBtn.className = 'code-block-copy';
@@ -400,6 +513,7 @@
     initNavigation();
     initTOC();
     initSearch();
+    initCallouts();
     initCodeBlocks();
     
     // Add theme toggle listener
