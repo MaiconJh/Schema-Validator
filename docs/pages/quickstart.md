@@ -3,6 +3,7 @@ title: Quickstart
 description: Run one successful and one failing validation end to end.
 doc_type: tutorial
 order: 2
+sequence: 4
 permalink: /quickstart.html
 ---
 

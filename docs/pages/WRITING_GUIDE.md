@@ -24,6 +24,7 @@ Each page must set front matter fields:
 - `description`
 - `doc_type`
 - `order`
+- `sequence`
 - `permalink`
 
 ## Procedure writing standard

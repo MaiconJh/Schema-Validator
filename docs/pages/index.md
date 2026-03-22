@@ -3,6 +3,7 @@ title: Overview
 description: Learn the documentation model, navigation system, and recommended reading paths for Schema Validator.
 doc_type: explanation
 order: 1
+sequence: 1
 permalink: /index.html
 ---
 

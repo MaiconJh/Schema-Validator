@@ -298,8 +298,53 @@
   // --------------------------------------------------------------------------
   // Code Block Enhancements
   // --------------------------------------------------------------------------
+  function extractLanguage(...nodes) {
+    for (const node of nodes) {
+      if (!node || !node.className || typeof node.className !== 'string') continue;
+      const match = node.className.match(/language-([a-z0-9+-]+)/i);
+      if (match && match[1]) return match[1].toLowerCase();
+    }
+    return 'code';
+  }
+
+  function resolveCodeBlockContainer(pre) {
+    if (!pre) return null;
+    if (pre.closest('.code-block')) return pre.closest('.code-block');
+
+    const highlighted = pre.closest('.highlighter-rouge, figure.highlight');
+    if (highlighted) return highlighted;
+
+    if (pre.parentElement && pre.parentElement.classList.contains('highlight')) {
+      return pre.parentElement;
+    }
+
+    return pre;
+  }
+
+  function normalizeCodeBlocks() {
+    const preNodes = [...document.querySelectorAll('.article-content pre')];
+
+    preNodes.forEach((pre) => {
+      if (pre.closest('.code-block')) return;
+
+      const container = resolveCodeBlockContainer(pre);
+      if (!container) return;
+
+      if (container === pre) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-block';
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+      } else {
+        container.classList.add('code-block');
+      }
+    });
+
+    return [...document.querySelectorAll('.article-content .code-block')];
+  }
+
   function initCodeBlocks() {
-    const codeBlocks = document.querySelectorAll('.code-block');
+    const codeBlocks = normalizeCodeBlocks();
     
     codeBlocks.forEach((block) => {
       const pre = block.querySelector('pre');
@@ -307,7 +352,7 @@
       
       // Get language from class or header
       const code = pre.querySelector('code');
-      const lang = code?.className.match(/language-(\w+)/)?.[1] || 'code';
+      const lang = extractLanguage(code, pre, block);
       
       // Add header if not present
       if (!block.querySelector('.code-block-header')) {
@@ -321,6 +366,7 @@
         const copyBtn = document.createElement('button');
         copyBtn.className = 'code-block-copy';
         copyBtn.innerHTML = getIcon('copy') + 'Copy';
+        copyBtn.type = 'button';
         copyBtn.setAttribute('aria-label', 'Copy code to clipboard');
         
         copyBtn.addEventListener('click', async () => {
@@ -340,7 +386,7 @@
         
         header.appendChild(langLabel);
         header.appendChild(copyBtn);
-        block.insertBefore(header, pre);
+        block.insertBefore(header, block.firstElementChild);
       }
     });
   }

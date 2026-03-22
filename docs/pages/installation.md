@@ -3,6 +3,7 @@ title: Installation
 description: Build, deploy, and verify Schema Validator on a Paper server with Skript.
 doc_type: how-to
 order: 1
+sequence: 3
 permalink: /installation.html
 ---
 

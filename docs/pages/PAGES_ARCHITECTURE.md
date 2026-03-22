@@ -43,6 +43,7 @@ Each navigable page must declare:
 - `description`
 - `doc_type`
 - `order`
+- `sequence`
 - `permalink`
 
 Optional keys:

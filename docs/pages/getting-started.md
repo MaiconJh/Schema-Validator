@@ -3,6 +3,7 @@ title: Getting started
 description: Build core mental models before installation so implementation decisions stay consistent.
 doc_type: tutorial
 order: 1
+sequence: 2
 permalink: /getting-started.html
 ---
 

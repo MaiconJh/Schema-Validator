@@ -22,6 +22,7 @@
           <div class="content-layout">
             <div class="article-content" id="article-body">
               {{ content }}
+              {% include nav-arrows.html %}
             </div>
             {% if page.toc != false %}
             <aside class="toc" aria-label="Table of contents">

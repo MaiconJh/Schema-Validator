@@ -3,6 +3,7 @@ title: Architecture
 description: Understand runtime components, integration boundaries, and validation data flow.
 doc_type: explanation
 order: 2
+sequence: 9
 permalink: /architecture.html
 ---
 

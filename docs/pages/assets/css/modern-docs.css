@@ -744,6 +744,19 @@ svg.heading-anchor-icon {
   font-family: var(--font-mono);
 }
 
+/* Jekyll/Rouge wrappers */
+.code-block .highlight {
+  margin: 0;
+  background: transparent;
+}
+
+.code-block pre.highlight {
+  margin: 0;
+  padding: var(--space-4);
+  background: transparent;
+  border: 0;
+}
+
 /* Inline Code */
 .article-content code:not(pre code) {
   padding: 0.2em 0.4em;
