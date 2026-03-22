@@ -1,99 +1,98 @@
-﻿# Documentation UX Architecture (`docs/pages/`)
+---
+title: Pages architecture
+description: Structural and implementation model for the docs/pages Jekyll site.
+nav_exclude: true
+permalink: /pages-architecture.html
+---
 
-## Scope and constraints
+# Documentation UX Architecture (`docs/pages/`)
 
-This architecture is intentionally isolated to `docs/pages/` and does not modify project-level docs outside this tree.
+## Scope
 
-## Design references
+This architecture is isolated to `docs/pages/` and defines how the published docs site is built with Jekyll.
 
-The current visual system follows modern product-docs patterns inspired by Stripe, Vercel, Next.js, React, and Tailwind-style layouts. The core implementation is the `modern-docs.css` design system and `modern-docs.js` interaction layer.
+## Source of truth
 
-## Source of truth in this folder
+The published documentation pages are Markdown files in `docs/pages/*.md`.
 
-Primary assets:
+Shared rendering and behavior are implemented by:
+
+- `docs/pages/_layouts/default.html`
+- `docs/pages/_includes/*`
 - `docs/pages/assets/css/modern-docs.css`
 - `docs/pages/assets/js/modern-docs.js`
 
-Optional Jekyll compatibility (not required for the static HTML build):
-- `docs/pages/_config.yml`
-- `docs/pages/_layouts/default.html`
-- `docs/pages/_includes/*`
+Legacy static HTML pages are not source of truth.
 
-## Information architecture
+## Information architecture (Diataxis)
 
-The page order reflects onboarding-to-advanced progression:
-1. `index.html` (Overview)
-2. `getting-started.html`
-3. `installation.html`
-4. `quickstart.html`
-5. `configuration.html`
-6. `schema-keywords.html`
-7. `validation-behavior.html`
-8. `examples.html`
-9. `architecture.html`
+Navigation is grouped by `doc_type` metadata in page front matter:
 
-## Navigation system
+- `tutorial`
+- `how-to`
+- `reference`
+- `explanation`
 
-Persistent elements:
-- Sidebar navigation is always present on desktop and collapsible on mobile.
-- Breadcrumbs provide local context within each page.
-- Navigation arrows at the end of articles provide linear progression.
+Each page also defines `order` for stable sorting and `permalink` to preserve public URLs.
 
-Active state:
-- `modern-docs.js` sets `.active` and `aria-current="page"` on the current page link.
-- Active styling uses a left inset highlight and elevated contrast for visibility.
+## Page metadata contract
 
-Icons:
-- Sidebar icons are injected by `modern-docs.js` and inherit link color on hover and active.
+Each navigable page must declare:
 
-## Sidebar visual system
+- `title`
+- `description`
+- `doc_type`
+- `order`
+- `permalink`
 
-Hierarchy and spacing:
-- Uppercase section label with increased letter-spacing.
-- Links are flex-aligned with icon and text spacing (`gap`) and padded hit targets.
+Optional keys:
 
-Interaction styling:
-- No default underline. Underline appears only on hover and focus.
-- Hover uses a subtle background and text color shift.
-- Active uses a stronger background and a left accent bar.
+- `toc` (default `true`)
+- `nav_exclude` (default `false`)
 
-Theming:
-- Sidebar colors are driven by `--sidebar-*` tokens.
-- Background uses a subtle vertical gradient in both light and dark modes.
+## Layout model
 
-## Table of contents (TOC)
+`_layouts/default.html` renders:
 
-The TOC is generated client-side by scanning `h2` and `h3` headings inside `#article-body`. Active section tracking is handled via `IntersectionObserver`.
+1. Sticky header with search, theme toggle, and mobile sidebar toggle
+2. Left sidebar grouped by Diataxis sections
+3. Main article container with page title and lead
+4. Auto-generated TOC from `h2` and `h3`
 
-## Search behavior
+`_includes/sidebar.html` builds navigation from `site.pages` filtered by `doc_type`.
 
-The header search input performs client-side filtering:
-- Filters sidebar links by text match.
-- Marks the article with a no-results state if the term is not present.
+## Client behavior model
 
-## Layout and responsiveness
+`modern-docs.js` provides:
 
-Desktop layout:
-- `.shell` grid: sidebar + main content.
-- `.content-layout` grid: article + TOC.
+- Theme toggle (light/dark)
+- Mobile sidebar open/close
+- Active nav detection with icon injection
+- TOC generation and active heading tracking
+- Sidebar link filtering by search query
+- Code block copy button enhancement
 
-Responsive behavior:
-- At `max-width: 1200px`, TOC is hidden.
-- At `max-width: 1024px`, sidebar becomes an off-canvas panel.
-- At `max-width: 768px`, paddings and typography scale down.
+## URL stability
 
-## Accessibility decisions
+Permalinks preserve historical routes:
 
-Key decisions aligned with WCAG 2.1:
-- Skip link for keyboard users.
-- Semantic landmarks (`header`, `nav`, `main`, `article`, `aside`).
-- ARIA labels for sidebar, breadcrumbs, search, and TOC.
-- Visible focus styles and `aria-current="page"` for active nav items.
+- `/index.html`
+- `/getting-started.html`
+- `/installation.html`
+- `/quickstart.html`
+- `/configuration.html`
+- `/schema-keywords.html`
+- `/validation-behavior.html`
+- `/examples.html`
+- `/architecture.html`
 
-## Information flow rationale
+## Accessibility baseline
 
-The sequence prioritizes user success:
-- Concept framing first.
-- Immediate setup and quick win second.
-- Operational and reference depth third.
-- Architectural understanding last.
+- Skip link to main content
+- Semantic landmarks (`header`, `nav`, `main`, `article`, `aside`)
+- `aria-current="page"` for active nav item
+- Focus-visible styles and keyboard navigable controls
+
+## Documentation governance
+
+Editorial and structure standards are defined in [Writing guide](writing-guide.html).

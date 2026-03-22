@@ -1,7 +1,17 @@
-<nav class="ghd-breadcrumbs" aria-label="Breadcrumb">
-  <ol>
-    <li><a href="{{ '/index.html' | relative_url }}">Docs</a></li>
-    {% if page.section %}<li>{{ page.section }}</li>{% endif %}
-    <li aria-current="page">{{ page.title }}</li>
+{% assign doc_type_label = "" %}
+{% case page.doc_type %}
+  {% when "tutorial" %}{% assign doc_type_label = "Tutorials" %}
+  {% when "how-to" %}{% assign doc_type_label = "How-to Guides" %}
+  {% when "reference" %}{% assign doc_type_label = "Reference" %}
+  {% when "explanation" %}{% assign doc_type_label = "Explanation" %}
+{% endcase %}
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs-list">
+    <li class="breadcrumbs-item"><a href="{{ '/index.html' | relative_url }}" class="breadcrumbs-link">Docs</a></li>
+    {% if doc_type_label != "" and page.url != "/index.html" %}
+    <li class="breadcrumbs-item"><span class="breadcrumbs-link">{{ doc_type_label }}</span></li>
+    {% endif %}
+    <li class="breadcrumbs-item"><span class="breadcrumbs-current">{{ page.title }}</span></li>
   </ol>
 </nav>

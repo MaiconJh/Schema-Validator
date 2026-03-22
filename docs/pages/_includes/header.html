@@ -1,15 +1,22 @@
-<header class="ghd-header" role="banner">
-  <a class="ghd-logo" href="{{ '/index.html' | relative_url }}" aria-label="Schema Validator Docs home">
-    <span aria-hidden="true">◆</span>
-    <span>Schema Validator Docs</span>
-  </a>
+<header class="header" role="banner">
+  <div class="header-inner">
+    <a class="header-logo" href="{{ '/index.html' | relative_url }}" aria-label="Schema Validator Docs home">
+      <span class="header-logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </span>
+      <span>Schema Validator</span>
+    </a>
 
-  <div class="ghd-header-controls">
-    <label class="ghd-search-wrap" for="search-input">
-      <span class="sr-only">Search documentation pages</span>
-      <input id="search-input" type="search" placeholder="Search docs pages" autocomplete="off" aria-label="Search docs pages">
-    </label>
-    <button id="theme-toggle" class="ghd-btn" type="button" aria-label="Toggle dark mode">Toggle theme</button>
-    <button id="sidebar-toggle" class="ghd-btn mobile-only" type="button" aria-controls="sidebar" aria-expanded="false">Menu</button>
+    <div class="header-controls">
+      <label class="header-search" for="search-input">
+        <input id="search-input" class="header-search-input" type="search" placeholder="Search documentation..." autocomplete="off" aria-label="Search documentation">
+      </label>
+      <button id="theme-toggle" class="header-btn" type="button" aria-label="Toggle dark mode"></button>
+      <button id="sidebar-toggle" class="header-btn mobile-only" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle menu"></button>
+    </div>
   </div>
 </header>

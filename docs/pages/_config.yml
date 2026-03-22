@@ -4,7 +4,6 @@ baseurl: "/docs/pages"
 markdown: kramdown
 highlighter: rouge
 permalink: pretty
-collections: {}
 defaults:
   - scope:
       path: ""
@@ -12,7 +11,7 @@ defaults:
     values:
       layout: default
       toc: true
-      sidebar_group: "Documentation"
+      nav_exclude: false
 include:
   - _includes
   - _layouts

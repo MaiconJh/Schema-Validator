@@ -389,16 +389,6 @@ body {
   gap: var(--space-6);
 }
 
-.ghd-sidebar {
-  position: sticky;
-  top: var(--header-height);
-  height: calc(100vh - var(--header-height));
-  overflow-y: auto;
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--sidebar-border);
-  padding: var(--space-6) var(--space-5);
-}
-
 .sidebar-section {
   margin-bottom: var(--space-8);
   display: flex;
@@ -425,19 +415,6 @@ body {
   opacity: 0.7;
 }
 
-.ghd-sidebar-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 0 var(--space-2);
-  margin: 0;
-  font-size: var(--text-sm);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--sidebar-title);
-}
-
 .sidebar-nav {
   list-style: none;
   margin: 0;
@@ -447,23 +424,12 @@ body {
   gap: var(--space-2);
 }
 
-.ghd-nav-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.sidebar-nav-item,
-.ghd-nav-list li {
+.sidebar-nav-item {
   margin: 0;
 }
 
 .sidebar-nav-link,
-.sidebar-nav a,
-.ghd-nav-list a {
+.sidebar-nav a {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -480,8 +446,7 @@ body {
 }
 
 .sidebar-nav-link:hover,
-.sidebar-nav a:hover,
-.ghd-nav-list a:hover {
+.sidebar-nav a:hover {
   background: var(--sidebar-link-hover-bg);
   color: var(--sidebar-link-hover);
   text-decoration: underline;
@@ -490,8 +455,7 @@ body {
 }
 
 .sidebar-nav-link:focus-visible,
-.sidebar-nav a:focus-visible,
-.ghd-nav-list a:focus-visible {
+.sidebar-nav a:focus-visible {
   outline: none;
   background: var(--sidebar-link-hover-bg);
   box-shadow: 0 0 0 3px var(--color-accent-subtle);
@@ -499,9 +463,7 @@ body {
 
 .sidebar-nav-link.active,
 .sidebar-nav a.active,
-.sidebar-nav a[aria-current="page"],
-.ghd-nav-list a.active,
-.ghd-nav-list a[aria-current="page"] {
+.sidebar-nav a[aria-current="page"] {
   background: var(--sidebar-link-active-bg);
   color: var(--sidebar-link-active);
   font-weight: 600;
@@ -514,12 +476,10 @@ body {
 .sidebar-nav-item svg,
 .sidebar-nav-link svg,
 .sidebar-nav a svg,
-.ghd-nav-list a svg,
 .card-title svg,
 .callout-icon svg,
 .toc-title svg,
 .sidebar-title svg,
-.ghd-sidebar-title svg,
 .breadcrumbs svg,
 .nav-arrow-label svg,
 .header-btn svg,
@@ -543,20 +503,16 @@ svg.heading-anchor-icon {
 }
 
 .sidebar-nav-link svg,
-.sidebar-nav a svg,
-.ghd-nav-list a svg {
+.sidebar-nav a svg {
   color: var(--sidebar-link-icon);
   opacity: 0.75;
 }
 
 .sidebar-nav-link:hover svg,
 .sidebar-nav a:hover svg,
-.ghd-nav-list a:hover svg,
 .sidebar-nav-link.active svg,
 .sidebar-nav a.active svg,
-.sidebar-nav a[aria-current="page"] svg,
-.ghd-nav-list a.active svg,
-.ghd-nav-list a[aria-current="page"] svg {
+.sidebar-nav a[aria-current="page"] svg {
   opacity: 1;
   color: inherit;
 }
@@ -1284,29 +1240,19 @@ h3:focus-within .heading-anchor {
 }
 
 /* Staggered animations for lists */
-.sidebar-nav-item,
-.ghd-nav-list li {
+.sidebar-nav-item {
   animation: slideIn var(--transition-normal) ease-out backwards;
 }
 
-.sidebar-nav-item:nth-child(1),
-.ghd-nav-list li:nth-child(1) { animation-delay: 0ms; }
-.sidebar-nav-item:nth-child(2),
-.ghd-nav-list li:nth-child(2) { animation-delay: 50ms; }
-.sidebar-nav-item:nth-child(3),
-.ghd-nav-list li:nth-child(3) { animation-delay: 100ms; }
-.sidebar-nav-item:nth-child(4),
-.ghd-nav-list li:nth-child(4) { animation-delay: 150ms; }
-.sidebar-nav-item:nth-child(5),
-.ghd-nav-list li:nth-child(5) { animation-delay: 200ms; }
-.sidebar-nav-item:nth-child(6),
-.ghd-nav-list li:nth-child(6) { animation-delay: 250ms; }
-.sidebar-nav-item:nth-child(7),
-.ghd-nav-list li:nth-child(7) { animation-delay: 300ms; }
-.sidebar-nav-item:nth-child(8),
-.ghd-nav-list li:nth-child(8) { animation-delay: 350ms; }
-.sidebar-nav-item:nth-child(9),
-.ghd-nav-list li:nth-child(9) { animation-delay: 400ms; }
+.sidebar-nav-item:nth-child(1) { animation-delay: 0ms; }
+.sidebar-nav-item:nth-child(2) { animation-delay: 50ms; }
+.sidebar-nav-item:nth-child(3) { animation-delay: 100ms; }
+.sidebar-nav-item:nth-child(4) { animation-delay: 150ms; }
+.sidebar-nav-item:nth-child(5) { animation-delay: 200ms; }
+.sidebar-nav-item:nth-child(6) { animation-delay: 250ms; }
+.sidebar-nav-item:nth-child(7) { animation-delay: 300ms; }
+.sidebar-nav-item:nth-child(8) { animation-delay: 350ms; }
+.sidebar-nav-item:nth-child(9) { animation-delay: 400ms; }
 
 /* Focus visible for keyboard navigation */
 :focus-visible {

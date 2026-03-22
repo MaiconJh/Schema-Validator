@@ -211,26 +211,38 @@
     
     const navLinks = [...pageIndex.querySelectorAll('a')];
     const currentPath = window.location.pathname;
+    const currentSlug = getHrefSlug(currentPath) || 'index.html';
     
     navLinks.forEach((a) => {
       const href = a.getAttribute('href');
-      if (currentPath.endsWith(href) || currentPath === href) {
+      const hrefSlug = getHrefSlug(href);
+      const isCurrent = currentPath === href || (href && currentPath.endsWith(href)) || (hrefSlug && hrefSlug === currentSlug);
+      const icon = getPageIcon(hrefSlug);
+      const label = a.textContent.trim();
+
+      if (isCurrent) {
         a.classList.add('active');
         a.setAttribute('aria-current', 'page');
-        a.innerHTML = getIcon(getPageIcon(href)) + a.innerHTML;
-      } else {
-        // Add icons to other links too
-        a.innerHTML = getIcon(getPageIcon(href)) + a.innerHTML;
       }
+
+      a.innerHTML = getIcon(icon) + label;
     });
   }
 
+  function getHrefSlug(href) {
+    if (!href) return '';
+    const cleanHref = href.split('#')[0].split('?')[0];
+    const normalized = cleanHref.endsWith('/') ? `${cleanHref}index.html` : cleanHref;
+    const slashIndex = normalized.lastIndexOf('/');
+    return slashIndex >= 0 ? normalized.slice(slashIndex + 1) : normalized;
+  }
+
   // Map pages to icons
-  function getPageIcon(href) {
+  function getPageIcon(pageSlug) {
     const icons = {
       'index.html': 'home',
       'getting-started.html': 'rocket',
-      'installation.html': 'download',
+      'installation.html': 'package',
       'quickstart.html': 'zap',
       'configuration.html': 'settings',
       'schema-keywords.html': 'hash',
@@ -238,7 +250,7 @@
       'examples.html': 'code',
       'architecture.html': 'layers'
     };
-    return icons[href] || 'file-text';
+    return icons[pageSlug] || 'file-text';
   }
 
   // --------------------------------------------------------------------------

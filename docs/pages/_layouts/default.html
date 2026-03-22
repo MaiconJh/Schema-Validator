@@ -7,25 +7,28 @@
     <a class="skip-link" href="#content">Skip to content</a>
     {% include header.html %}
 
-    <div class="ghd-shell">
+    <div class="shell">
       {% include sidebar.html %}
 
-      <main id="content" class="ghd-content" tabindex="-1">
+      <main id="content" class="main" tabindex="-1">
         {% include breadcrumbs.html %}
 
         <article>
-          <header class="ghd-article-header">
-            <h1>{{ page.title }}</h1>
-            {% if page.description %}<p class="lead">{{ page.description }}</p>{% endif %}
+          <header class="article-header">
+            <h1 class="article-title">{{ page.title }}</h1>
+            {% if page.description %}<p class="article-lead">{{ page.description }}</p>{% endif %}
           </header>
 
-          <div class="ghd-layout">
-            <div class="ghd-markdown" id="article-body">
+          <div class="content-layout">
+            <div class="article-content" id="article-body">
               {{ content }}
             </div>
             {% if page.toc != false %}
-            <aside class="ghd-toc" aria-label="Table of contents">
-              <h2>In this article</h2>
+            <aside class="toc" aria-label="Table of contents">
+              <h2 class="toc-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+                On this page
+              </h2>
               <nav id="toc"></nav>
             </aside>
             {% endif %}
