@@ -145,6 +145,11 @@
   --code-surface-strong: #f1f5f9;
   --code-border: #dbe4ef;
   --code-header-border: #d2dce8;
+  --table-surface: rgb(255 255 255 / 0.76);
+  --table-head-surface: rgb(241 245 249 / 0.82);
+  --table-border: #d8e2ee;
+  --table-row-border: #e2e8f0;
+  --table-row-alt: rgb(248 250 252 / 0.7);
   
   /* Border Radius */
   --radius-sm: 4px;
@@ -261,6 +266,11 @@
   --code-surface-strong: #111a2e;
   --code-border: #2b3b55;
   --code-header-border: #223149;
+  --table-surface: rgb(12 18 32 / 0.76);
+  --table-head-surface: rgb(17 26 46 / 0.86);
+  --table-border: #2b3b55;
+  --table-row-border: #223149;
+  --table-row-alt: rgb(17 24 39 / 0.52);
 }
 
 /* --------------------------------------------------------------------------
@@ -859,6 +869,54 @@ svg.heading-anchor-icon {
 
 .article-content a:hover {
   border-bottom-color: var(--color-accent-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Tables
+   -------------------------------------------------------------------------- */
+.table-wrap {
+  margin: var(--space-6) 0;
+  overflow-x: auto;
+  border: 1px solid var(--table-border);
+  border-radius: var(--radius-lg);
+  background: var(--table-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.article-content .table-wrap table {
+  width: 100%;
+  min-width: 640px;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.article-content .table-wrap thead th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  background: var(--table-head-surface);
+  border-bottom: 1px solid var(--table-row-border);
+}
+
+.article-content .table-wrap tbody td {
+  padding: var(--space-3) var(--space-4);
+  vertical-align: top;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--table-row-border);
+}
+
+.article-content .table-wrap tbody tr:nth-child(even) td {
+  background: var(--table-row-alt);
+}
+
+.article-content .table-wrap tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.article-content .table-wrap code {
+  white-space: nowrap;
 }
 
 /* --------------------------------------------------------------------------
@@ -1550,6 +1608,7 @@ h3:focus-within .heading-anchor {
 @supports ((-webkit-backdrop-filter: blur(8px)) or (backdrop-filter: blur(8px))) {
   .article-header,
   .toc,
+  .table-wrap,
   .callout,
   .card,
   .nav-arrow {

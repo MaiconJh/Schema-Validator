@@ -325,6 +325,22 @@
   }
 
   // --------------------------------------------------------------------------
+  // Table Enhancements
+  // --------------------------------------------------------------------------
+  function initTables() {
+    if (!articleBody) return;
+
+    const tables = [...articleBody.querySelectorAll('table')];
+    tables.forEach((table) => {
+      if (!table || table.closest('.table-wrap')) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'table-wrap';
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    });
+  }
+
+  // --------------------------------------------------------------------------
   // Callouts / Admonitions
   // --------------------------------------------------------------------------
   function parseCalloutMarker(text) {
@@ -542,6 +558,7 @@
     initNavigation();
     initTOC();
     initSearch();
+    initTables();
     initCallouts();
     initCodeBlocks();
     
