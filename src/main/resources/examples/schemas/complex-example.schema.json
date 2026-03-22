@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/complex-example.schema.json",
+  "title": "Complex Example Schema",
+  "description": "Comprehensive schema demonstrating all implemented JSON Schema features including $ref, array constraints, object constraints, type arrays, and 2019-09/2020-12 keywords.",
+  "$defs": {
+    "Address": {
+      "$id": "https://example.com/schemas/address.schema.json",
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string",
+          "title": "Street Address",
+          "description": "The street address including number"
+        },
+        "city": {
+          "type": "string",
+          "minLength": 2
+        },
+        "zipCode": {
+          "type": "string",
+          "pattern": "^[0-9]{5}-[0-9]{3}$"
+        },
+        "country": {
+          "type": "string",
+          "enum": ["Brazil", "United States", "Canada", "United Kingdom"]
+        }
+      },
+      "required": ["street", "city", "country"],
+      "additionalProperties": false
+    },
+    "Person": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "age": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 150
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string"
+        }
+      },
+      "required": ["name", "email"],
+      "dependentRequired": {
+        "phone": ["name"]
+      },
+      "dependentSchemas": {
+        "age": {
+          "properties": {
+            "age": {},
+            "birthCertificate": {
+              "type": "string"
+            }
+          },
+          "required": ["birthCertificate"]
+        }
+      }
+    },
+    "Product": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^PROD-[0-9]{4}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 3
+        },
+        "price": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 10000
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "category": {
+          "type": "string",
+          "enum": ["electronics", "clothing", "food", "books"]
+        },
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "dimensions": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "number",
+              "minimum": 0
+            },
+            "height": {
+              "type": "number",
+              "minimum": 0
+            },
+            "depth": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": ["width", "height", "depth"],
+          "minProperties": 2,
+          "maxProperties": 3
+        }
+      },
+      "required": ["id", "name", "price", "quantity"],
+      "dependencies": {
+        "dimensions": ["name"]
+      }
+    },
+    "OrderItem": {
+      "type": "object",
+      "properties": {
+        "productId": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "unitPrice": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["productId", "quantity", "unitPrice"]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "orderId": {
+      "type": "string",
+      "pattern": "^ORD-[0-9]{8}$"
+    },
+    "customer": {
+      "$ref": "#/$defs/Person"
+    },
+    "billingAddress": {
+      "$ref": "#/$defs/Address"
+    },
+    "shippingAddress": {
+      "$ref": "#/$defs/Address"
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": false,
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/OrderItem"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "giftWrap": {
+              "type": "boolean"
+            }
+          }
+        }
+      ],
+      "items": {
+        "$ref": "#/$defs/OrderItem"
+      }
+    },
+    "totalAmount": {
+      "type": "number",
+      "minimum": 0,
+      "multipleOf": 0.01
+    },
+    "discount": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "exclusiveMaximum": true
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "processing", "shipped", "delivered", "cancelled"]
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": ["string", "null"]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "campaign": {
+          "type": "string"
+        },
+        "referralCode": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{6}$"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "alternatives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "optionId": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "orderId",
+    "customer",
+    "items",
+    "totalAmount",
+    "status"
+  ],
+  "minProperties": 4,
+  "maxProperties": 20,
+  "allOf": [
+    {
+      "properties": {
+        "status": {
+          "enum": ["shipped", "delivered"]
+        }
+      },
+      "required": ["billingAddress"]
+    }
+  ],
+  "anyOf": [
+    {
+      "properties": {
+        "status": {
+          "enum": ["cancelled"]
+        }
+      },
+      "required": ["notes"]
+    },
+    {
+      "not": {
+        "properties": {
+          "status": {
+            "enum": ["cancelled"]
+          }
+        }
+      }
+    }
+  ],
+  "oneOf": [
+    {
+      "properties": {
+        "discount": {
+          "minimum": 50
+        }
+      }
+    },
+    {
+      "properties": {
+        "discount": {
+          "maximum": 0
+        }
+      }
+    }
+  ],
+  "if": {
+    "properties": {
+      "status": {
+        "enum": ["pending"]
+      }
+    }
+  },
+  "then": {
+    "properties": {
+      "createdAt": {
+        "format": "date-time"
+      }
+    },
+    "required": ["createdAt"]
+  },
+  "else": {
+    "properties": {
+      "status": {
+        "enum": ["processing", "shipped", "delivered", "cancelled"]
+      }
+    }
+  },
+  "additionalProperties": false
+}

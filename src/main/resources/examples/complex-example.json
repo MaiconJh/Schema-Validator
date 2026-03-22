@@ -1,0 +1,43 @@
+{
+  "orderId": "ORD-12345678",
+  "customer": {
+    "name": "John Doe",
+    "age": 30,
+    "email": "john.doe@example.com"
+  },
+  "billingAddress": {
+    "street": "123 Main Street",
+    "city": "New York",
+    "zipCode": "12345-678",
+    "country": "United States"
+  },
+  "shippingAddress": {
+    "street": "456 Oak Avenue",
+    "city": "Los Angeles",
+    "zipCode": "90210-123",
+    "country": "United States"
+  },
+  "items": [
+    {
+      "productId": "PROD-0001",
+      "quantity": 2,
+      "unitPrice": 29.99
+    },
+    {
+      "productId": "PROD-0002",
+      "quantity": 1,
+      "unitPrice": 49.99
+    }
+  ],
+  "totalAmount": 109.97,
+  "discount": 0,
+  "status": "processing",
+  "createdAt": "2026-03-22T10:30:00Z",
+  "notes": null,
+  "metadata": {
+    "source": "website",
+    "campaign": "spring_sale",
+    "referralCode": "ABC123"
+  },
+  "alternatives": []
+}
