@@ -1,6 +1,6 @@
 title: Schema Validator Docs
-url: ""
-baseurl: "/docs/pages"
+url: "https://maiconjh.github.io"
+baseurl: "/Schema-Validator"
 markdown: kramdown
 highlighter: rouge
 permalink: pretty
