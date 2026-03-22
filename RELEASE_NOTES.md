@@ -17,7 +17,7 @@ This addon was created with **Artificial Intelligence assistance**. Use with cau
 - [Skript 2.14+](https://github.com/SkriptLang/Skript)
 - Paper 1.21+ ou Spigot 1.21+
 
-## ✨ What's New in v0.4.0 - JSON Schema Complete
+## ✨ What's New in v0.4.0 - Full Schema Compliance
 
 ### 🎯 Major Features Added
 
