@@ -90,8 +90,10 @@
   /* Layout */
   --header-height: 64px;
   --sidebar-width: 280px;
-  --toc-width: 240px;
-  --content-max-width: 900px;
+  --toc-width: clamp(240px, 18vw, 320px);
+  --content-max-width: 1460px;
+  --article-max-width: 980px;
+  --content-gap: clamp(var(--space-8), 2.6vw, var(--space-12));
 
   /* Sidebar */
   --sidebar-bg: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
@@ -659,7 +661,7 @@ svg.heading-anchor-icon {
    Main Content Area
    -------------------------------------------------------------------------- */
 .main {
-  padding: var(--space-8) var(--space-12);
+  padding: var(--space-8) clamp(var(--space-6), 2.8vw, var(--space-12));
   max-width: var(--content-max-width);
   margin: 0 auto;
   width: 100%;
@@ -796,8 +798,8 @@ svg.heading-anchor-icon {
    -------------------------------------------------------------------------- */
 .content-layout {
   display: grid;
-  grid-template-columns: 1fr var(--toc-width);
-  gap: var(--space-12);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, var(--toc-width));
+  gap: var(--content-gap);
   align-items: start;
 }
 
@@ -806,6 +808,18 @@ svg.heading-anchor-icon {
    -------------------------------------------------------------------------- */
 .article-content {
   min-width: 0;
+  max-width: min(100%, var(--article-max-width));
+}
+
+/* Give extra horizontal room on ultra-wide displays without stretching text too much */
+@media (min-width: 1700px) {
+  .main {
+    max-width: 1640px;
+  }
+
+  .content-layout {
+    grid-template-columns: minmax(0, 1040px) minmax(250px, 320px);
+  }
 }
 
 .article-content h2 {
