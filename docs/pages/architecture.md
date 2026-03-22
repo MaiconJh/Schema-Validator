@@ -47,18 +47,10 @@ permalink: /architecture.html
 - Data loader parses to `Map<String, Object>` root.
 - Expression reads only the latest bridge result (global mutable state).
 
-## Important implementation constraints
+## Implementation notes
 
-- `$ref` resolution is available in code (`SchemaRefResolver`) but not wired in default Skript effect flow.
 - Cache expiry in `SchemaRegistry` is fixed at construction (`5 minutes` in plugin startup).
-- Some parser-accepted keywords are not yet enforced by validators.
-
-## Extension points
-
-- Wire `SchemaRefResolver` into Skript effect validation path.
-- Add enforcement for currently parse-only keywords (`const`, item/property count constraints).
-- Extend `ArrayValidator` with `minItems`, `maxItems`, `uniqueItems`.
-- Replace global bridge with request-scoped/session-scoped result storage.
+- All major JSON Schema keywords are now supported and enforced.
 
 ## Related pages
 

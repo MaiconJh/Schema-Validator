@@ -15,17 +15,18 @@ permalink: /design-constraints.html
 
 `DataFileLoader` currently deserializes data as `Map<String, Object>` root for effect execution. Root arrays and scalar roots are not supported in this path.
 
-## `$ref` path dependency
-
-`SchemaRefResolver` exists and is used in resolver-aware flows, but default Skript effect execution constructs `new ValidationService()` without resolver wiring.
-
 ## Cache eviction model
 
 `SchemaRegistry.getSchema()` performs time-based eviction on read. There is no background refresh or preload scheduler.
 
-## Registry/support mismatch
+## Supported keywords
 
-`SupportedKeywordsRegistry` lists recognized keywords, but validator enforcement is narrower. Some keywords are parse-recognized only.
+All major JSON Schema keywords are now supported including:
+
+- `$ref` resolution with JSON Pointer
+- Array constraints (minItems, maxItems, uniqueItems, prefixItems)
+- Object constraints (minProperties, maxProperties, dependencies, dependentRequired, dependentSchemas)
+- Metadata ($schema, $id, title, description)
 
 ## Startup failure count summary
 

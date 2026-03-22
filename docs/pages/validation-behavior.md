@@ -48,7 +48,8 @@ permalink: /validation-behavior.html
 - Value must be `List<?>`.
 - `items` schema is applied recursively to each element.
 - If `items` is missing, per-item checks are skipped.
-- `minItems`, `maxItems`, `uniqueItems` are currently not enforced.
+- `minItems`, `maxItems`, `uniqueItems` are fully enforced.
+- `prefixItems` supports tuple validation (2019-09/2020-12).
 
 ## Error model
 
@@ -68,7 +69,6 @@ Compact format returned to Skript expression:
 
 ## Known runtime constraints
 
-- The built-in Skript effect validates with `new ValidationService()` (no resolver), so `$ref` is not resolved in that path.
 - Data loader in Skript integration parses root as `Map<String, Object>`.
 
 ## Related pages

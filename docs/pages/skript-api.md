@@ -61,7 +61,6 @@ Compact message format:
 ## Known constraints
 
 - Data loader currently deserializes root payload as `Map<String, Object>`.
-- `$ref` is not resolved in default Skript effect path because it uses `new ValidationService()` without resolver.
 - Bridge state is global and stores only the latest validation result.
 
 ## Minimal practical command
