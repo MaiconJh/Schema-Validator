@@ -17,59 +17,100 @@ This addon was created with **Artificial Intelligence assistance**. Use with cau
 - [Skript 2.14+](https://github.com/SkriptLang/Skript)
 - Paper 1.21+ ou Spigot 1.21+
 
-## ✨ What's New in v0.3.5 - Minecraft Formats Update
+## ✨ What's New in v0.4.0 - JSON Schema Complete
 
 ### 🎯 Major Features Added
 
-#### 1. Conditional Validation (oneOf, not, if/then/else)
+#### 1. $ref Resolution with Full JSON Pointer Support
 
-Full JSON Schema conditional validation support:
+Complete JSON Pointer reference resolution with support for:
 
-- **oneOf** — Data must match exactly ONE of the defined schemas
-- **not** — Data must NOT match the specified schema
-- **if/then/else** — Conditional validation: if "if" condition is met, validate against "then"; otherwise validate against "else"
+- **Full JSON Pointer navigation** — Navigate by keyword/object/list
+- **definitions/$defs support** — Schema definitions with proper indexing
+- **~0/~1 escaping** — Escape sequences for `~` and `/` characters
+- **Indices support** — Reference items in allOf/anyOf/oneOf arrays
+- **$id-based indexing** — External reference resolution
 
-#### 2. Format Validation
+```json
+{
+  "$defs": {
+    "Address": {
+      "type": "object",
+      "properties": {
+        "street": {"type": "string"},
+        "city": {"type": "string"}
+      }
+    }
+  },
+  "properties": {
+    "billing_address": {"$ref": "#/$defs/Address"},
+    "shipping_address": {"$ref": "#/$defs/Address"}
+  }
+}
+```
 
-Comprehensive format validators including 12 standard formats and 13 Minecraft-specific formats:
+#### 2. Array Constraints
 
-| Standard Formats | Minecraft Formats |
-|-----------------|-------------------|
-| email | minecraft-item |
-| uri | minecraft-block |
-| uri-reference | minecraft-entity |
-| date-time | minecraft-attribute |
-| date | minecraft-effect |
-| time | minecraft-enchantment |
-| ipv4 | minecraft-biome |
-| ipv6 | minecraft-dimension |
-| hostname | minecraft-particle |
-| unix-time | minecraft-sound |
-| json-pointer | minecraft-potion |
-| relative-json-pointer | minecraft-recipe |
-| | minecraft-tag |
+| Feature | Description |
+|---------|-------------|
+| **minItems** | Minimum array length validation |
+| **maxItems** | Maximum array length validation |
+| **uniqueItems** | Uniqueness constraint for array elements |
+| **prefixItems** | Tuple validation (2019-09/2020-12) |
+| **items** | Schema validation for array elements |
 
-#### 3. MultipleOf Validation
+#### 3. Object Constraints
 
-Support for numeric divisibility constraints:
+| Feature | Description |
+|---------|-------------|
+| **minProperties** | Minimum property count validation |
+| **maxProperties** | Maximum property count validation |
+| **dependencies** | Property and schema dependency modes |
+| **dependentRequired** | Required properties when dependency present (2019-09+) |
+| **dependentSchemas** | Schema constraints when dependency present (2019-09+) |
+| **additionalProperties** | Now supports both boolean and schema forms |
+
+#### 4. Exclusive Minimum/Maximum
+
+- **Modern numeric form** — Per 2019-09/2020-12 specification
+- **Legacy boolean compatibility** — Maintained for Draft-04/06/07
 
 ```json
 {
   "type": "number",
-  "multipleOf": 0.5
+  "exclusiveMinimum": 0,
+  "exclusiveMaximum": 100
 }
 ```
 
-#### 4. Array & Object Validation
+#### 5. Metadata Modeling
 
-- **minItems/maxItems/uniqueItems** — Array cardinality validation
-- **minProperties/maxProperties** — Object property count validation
+| Keyword | Description |
+|---------|-------------|
+| **$schema** | Schema dialect identification |
+| **$id** | Base URI for reference resolution |
+| **title** | Schema title |
+| **description** | Schema description |
 
-#### 5. System Features
+#### 6. Modern Type Array Support
 
-- **Supported Keywords Registry** — 39 keywords officially supported
-- **Unsupported Keyword Detection** — Automatic warnings for invalid keywords
-- **Fail-Fast Mode** — Optional strict validation via config
+Runtime dispatch by actual data type with support for nullable types:
+
+```json
+{
+  "type": ["string", "null"],
+  "description": "A string that can also be null"
+}
+```
+
+#### 7. 2019-09/2020-12 Keywords
+
+| Keyword | Draft | Description |
+|---------|-------|-------------|
+| **$defs** | 2019-09 | Schema definitions |
+| **prefixItems** | 2019-09 | Tuple validation |
+| **dependentRequired** | 2019-09 | Conditional required properties |
+| **dependentSchemas** | 2019-09 | Conditional schema constraints |
 
 ---
 
@@ -77,9 +118,9 @@ Support for numeric divisibility constraints:
 
 | Fix | Description |
 |------|-------------|
-| **FileSchemaLoader.java** | Fixed detection of unsupported keywords in custom properties |
-| **PrimitiveValidator.java** | Fixed validation of `type: number` to accept Integer values |
-| **Schema examples** | Updated to use proper Minecraft namespaced IDs (e.g., `minecraft:diamond` instead of `diamond`) |
+| ✅ **Documentation Updated** | All documentation now reflects implemented features |
+| ✅ **Schema Keywords** | Fixed status of all previously marked as "not enforced" |
+| ✅ **Limitations Audit** | Updated to show completed implementations |
 
 ---
 
