@@ -66,9 +66,9 @@ Unknown format names currently pass validation (no error).
 
 ## Semantic validation for Minecraft formats
 
-> [!IMPORTANT]
-> Since version **0.5.0**, `FormatValidator` uses **real Bukkit registries** for semantic validation when the server is running.  
-> **You must call `FormatValidator.initializeCaches()` in your plugin's `onEnable()`** after the server is fully loaded to populate the internal caches.
+[!IMPORTANT]
+Since version **0.5.0**, `FormatValidator` uses **real Bukkit registries** for semantic validation when the server is running.  
+**You must call `FormatValidator.initializeCaches()` in your plugin's `onEnable()`** after the server is fully loaded to populate the internal caches.
 
 ### How it works
 
