@@ -29,6 +29,11 @@ public class Schema {
     private final String format; // JSON Schema format (date, email, uri, etc.)
     private final Number multipleOf; // MultipleOf constraint for numbers
     private final List<Object> enumValues;
+    private final String schemaDialect; // $schema keyword
+    private final String id; // $id keyword
+    private final String title; // title keyword
+    private final String description; // description keyword
+    private final List<String> typeList; // type as list (e.g., ["string", "null"])
     private final String ref; // $ref for schema references
     private final String version; // Schema version for compatibility
     private final String compatibility; // Compatibility flag (e.g., "1.21", "1.20")
@@ -40,76 +45,14 @@ public class Schema {
     private final Schema thenSchema; // then schema (conditional)
     private final Schema elseSchema; // else schema (conditional)
 
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, Schema itemSchema) {
-        this(name, type, properties, null, itemSchema, null, true, null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
-    }
-
-    /**
-     * Creates a schema with oneOf composition.
-     */
-    public Schema(String name, SchemaType type, List<Schema> oneOf) {
-        this(name, type, null, null, null, null, true,
-             null, null, false, false, null, null, null, null, null, null,
-             null, null, null, null, null, oneOf, null, null, null, null);
-    }
-
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Schema itemSchema, List<String> requiredFields) {
-        this(name, type, properties, null, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
-    }
-
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Schema itemSchema, List<String> requiredFields, boolean additionalProperties) {
-        this(name, type, properties, null, itemSchema, requiredFields, additionalProperties, 
-             null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
-    }
-
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Schema itemSchema, List<String> requiredFields, boolean additionalProperties,
-                  Number minimum, Number maximum, boolean exclusiveMinimum, boolean exclusiveMaximum,
-                  Integer minLength, Integer maxLength, String pattern, List<Object> enumValues) {
-        this(name, type, properties, null, itemSchema, requiredFields, additionalProperties, 
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, null, null, enumValues, null, null, null, null, null);
-    }
-
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, true, null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
-    }
-
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
-                  boolean additionalProperties) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties, 
-             null, null, false, false, null, null, null, null, null, null, null, null, null, null, null);
-    }
-
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
-                  boolean additionalProperties, Number minimum, Number maximum, 
-                  boolean exclusiveMinimum, boolean exclusiveMaximum,
-                  Integer minLength, Integer maxLength, String pattern, List<Object> enumValues, String ref) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties, 
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, null, null, enumValues, ref, null, null, null, null);
-    }
-
+    // Main constructor with all parameters
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
                   boolean additionalProperties, Number minimum, Number maximum, 
                   boolean exclusiveMinimum, boolean exclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, String format, Number multipleOf,
-                  List<Object> enumValues, String ref, String version, String compatibility, List<Schema> allOf, List<Schema> anyOf) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties,
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum, minLength, maxLength, pattern, format,
-             multipleOf, enumValues, ref, version, compatibility, allOf, anyOf, null, null, null, null, null);
-    }
-
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
-                  boolean additionalProperties, Number minimum, Number maximum, 
-                  boolean exclusiveMinimum, boolean exclusiveMaximum,
-                  Integer minLength, Integer maxLength, String pattern, String format, Number multipleOf,
-                  List<Object> enumValues, String ref, String version, String compatibility,
+                  List<Object> enumValues, String schemaDialect, String id, String title, String description,
+                  List<String> typeList, String ref, String version, String compatibility,
                   List<Schema> allOf, List<Schema> anyOf, List<Schema> oneOf,
                   Schema notSchema, Schema ifSchema, Schema thenSchema, Schema elseSchema) {
         this.name = name;
@@ -129,6 +72,11 @@ public class Schema {
         this.format = format;
         this.multipleOf = multipleOf;
         this.enumValues = enumValues == null ? Collections.emptyList() : Collections.unmodifiableList(enumValues);
+        this.schemaDialect = schemaDialect;
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.typeList = typeList;
         this.ref = ref;
         this.version = version;
         this.compatibility = compatibility;
@@ -141,6 +89,114 @@ public class Schema {
         this.elseSchema = elseSchema;
     }
 
+    // Simplified constructor: name, type, properties, itemSchema
+    public Schema(String name, SchemaType type, Map<String, Schema> properties, Schema itemSchema) {
+        this(name, type, properties, null, itemSchema, null, true,
+             null, null, false, false,
+             null, null, null, null, null,
+             null, null, null, null, null,
+             null, null, null, null,
+             null, null, null, null, null, null, null);
+    }
+
+    // Constructor with oneOf composition
+    public Schema(String name, SchemaType type, List<Schema> oneOf) {
+        this(name, type, null, null, null, null, true,
+             null, null, false, false,
+             null, null, null, null, null,
+             null, null, null, null, null,
+             null, null, null, null,
+             null, null, oneOf, null, null, null, null);
+    }
+
+    // Constructor: name, type, properties, itemSchema, requiredFields
+    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
+                  Schema itemSchema, List<String> requiredFields) {
+        this(name, type, properties, null, itemSchema, requiredFields, true,
+             null, null, false, false,
+             null, null, null, null, null,
+             null, null, null, null, null,
+             null, null, null, null,
+             null, null, null, null, null, null, null);
+    }
+
+    // Constructor: name, type, properties, itemSchema, requiredFields, additionalProperties
+    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
+                  Schema itemSchema, List<String> requiredFields, boolean additionalProperties) {
+        this(name, type, properties, null, itemSchema, requiredFields, additionalProperties,
+             null, null, false, false,
+             null, null, null, null, null,
+             null, null, null, null, null,
+             null, null, null, null,
+             null, null, null, null, null, null, null);
+    }
+
+    // Constructor with numeric/string constraints
+    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
+                  Schema itemSchema, List<String> requiredFields, boolean additionalProperties,
+                  Number minimum, Number maximum, boolean exclusiveMinimum, boolean exclusiveMaximum,
+                  Integer minLength, Integer maxLength, String pattern, List<Object> enumValues) {
+        this(name, type, properties, null, itemSchema, requiredFields, additionalProperties,
+             minimum, maximum, exclusiveMinimum, exclusiveMaximum,
+             minLength, maxLength, pattern, null, null, enumValues,
+             null, null, null, null, null,
+             null, null, null, null,
+             null, null, null, null, null, null);
+    }
+
+    // Constructor with patternProperties
+    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
+                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields) {
+        this(name, type, properties, patternProperties, itemSchema, requiredFields, true,
+             null, null, false, false,
+             null, null, null, null, null,
+             null, null, null, null, null,
+             null, null, null, null,
+             null, null, null, null, null, null, null);
+    }
+
+    // Constructor with patternProperties and additionalProperties
+    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
+                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
+                  boolean additionalProperties) {
+        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties,
+             null, null, false, false,
+             null, null, null, null, null,
+             null, null, null, null, null,
+             null, null, null, null,
+             null, null, null, null, null, null, null);
+    }
+
+    // Constructor with numeric/string constraints and $ref
+    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
+                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
+                  boolean additionalProperties, Number minimum, Number maximum, 
+                  boolean exclusiveMinimum, boolean exclusiveMaximum,
+                  Integer minLength, Integer maxLength, String pattern, List<Object> enumValues, String ref) {
+        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties,
+             minimum, maximum, exclusiveMinimum, exclusiveMaximum,
+             minLength, maxLength, pattern, null, null, enumValues,
+             null, null, null, null, null,
+             ref, null, null, null,
+             null, null, null, null, null, null);
+    }
+
+    // Constructor with format, multipleOf, version, compatibility, allOf, anyOf
+    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
+                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
+                  boolean additionalProperties, Number minimum, Number maximum, 
+                  boolean exclusiveMinimum, boolean exclusiveMaximum,
+                  Integer minLength, Integer maxLength, String pattern, String format, Number multipleOf,
+                  List<Object> enumValues, String ref, String version, String compatibility, List<Schema> allOf, List<Schema> anyOf) {
+        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties,
+             minimum, maximum, exclusiveMinimum, exclusiveMaximum,
+             minLength, maxLength, pattern, format, multipleOf, enumValues,
+             null, null, null, null, null,
+             ref, version, compatibility,
+             allOf, anyOf, null, null, null, null, null);
+    }
+
+    // Getters (unchanged)
     public String getName() {
         return name;
     }
@@ -355,5 +411,53 @@ public class Schema {
      */
     public boolean hasConditional() {
         return ifSchema != null;
+    }
+
+    /**
+     * Returns the schema dialect (e.g., "https://json-schema.org/draft/2020-12/schema").
+     * @return the schema dialect or null
+     */
+    public String getSchemaDialect() {
+        return schemaDialect;
+    }
+
+    /**
+     * Returns the schema ID (e.g., "https://example.com/schemas/user.json").
+     * @return the schema ID or null
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Returns the schema title.
+     * @return the title or null
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Returns the schema description.
+     * @return the description or null
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Checks if this schema has a type union (array of types).
+     * @return true if type is an array
+     */
+    public boolean hasTypeUnion() {
+        return typeList != null && !typeList.isEmpty();
+    }
+
+    /**
+     * Returns the allowed types for this schema.
+     * @return list of types or empty list
+     */
+    public List<String> getAllowedTypes() {
+        return typeList != null ? typeList : Collections.emptyList();
     }
 }

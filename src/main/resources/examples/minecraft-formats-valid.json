@@ -1,0 +1,10 @@
+{
+  "player_effect": "minecraft:speed",
+  "enchantment": "minecraft:efficiency",
+  "biome": "minecraft:plains",
+  "dimension": "minecraft:overworld",
+  "particle": "minecraft:flame",
+  "sound": "minecraft:block.gold_ore.break",
+  "potion": "minecraft:strength",
+  "recipe": "minecraft:diamond_sword"
+}

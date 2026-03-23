@@ -53,6 +53,9 @@ public class SchemaValidatorPlugin extends JavaPlugin {
         SkriptSyntaxRegistration.register(this);
         PluginContext.initialize(this, schemaRegistry, fileSchemaLoader);
 
+        // Initialize format validation caches for semantic Minecraft validation
+        com.maiconjh.schemacr.validation.FormatValidator.initializeCaches();
+
         getLogger().info("Schema-Validator enabled with " + schemaRegistry.getSchemaCount() + " schemas loaded.");
     }
 

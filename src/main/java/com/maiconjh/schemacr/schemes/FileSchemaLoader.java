@@ -225,6 +225,39 @@ public class FileSchemaLoader {
             enumValues.addAll(enumRaw);
         }
 
+        // Parse $schema (schema dialect)
+        String schemaDialect = null;
+        if (raw.containsKey("$schema") && raw.get("$schema") instanceof String schemaDialectValue) {
+            schemaDialect = schemaDialectValue;
+        }
+
+        // Parse $id (schema identifier)
+        String id = null;
+        if (raw.containsKey("$id") && raw.get("$id") instanceof String idValue) {
+            id = idValue;
+        }
+
+        // Parse title
+        String title = null;
+        if (raw.containsKey("title") && raw.get("title") instanceof String titleValue) {
+            title = titleValue;
+        }
+
+        // Parse description
+        String description = null;
+        if (raw.containsKey("description") && raw.get("description") instanceof String descriptionValue) {
+            description = descriptionValue;
+        }
+
+        // Parse type as array (union types)
+        List<String> typeList = null;
+        if (raw.containsKey("type") && raw.get("type") instanceof List<?> typeRaw) {
+            typeList = new ArrayList<>();
+            for (Object item : typeRaw) {
+                typeList.add(String.valueOf(item));
+            }
+        }
+
         // Parse $ref (schema reference)
         String ref = null;
         if (raw.containsKey("$ref") && raw.get("$ref") instanceof String refValue) {
@@ -322,7 +355,9 @@ public class FileSchemaLoader {
 
         return new Schema(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProps,
                          minimum, maximum, exclusiveMinimum, exclusiveMaximum,
-                         minLength, maxLength, pattern, format, multipleOf, enumValues, ref, version, compatibility,
+                         minLength, maxLength, pattern, format, multipleOf, enumValues, 
+                         schemaDialect, id, title, description, typeList,
+                         ref, version, compatibility,
                          allOfSchemas, anyOfSchemas, oneOfSchemas, notSchema, ifSchema, thenSchema, elseSchema);
     }
 

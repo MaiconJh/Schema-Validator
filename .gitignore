@@ -196,6 +196,8 @@ site/
 
 # JavaDoc gerado
 javadoc/
+docs/_site/
+docs/pages/_site_test/
 
 
 # ============================================

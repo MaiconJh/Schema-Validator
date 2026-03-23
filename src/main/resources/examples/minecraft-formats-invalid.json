@@ -1,0 +1,10 @@
+{
+  "player_effect": "minecraft:um_effect_que_nao_existe",
+  "enchantment": "minecraft:uma_enchant_que_nao_existe",
+  "biome": "minecraft:um_biome_que_nao_existe",
+  "dimension": "minecraft:uma_dimension_que_nao_existe",
+  "particle": "minecraft:uma_particle_que_nao_existe",
+  "sound": "minecraft:um_sound_que_nao_existe",
+  "potion": "minecraft:uma_potion_que_nao_existe",
+  "recipe": "minecraft:uma_recipe_que_nao_existe"
+}

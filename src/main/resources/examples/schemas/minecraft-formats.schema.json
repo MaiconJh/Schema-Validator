@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "minecraft-formats.schema.json",
+  "title": "Minecraft Formats Example",
+  "description": "Schema demonstrating semantic validation for Minecraft formats",
+  "type": "object",
+  "properties": {
+    "player_effect": {
+      "type": "string",
+      "format": "minecraft-effect",
+      "description": "Validates that the effect exists in Minecraft"
+    },
+    "enchantment": {
+      "type": "string",
+      "format": "minecraft-enchantment",
+      "description": "Validates that the enchantment exists in Minecraft"
+    },
+    "biome": {
+      "type": "string",
+      "format": "minecraft-biome",
+      "description": "Validates that the biome exists in Minecraft"
+    },
+    "dimension": {
+      "type": "string",
+      "format": "minecraft-dimension",
+      "description": "Validates that the dimension exists in Minecraft"
+    },
+    "particle": {
+      "type": "string",
+      "format": "minecraft-particle",
+      "description": "Validates that the particle exists in Minecraft"
+    },
+    "sound": {
+      "type": "string",
+      "format": "minecraft-sound",
+      "description": "Validates that the sound exists in Minecraft"
+    },
+    "potion": {
+      "type": "string",
+      "format": "minecraft-potion",
+      "description": "Validates that the potion exists in Minecraft"
+    },
+    "recipe": {
+      "type": "string",
+      "format": "minecraft-recipe",
+      "description": "Validates that the recipe exists in Minecraft"
+    }
+  }
+}

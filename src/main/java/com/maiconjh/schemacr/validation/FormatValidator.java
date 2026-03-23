@@ -1,6 +1,21 @@
 package com.maiconjh.schemacr.validation;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
+import org.bukkit.Registry;
+import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Biome;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
 /**
  * Validates JSON Schema format strings.
@@ -172,6 +187,147 @@ public final class FormatValidator {
         "^#[a-z][a-z0-9_*-]*:[a-z][a-z0-9_*-]+$"
     );
 
+    // Static caches for semantic validation (populated by initializeCaches())
+    private static final Set<String> VALID_ENTITIES = new HashSet<>();
+    private static final Set<String> VALID_BIOMES = new HashSet<>();
+    private static final Set<String> VALID_DIMENSIONS = new HashSet<>();
+    private static final Set<String> VALID_ENCHANTMENTS = new HashSet<>();
+    private static final Set<String> VALID_SOUNDS = new HashSet<>();
+    private static final Set<String> VALID_ATTRIBUTES = new HashSet<>();
+    private static final Set<String> VALID_EFFECTS = new HashSet<>();
+    private static final Set<String> VALID_PARTICLES = new HashSet<>();
+    private static final Set<String> VALID_POTIONS = new HashSet<>();
+    private static boolean cachesInitialized = false;
+    private static boolean warningLogged = false;
+
+    /**
+     * Initializes the caches with valid values from Bukkit registries.
+     * Must be called after the server is loaded (e.g., in onEnable()).
+     */
+    public static void initializeCaches() {
+        if (cachesInitialized || Bukkit.getServer() == null) {
+            return;
+        }
+
+        try {
+            // Load EntityTypes
+            for (EntityType entityType : EntityType.values()) {
+                if (entityType.getKey() != null) {
+                    VALID_ENTITIES.add(entityType.getKey().toString());
+                }
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Failed to load entity types: " + e.getMessage());
+        }
+
+        try {
+            // Load Biomes
+            for (Biome biome : Biome.values()) {
+                if (biome.getKey() != null) {
+                    VALID_BIOMES.add(biome.getKey().toString());
+                }
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Failed to load biomes: " + e.getMessage());
+        }
+
+        try {
+            // Load Enchantments
+            for (Enchantment enchantment : Enchantment.values()) {
+                if (enchantment.getKey() != null) {
+                    VALID_ENCHANTMENTS.add(enchantment.getKey().toString());
+                }
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Failed to load enchantments: " + e.getMessage());
+        }
+
+        try {
+            // Load Sounds
+            for (Sound sound : Sound.values()) {
+                if (sound.getKey() != null) {
+                    VALID_SOUNDS.add(sound.getKey().toString());
+                }
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Failed to load sounds: " + e.getMessage());
+        }
+
+        try {
+            // Load Attributes
+            for (Attribute attribute : Attribute.values()) {
+                if (attribute.getKey() != null) {
+                    VALID_ATTRIBUTES.add(attribute.getKey().toString());
+                }
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Failed to load attributes: " + e.getMessage());
+        }
+
+        try {
+            // Load PotionEffectTypes (effects like speed, strength) using Registry
+            // Registry.EFFECT is available in Paper 1.21+
+            Registry<PotionEffectType> effectRegistry = Registry.EFFECT;
+            for (PotionEffectType effect : effectRegistry) {
+                if (effect.getKey() != null) {
+                    VALID_EFFECTS.add(effect.getKey().toString());
+                }
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Failed to load potion effects: " + e.getMessage());
+        }
+
+        try {
+            // Load Particles
+            for (Particle particle : Particle.values()) {
+                if (particle.getKey() != null) {
+                    VALID_PARTICLES.add(particle.getKey().toString());
+                }
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Failed to load particles: " + e.getMessage());
+        }
+
+        try {
+            // Load PotionTypes
+            for (PotionType potionType : PotionType.values()) {
+                if (potionType.getKey() != null) {
+                    VALID_POTIONS.add(potionType.getKey().toString());
+                }
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Failed to load potion types: " + e.getMessage());
+        }
+
+        // Load known dimensions (overworld, nether, the_end)
+        VALID_DIMENSIONS.add("minecraft:overworld");
+        VALID_DIMENSIONS.add("minecraft:nether");
+        VALID_DIMENSIONS.add("minecraft:the_end");
+
+        cachesInitialized = true;
+        Bukkit.getLogger().info("FormatValidator caches initialized with " +
+            VALID_ENTITIES.size() + " entities, " +
+            VALID_BIOMES.size() + " biomes, " +
+            VALID_ENCHANTMENTS.size() + " enchantments, " +
+            VALID_SOUNDS.size() + " sounds, " +
+            VALID_ATTRIBUTES.size() + " attributes, " +
+            VALID_EFFECTS.size() + " effects, " +
+            VALID_PARTICLES.size() + " particles, " +
+            VALID_POTIONS.size() + " potions, " +
+            VALID_DIMENSIONS.size() + " dimensions");
+
+        // Debug: log a few samples
+        if (!VALID_SOUNDS.isEmpty()) {
+            Bukkit.getLogger().info("Sample sounds: " + VALID_SOUNDS.stream().limit(5).toList());
+        }
+        if (!VALID_EFFECTS.isEmpty()) {
+            Bukkit.getLogger().info("Sample effects: " + VALID_EFFECTS.stream().limit(5).toList());
+        }
+        if (!VALID_PARTICLES.isEmpty()) {
+            Bukkit.getLogger().info("Sample particles: " + VALID_PARTICLES.stream().limit(5).toList());
+        }
+    }
+
     private FormatValidator() {
         // Utility class
     }
@@ -206,21 +362,145 @@ public final class FormatValidator {
             case "relative-json-pointer" -> RELATIVE_JSON_POINTER.matcher(value).matches();
             case "uuid" -> UUID.matcher(value).matches();
             case "regex" -> isValidRegex(value);
-            case "minecraft-item" -> MINECRAFT_ITEM.matcher(value).matches();
-            case "minecraft-block" -> MINECRAFT_BLOCK.matcher(value).matches();
-            case "minecraft-entity" -> MINECRAFT_ENTITY.matcher(value).matches();
-            case "minecraft-attribute" -> MINECRAFT_ATTRIBUTE.matcher(value).matches();
-            case "minecraft-effect" -> MINECRAFT_EFFECT.matcher(value).matches();
-            case "minecraft-enchantment" -> MINECRAFT_ENCHANTMENT.matcher(value).matches();
-            case "minecraft-biome" -> MINECRAFT_BIOME.matcher(value).matches();
-            case "minecraft-dimension" -> MINECRAFT_DIMENSION.matcher(value).matches();
-            case "minecraft-particle" -> MINECRAFT_PARTICLE.matcher(value).matches();
-            case "minecraft-sound" -> MINECRAFT_SOUND.matcher(value).matches();
-            case "minecraft-potion" -> MINECRAFT_POTION.matcher(value).matches();
-            case "minecraft-recipe" -> MINECRAFT_RECIPE.matcher(value).matches();
+            case "minecraft-item" -> isValidMinecraftMaterial(value, false);
+            case "minecraft-block" -> isValidMinecraftMaterial(value, true);
+            case "minecraft-entity" -> isValidMinecraftEntity(value);
+            case "minecraft-attribute" -> isValidMinecraftAttribute(value);
+            case "minecraft-effect" -> isValidMinecraftEffect(value);
+            case "minecraft-enchantment" -> isValidMinecraftEnchantment(value);
+            case "minecraft-biome" -> isValidMinecraftBiome(value);
+            case "minecraft-dimension" -> isValidMinecraftDimension(value);
+            case "minecraft-particle" -> isValidMinecraftParticle(value);
+            case "minecraft-sound" -> isValidMinecraftSound(value);
+            case "minecraft-potion" -> isValidMinecraftPotion(value);
+            case "minecraft-recipe" -> isValidMinecraftRecipe(value);
             case "minecraft-tag" -> MINECRAFT_TAG.matcher(value).matches();
             default -> true; // Unknown format - skip validation
         };
+    }
+
+    /**
+     * Helper method to check if caches are initialized and log warning if not.
+     * Returns true if validation can proceed normally (caches ready or value is custom).
+     * For missing caches, it allows custom namespaces but rejects minecraft: ones.
+     */
+    private static boolean handleCacheFallback(String value) {
+        if (cachesInitialized) {
+            return true; // Normal validation can proceed
+        }
+        if (!warningLogged) {
+            Bukkit.getLogger().warning("FormatValidator caches not initialized! Call initializeCaches() in onEnable().");
+            warningLogged = true;
+        }
+        // Fallback: if value starts with "minecraft:", treat as invalid (since we can't validate)
+        // otherwise allow custom namespaces (plugins)
+        return !value.startsWith("minecraft:");
+    }
+
+    /**
+     * Validates a Minecraft material (item or block) using semantic validation.
+     * Uses Material.getMaterial() when server is running.
+     * Falls back to pattern validation when server is offline.
+     * 
+     * @param value the material ID (e.g., "minecraft:diamond_ore")
+     * @param checkBlock if true, validates as block; if false, validates as item
+     * @return true if valid material
+     */
+    private static boolean isValidMinecraftMaterial(String value, boolean checkBlock) {
+        // First do pattern validation for basic format
+        if (!MINECRAFT_ITEM.matcher(value).matches()) {
+            return false;
+        }
+
+        // Try to validate using Bukkit's Material registry
+        try {
+            if (Bukkit.getServer() != null) {
+                String materialName = parseMaterialName(value);
+                if (materialName != null) {
+                    Material material = Material.getMaterial(materialName);
+                    if (material != null) {
+                        if (checkBlock) {
+                            return material.isBlock();
+                        } else {
+                            return material.isItem();
+                        }
+                    }
+                }
+                // Material not found - could be a custom plugin item
+                if (!value.startsWith("minecraft:")) {
+                    return true;
+                }
+                return false;
+            }
+        } catch (Exception e) {
+            // Server not available, fall through to offline validation
+        }
+
+        // Offline validation - use regex patterns
+        if (checkBlock) {
+            return value.matches("^minecraft:[a-z][a-z0-9_*-]+$");
+        }
+        return true; // Allow any valid namespace:name format when offline
+    }
+
+    /**
+     * Parses a Minecraft ID string to extract the material name in Bukkit format.
+     * 
+     * @param value the Minecraft ID (e.g., "minecraft:diamond_ore")
+     * @return the material name in uppercase (e.g., "DIAMOND_ORE") or null if invalid
+     */
+    private static String parseMaterialName(String value) {
+        if (value == null || !value.contains(":")) {
+            return null;
+        }
+
+        String[] parts = value.split(":", 2);
+        if (parts.length != 2) {
+            return null;
+        }
+
+        String namespace = parts[0];
+        String name = parts[1];
+
+        if (!namespace.equals("minecraft")) {
+            return name.toUpperCase().replace("-", "_").replace("*", "");
+        }
+
+        return name.toUpperCase().replace("-", "_").replace("*", "");
+    }
+
+    /**
+     * Validates a Minecraft entity type (e.g., "minecraft:zombie", "minecraft:creeper").
+     * Uses semantic validation via cached EntityType keys.
+     * 
+     * @param value the entity ID (e.g., "minecraft:zombie")
+     * @return true if valid entity
+     */
+    private static boolean isValidMinecraftEntity(String value) {
+        if (!MINECRAFT_ENTITY.matcher(value).matches()) {
+            return false;
+        }
+        if (!handleCacheFallback(value)) {
+            return false;
+        }
+        return VALID_ENTITIES.contains(value);
+    }
+
+    /**
+     * Validates a Minecraft attribute (e.g., "minecraft:generic.max_health").
+     * Uses semantic validation via cached Attribute keys.
+     * 
+     * @param value the attribute ID (e.g., "minecraft:generic.max_health")
+     * @return true if valid attribute
+     */
+    private static boolean isValidMinecraftAttribute(String value) {
+        if (!MINECRAFT_ATTRIBUTE.matcher(value).matches()) {
+            return false;
+        }
+        if (!handleCacheFallback(value)) {
+            return false;
+        }
+        return VALID_ATTRIBUTES.contains(value);
     }
 
     /**
@@ -234,6 +514,157 @@ public final class FormatValidator {
             Pattern.compile(value);
             return true;
         } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Validates a Minecraft status effect (e.g., "minecraft:speed", "minecraft:strength").
+     * Uses semantic validation via cached PotionEffectType keys.
+     * 
+     * @param value the effect ID (e.g., "minecraft:speed")
+     * @return true if valid effect
+     */
+    private static boolean isValidMinecraftEffect(String value) {
+        if (!MINECRAFT_EFFECT.matcher(value).matches()) {
+            return false;
+        }
+        if (!handleCacheFallback(value)) {
+            return false;
+        }
+        return VALID_EFFECTS.contains(value);
+    }
+
+    /**
+     * Validates a Minecraft enchantment (e.g., "minecraft:efficiency", "minecraft:sharpness").
+     * Uses semantic validation via cached Enchantment keys.
+     * 
+     * @param value the enchantment ID (e.g., "minecraft:efficiency")
+     * @return true if valid enchantment
+     */
+    private static boolean isValidMinecraftEnchantment(String value) {
+        if (!MINECRAFT_ENCHANTMENT.matcher(value).matches()) {
+            return false;
+        }
+        if (!handleCacheFallback(value)) {
+            return false;
+        }
+        return VALID_ENCHANTMENTS.contains(value);
+    }
+
+    /**
+     * Validates a Minecraft biome (e.g., "minecraft:plains", "minecraft:desert").
+     * Uses semantic validation via cached Biome keys.
+     * 
+     * @param value the biome ID (e.g., "minecraft:plains")
+     * @return true if valid biome
+     */
+    private static boolean isValidMinecraftBiome(String value) {
+        if (!MINECRAFT_BIOME.matcher(value).matches()) {
+            return false;
+        }
+        if (!handleCacheFallback(value)) {
+            return false;
+        }
+        return VALID_BIOMES.contains(value);
+    }
+
+    /**
+     * Validates a Minecraft dimension (e.g., "minecraft:overworld", "minecraft:nether").
+     * Uses semantic validation via cached dimension keys.
+     * 
+     * @param value the dimension ID (e.g., "minecraft:overworld")
+     * @return true if valid dimension
+     */
+    private static boolean isValidMinecraftDimension(String value) {
+        if (!MINECRAFT_DIMENSION.matcher(value).matches()) {
+            return false;
+        }
+        if (!handleCacheFallback(value)) {
+            return false;
+        }
+        return VALID_DIMENSIONS.contains(value);
+    }
+
+    /**
+     * Validates a Minecraft particle (e.g., "minecraft:blockcrack", "minecraft:flame").
+     * Uses semantic validation via cached Particle keys.
+     * 
+     * @param value the particle ID (e.g., "minecraft:flame")
+     * @return true if valid particle
+     */
+    private static boolean isValidMinecraftParticle(String value) {
+        if (!MINECRAFT_PARTICLE.matcher(value).matches()) {
+            return false;
+        }
+        if (!handleCacheFallback(value)) {
+            return false;
+        }
+        return VALID_PARTICLES.contains(value);
+    }
+
+    /**
+     * Validates a Minecraft sound (e.g., "minecraft:block.gold_ore.break").
+     * Uses semantic validation via cached Sound keys.
+     * 
+     * @param value the sound ID (e.g., "minecraft:block.gold_ore.break")
+     * @return true if valid sound
+     */
+    private static boolean isValidMinecraftSound(String value) {
+        if (!MINECRAFT_SOUND.matcher(value).matches()) {
+            return false;
+        }
+        if (!handleCacheFallback(value)) {
+            return false;
+        }
+        return VALID_SOUNDS.contains(value);
+    }
+
+    /**
+     * Validates a Minecraft potion (e.g., "minecraft:strength", "minecraft:slowness").
+     * Uses semantic validation via cached PotionType keys.
+     * 
+     * @param value the potion ID (e.g., "minecraft:strength")
+     * @return true if valid potion
+     */
+    private static boolean isValidMinecraftPotion(String value) {
+        if (!MINECRAFT_POTION.matcher(value).matches()) {
+            return false;
+        }
+        if (!handleCacheFallback(value)) {
+            return false;
+        }
+        return VALID_POTIONS.contains(value);
+    }
+
+    /**
+     * Validates a Minecraft recipe (e.g., "minecraft:diamond_sword").
+     * Uses Bukkit's getRecipe() for semantic validation.
+     * 
+     * @param value the recipe ID (e.g., "minecraft:diamond_sword")
+     * @return true if valid recipe
+     */
+    private static boolean isValidMinecraftRecipe(String value) {
+        if (!MINECRAFT_RECIPE.matcher(value).matches()) {
+            return false;
+        }
+
+        // Use direct API: NamespacedKey.fromString() and Bukkit.getRecipe()
+        try {
+            NamespacedKey key = NamespacedKey.fromString(value);
+            if (key != null && Bukkit.getRecipe(key) != null) {
+                return true;
+            }
+            // For non-minecraft namespaces, allow custom recipes (they may not be loaded yet)
+            if (!value.startsWith("minecraft:")) {
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            // If any error occurs, fallback to pattern validation for offline/custom
+            if (!value.startsWith("minecraft:")) {
+                return true;
+            }
             return false;
         }
     }

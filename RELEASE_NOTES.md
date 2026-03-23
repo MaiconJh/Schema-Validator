@@ -17,6 +17,37 @@ This addon was created with **Artificial Intelligence assistance**. Use with cau
 - [Skript 2.14+](https://github.com/SkriptLang/Skript)
 - Paper 1.21+ ou Spigot 1.21+
 
+## ✨ What's New in v0.5.0 - Semantic Minecraft Validation
+
+### 🎯 Major Features Added
+
+#### 1. Semantic Validation for Minecraft Formats
+
+Full semantic validation using real Bukkit registries when the server is running:
+
+- **Entity validation** - Validates against `EntityType` registry
+- **Biome validation** - Validates against `Biome` registry
+- **Enchantment validation** - Validates against `Enchantment` registry
+- **Particle validation** - Validates against `Particle` registry
+- **Sound validation** - Validates against `Sound` registry
+- **Effect validation** - Validates against `PotionEffectType` registry
+- **Potion validation** - Validates against `PotionType` registry
+- **Dimension validation** - Validates against hardcoded list (overworld, nether, the_end)
+- **Recipe validation** - Validates against `Bukkit.getRecipe()`
+- **Material validation** - Validates items/blocks using `Material.getMaterial()`
+
+#### 2. Schema Metadata Support
+
+Added support for JSON Schema metadata keywords:
+
+- **`$schema`** - Schema dialect (e.g., "https://json-schema.org/draft/2020-12/schema")
+- **`$id`** - Schema identifier
+- **`title`** - Schema title
+- **`description`** - Schema description
+- **`type` as array** - Union types support (e.g., ["string", "null"])
+
+---
+
 ## ✨ What's New in v0.4.0 - Full Schema Compliance
 
 ### 🎯 Major Features Added

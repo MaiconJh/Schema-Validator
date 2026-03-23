@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - 2026-03-23 - Semantic Minecraft Validation
+
+### Added
+
+#### Semantic Validation for Minecraft Formats
+- Entity validation against `EntityType` registry
+- Biome validation against `Biome` registry
+- Enchantment validation against `Enchantment` registry
+- Particle validation against `Particle` registry
+- Sound validation against `Sound` registry
+- Effect validation against `PotionEffectType` registry
+- Potion validation against `PotionType` registry
+- Dimension validation against hardcoded list
+- Recipe validation against `Bukkit.getRecipe()`
+- Material validation using `Material.getMaterial()`
+- Automatic cache initialization in plugin's `onEnable()`
+- Fallback to pattern validation when server is offline
+- Custom namespaces (non-minecraft) always allowed
+
+#### Schema Metadata Support
+- `$schema` - Schema dialect parsing
+- `$id` - Schema identifier parsing
+- `title` - Schema title parsing
+- `description` - Schema description parsing
+- `type` as array - Union types support
+
+---
+
 ## [0.4.0] - 2026-03-22 - Full Schema Compliance
 
 ### Added
