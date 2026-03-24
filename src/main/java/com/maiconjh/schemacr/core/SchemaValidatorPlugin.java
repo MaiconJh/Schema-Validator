@@ -157,7 +157,7 @@ public class SchemaValidatorPlugin extends JavaPlugin {
                 for (String required : schema.getRequiredFields()) {
                     map.put(required, createMinimalTestData(
                         schema.getProperties().getOrDefault(required, 
-                            new Schema("temp", SchemaType.STRING, null, null))));
+                            Schema.builder("temp", SchemaType.STRING).build())));
                 }
                 yield map;
             }

@@ -1,8 +1,5 @@
 package com.maiconjh.schemacr.schemes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,23 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.util.logging.Logger;
 
-/**
- * Loads schema definitions from JSON or YAML files.
- *
- * <p>Current parser supports a starter subset:</p>
- * <ul>
- *     <li>type: object/array/string/number/boolean/null/any</li>
- *     <li>properties for objects</li>
- *     <li>items for arrays</li>
- * </ul>
- * <p>Add new fields here to expand the schema language.</p>
- *
- * <p>Unsupported keyword detection is performed using {@link SupportedKeywordsRegistry}.</p>
- */
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 public class FileSchemaLoader {
 
     private final Logger logger;
@@ -40,32 +27,13 @@ public class FileSchemaLoader {
         this(logger, new SupportedKeywordsRegistry(logger));
     }
 
-    /**
-     * Creates a FileSchemaLoader with a custom keywords registry.
-     * @param logger the logger to use
-     * @param keywordsRegistry the supported keywords registry
-     */
     public FileSchemaLoader(Logger logger, SupportedKeywordsRegistry keywordsRegistry) {
         this.logger = logger;
         this.keywordsRegistry = keywordsRegistry;
     }
 
-    /**
-     * Enables or disables fail-fast mode.
-     * When enabled, unsupported keywords will throw exceptions instead of warnings.
-     * @param failFastMode true to enable fail-fast mode
-     */
-    public void setFailFastMode(boolean failFastMode) {
-        this.failFastMode = failFastMode;
-    }
-
-    /**
-     * Checks if fail-fast mode is enabled.
-     * @return true if fail-fast mode is enabled
-     */
-    public boolean isFailFastMode() {
-        return failFastMode;
-    }
+    public void setFailFastMode(boolean failFastMode) { this.failFastMode = failFastMode; }
+    public boolean isFailFastMode() { return failFastMode; }
 
     public Schema load(Path path, String schemaName) throws IOException {
         String lower = path.getFileName().toString().toLowerCase();
@@ -83,11 +51,8 @@ public class FileSchemaLoader {
         }
 
         Map<String, Object> raw = mapper.readValue(path.toFile(), Map.class);
-        
-        // Detect unsupported keywords
         detectUnsupportedKeywords(raw, schemaName);
-        
-        // First pass: extract definitions
+
         definitions.clear();
         if (raw.containsKey("definitions") && raw.get("definitions") instanceof Map<?, ?> defs) {
             for (Map.Entry<?, ?> entry : defs.entrySet()) {
@@ -97,8 +62,6 @@ public class FileSchemaLoader {
                 }
             }
         }
-        
-        // Also extract $defs (JSON Schema 2019-09 and later)
         if (raw.containsKey("$defs") && raw.get("$defs") instanceof Map<?, ?> defs) {
             for (Map.Entry<?, ?> entry : defs.entrySet()) {
                 if (entry.getValue() instanceof Map<?, ?> defMap) {
@@ -107,25 +70,14 @@ public class FileSchemaLoader {
                 }
             }
         }
-        
+
         Schema schema = toSchema(schemaName, raw);
         logger.info("Loaded schema '" + schemaName + "' from " + path);
         return schema;
     }
 
-    /**
-     * Parses a raw JSON/YAML map into a Schema.
-     * Can be used for external schema loading.
-     * 
-     * @param schemaName name for the schema
-     * @param raw raw JSON/YAML map
-     * @return parsed Schema
-     */
     public Schema parseSchema(String schemaName, Map<String, Object> raw) {
-        // Detect unsupported keywords
         detectUnsupportedKeywords(raw, schemaName);
-        
-        // First pass: extract definitions
         definitions.clear();
         if (raw.containsKey("definitions") && raw.get("definitions") instanceof Map<?, ?> defs) {
             for (Map.Entry<?, ?> entry : defs.entrySet()) {
@@ -138,311 +90,49 @@ public class FileSchemaLoader {
         return toSchema(schemaName, raw);
     }
 
-    /**
-     * Gets a definition by name.
-     * @param name the definition name
-     * @return the Schema definition or null
-     */
-    public Schema getDefinition(String name) {
-        return definitions.get(name);
-    }
-
-    private Schema toSchema(String name, Map<String, Object> raw) {
-        SchemaType type = parseType(String.valueOf(raw.getOrDefault("type", "any")));
-
-        Map<String, Schema> properties = new HashMap<>();
-        Map<String, Schema> patternProperties = new HashMap<>();
-        Schema itemSchema = null;
-        List<String> requiredFields = new ArrayList<>();
-
-        // Parse required fields
-        if (raw.containsKey("required") && raw.get("required") instanceof List<?> requiredRaw) {
-            for (Object item : requiredRaw) {
-                requiredFields.add(String.valueOf(item));
-            }
-        }
-
-        // Parse additionalProperties (default true)
-        boolean additionalProps = true;
-        if (raw.containsKey("additionalProperties")) {
-            Object value = raw.get("additionalProperties");
-            if (value instanceof Boolean) {
-                additionalProps = (Boolean) value;
-            }
-        }
-
-        // Parse numeric constraints
-        Number minimum = null;
-        Number maximum = null;
-        Number multipleOf = null;
-        boolean exclusiveMinimum = false;
-        boolean exclusiveMaximum = false;
-        
-        if (raw.containsKey("minimum") && raw.get("minimum") instanceof Number min) {
-            minimum = min;
-        }
-        if (raw.containsKey("maximum") && raw.get("maximum") instanceof Number max) {
-            maximum = max;
-        }
-        if (raw.containsKey("multipleOf") && raw.get("multipleOf") instanceof Number mult) {
-            multipleOf = mult;
-        }
-        if (raw.containsKey("exclusiveMinimum") && raw.get("exclusiveMinimum") instanceof Boolean exclMin) {
-            exclusiveMinimum = exclMin;
-        }
-        if (raw.containsKey("exclusiveMaximum") && raw.get("exclusiveMaximum") instanceof Boolean exclMax) {
-            exclusiveMaximum = exclMax;
-        }
-
-        // Parse string constraints
-        Integer minLength = null;
-        Integer maxLength = null;
-        String pattern = null;
-        String format = null;
-        
-        if (raw.containsKey("minLength") && raw.get("minLength") instanceof Number minLen) {
-            minLength = minLen.intValue();
-        }
-        if (raw.containsKey("maxLength") && raw.get("maxLength") instanceof Number maxLen) {
-            maxLength = maxLen.intValue();
-        }
-        if (raw.containsKey("pattern") && raw.get("pattern") instanceof String pat) {
-            // Validate regex pattern
-            try {
-                Pattern.compile(pat);
-                pattern = pat;
-            } catch (PatternSyntaxException e) {
-                logger.warning("Invalid regex pattern in schema '" + name + "': " + pat);
-            }
-        }
-        if (raw.containsKey("format") && raw.get("format") instanceof String fmt) {
-            format = fmt;
-        }
-
-        // Parse enum values
-        List<Object> enumValues = new ArrayList<>();
-        if (raw.containsKey("enum") && raw.get("enum") instanceof List<?> enumRaw) {
-            enumValues.addAll(enumRaw);
-        }
-
-        // Parse $schema (schema dialect)
-        String schemaDialect = null;
-        if (raw.containsKey("$schema") && raw.get("$schema") instanceof String schemaDialectValue) {
-            schemaDialect = schemaDialectValue;
-        }
-
-        // Parse $id (schema identifier)
-        String id = null;
-        if (raw.containsKey("$id") && raw.get("$id") instanceof String idValue) {
-            id = idValue;
-        }
-
-        // Parse title
-        String title = null;
-        if (raw.containsKey("title") && raw.get("title") instanceof String titleValue) {
-            title = titleValue;
-        }
-
-        // Parse description
-        String description = null;
-        if (raw.containsKey("description") && raw.get("description") instanceof String descriptionValue) {
-            description = descriptionValue;
-        }
-
-        // Parse type as array (union types)
-        List<String> typeList = null;
-        if (raw.containsKey("type") && raw.get("type") instanceof List<?> typeRaw) {
-            typeList = new ArrayList<>();
-            for (Object item : typeRaw) {
-                typeList.add(String.valueOf(item));
-            }
-        }
-
-        // Parse $ref (schema reference)
-        String ref = null;
-        if (raw.containsKey("$ref") && raw.get("$ref") instanceof String refValue) {
-            ref = refValue;
-        }
-
-        // Parse version and compatibility
-        String version = null;
-        String compatibility = null;
-        if (raw.containsKey("version") && raw.get("version") instanceof String v) {
-            version = v;
-        }
-        if (raw.containsKey("compatibility") && raw.get("compatibility") instanceof String c) {
-            compatibility = c;
-        }
-
-        // Parse allOf composition
-        List<Schema> allOfSchemas = new ArrayList<>();
-        if (raw.containsKey("allOf") && raw.get("allOf") instanceof List<?> allOfRaw) {
-            for (Object item : allOfRaw) {
-                if (item instanceof Map<?, ?> allOfMap) {
-                    allOfSchemas.add(toSchema(name + "_allOf_" + allOfSchemas.size(), castMap(allOfMap)));
-                }
-            }
-        }
-
-        // Parse anyOf composition
-        List<Schema> anyOfSchemas = new ArrayList<>();
-        if (raw.containsKey("anyOf") && raw.get("anyOf") instanceof List<?> anyOfRaw) {
-            for (Object item : anyOfRaw) {
-                if (item instanceof Map<?, ?> anyOfMap) {
-                    anyOfSchemas.add(toSchema(name + "_anyOf_" + anyOfSchemas.size(), castMap(anyOfMap)));
-                }
-            }
-        }
-
-        // Parse oneOf composition
-        List<Schema> oneOfSchemas = new ArrayList<>();
-        if (raw.containsKey("oneOf") && raw.get("oneOf") instanceof List<?> oneOfRaw) {
-            for (Object item : oneOfRaw) {
-                if (item instanceof Map<?, ?> oneOfMap) {
-                    oneOfSchemas.add(toSchema(name + "_oneOf_" + oneOfSchemas.size(), castMap(oneOfMap)));
-                }
-            }
-        }
-
-        // Parse not schema
-        Schema notSchema = null;
-        if (raw.containsKey("not") && raw.get("not") instanceof Map<?, ?> notMap) {
-            notSchema = toSchema(name + "_not", castMap(notMap));
-        }
-
-        // Parse if/then/else schemas
-        Schema ifSchema = null;
-        Schema thenSchema = null;
-        Schema elseSchema = null;
-        if (raw.containsKey("if") && raw.get("if") instanceof Map<?, ?> ifMap) {
-            ifSchema = toSchema(name + "_if", castMap(ifMap));
-        }
-        if (raw.containsKey("then") && raw.get("then") instanceof Map<?, ?> thenMap) {
-            thenSchema = toSchema(name + "_then", castMap(thenMap));
-        }
-        if (raw.containsKey("else") && raw.get("else") instanceof Map<?, ?> elseMap) {
-            elseSchema = toSchema(name + "_else", castMap(elseMap));
-        }
-
-        // Parse patternProperties
-        if (type == SchemaType.OBJECT && raw.containsKey("patternProperties")) {
-            Object pp = raw.get("patternProperties");
-            if (pp instanceof Map<?, ?> ppMap) {
-                for (Map.Entry<?, ?> entry : ppMap.entrySet()) {
-                    if (entry.getValue() instanceof Map<?, ?> childMap) {
-                        patternProperties.put(String.valueOf(entry.getKey()),
-                                toSchema("pattern_" + String.valueOf(entry.getKey()), castMap(childMap)));
-                    }
-                }
-            }
-        }
-
-        if (type == SchemaType.OBJECT && raw.containsKey("properties")) {
-            Object props = raw.get("properties");
-            if (props instanceof Map<?, ?> propsMap) {
-                for (Map.Entry<?, ?> entry : propsMap.entrySet()) {
-                    if (entry.getValue() instanceof Map<?, ?> childMap) {
-                        properties.put(String.valueOf(entry.getKey()),
-                                toSchema(String.valueOf(entry.getKey()), castMap(childMap)));
-                    }
-                }
-            }
-        }
-
-        if (type == SchemaType.ARRAY && raw.get("items") instanceof Map<?, ?> itemsMap) {
-            itemSchema = toSchema(name + "[]", castMap(itemsMap));
-        }
-
-        return new Schema(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProps,
-                         minimum, maximum, exclusiveMinimum, exclusiveMaximum,
-                         minLength, maxLength, pattern, format, multipleOf, enumValues, 
-                         schemaDialect, id, title, description, typeList,
-                         ref, version, compatibility,
-                         allOfSchemas, anyOfSchemas, oneOfSchemas, notSchema, ifSchema, thenSchema, elseSchema);
-    }
+    public Schema getDefinition(String name) { return definitions.get(name); }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> castMap(Map<?, ?> source) {
-        return (Map<String, Object>) source;
-    }
+    private Map<String, Object> castMap(Map<?, ?> source) { return (Map<String, Object>) source; }
 
-    /**
-     * Detects and logs unsupported keywords in the raw schema map.
-     * This method scans all keys in the schema and warns about any that are not supported.
-     * In fail-fast mode, throws an exception for unsupported keywords.
-     * 
-     * @param raw the raw schema map
-     * @param path path context for logging
-     * @throws IllegalArgumentException if fail-fast mode is enabled and unsupported keyword is found
-     */
     private void detectUnsupportedKeywords(Map<String, Object> raw, String path) {
         detectUnsupportedKeywords(raw, path, null);
     }
-    
-    /**
-     * Internal method with set of valid custom property names from parent scope.
-     * @param raw raw schema map
-     * @param path path context for logging
-     * @param validCustomProperties set of valid custom property names from parent properties/patternProperties
-     */
+
     private void detectUnsupportedKeywords(Map<String, Object> raw, String path, java.util.Set<String> validCustomProperties) {
-        if (raw == null || keywordsRegistry == null) {
-            return;
-        }
-        
-        // Collect valid custom properties from properties/patternProperties at current level
+        if (raw == null || keywordsRegistry == null) return;
+
         java.util.Set<String> currentValidProperties = new java.util.HashSet<>();
-        
-        // Add valid properties from "properties" keyword
         Object propertiesObj = raw.get("properties");
         if (propertiesObj instanceof Map<?, ?> propertiesMap) {
             for (Object key : propertiesMap.keySet()) {
-                if (key instanceof String keyStr) {
-                    currentValidProperties.add(keyStr);
-                }
+                if (key instanceof String keyStr) currentValidProperties.add(keyStr);
             }
         }
-        
-        // Add valid properties from "patternProperties" keyword
         Object patternPropertiesObj = raw.get("patternProperties");
         if (patternPropertiesObj instanceof Map<?, ?> patternPropertiesMap) {
             for (Object key : patternPropertiesMap.keySet()) {
-                if (key instanceof String keyStr) {
-                    currentValidProperties.add(keyStr);
-                }
+                if (key instanceof String keyStr) currentValidProperties.add(keyStr);
             }
         }
-        
-        // Merge with parent valid properties
+
         java.util.Set<String> allValidProperties = new java.util.HashSet<>();
-        if (validCustomProperties != null) {
-            allValidProperties.addAll(validCustomProperties);
-        }
+        if (validCustomProperties != null) allValidProperties.addAll(validCustomProperties);
         allValidProperties.addAll(currentValidProperties);
-        
+
         for (String key : raw.keySet()) {
-            // Skip internal/structural keys
-            if (key.startsWith("$")) {
-                continue;
-            }
-            
-            // Skip if this is a valid custom property defined in properties/patternProperties
-            // or if it's a standard JSON Schema keyword
-            if (allValidProperties.contains(key) || keywordsRegistry.isKeywordSupported(key)) {
-                continue;
-            }
-            
-            String message = "[" + path + "] Unsupported keyword detected: '" + key + 
-                        "'. This keyword will be ignored during validation.";
-            
+            if (key.startsWith("$")) continue;
+            if (allValidProperties.contains(key) || keywordsRegistry.isKeywordSupported(key)) continue;
+
+            String message = "[" + path + "] Unsupported keyword detected: '" + key +
+                    "'. This keyword will be ignored during validation.";
             if (failFastMode) {
-                throw new IllegalArgumentException("FAIL-FAST: " + message + " Set strict-mode: false in config to allow.");
+                throw new IllegalArgumentException("FAIL-FAST: " + message);
             } else {
                 logger.warning(message);
             }
         }
-        
-        // Recursively check nested schemas, passing current valid properties
+
         for (Object value : raw.values()) {
             if (value instanceof Map<?, ?> nestedMap) {
                 detectUnsupportedKeywords((Map<String, Object>) nestedMap, path + ".nested", allValidProperties);
@@ -456,12 +146,186 @@ public class FileSchemaLoader {
         }
     }
 
-    /**
-     * Gets the supported keywords registry.
-     * @return the keywords registry
-     */
-    public SupportedKeywordsRegistry getKeywordsRegistry() {
-        return keywordsRegistry;
+    private Schema toSchema(String name, Map<String, Object> raw) {
+        Schema.Builder builder = Schema.builder(name, parseType(String.valueOf(raw.getOrDefault("type", "any"))));
+
+        // required fields
+        if (raw.containsKey("required") && raw.get("required") instanceof List<?> requiredRaw) {
+            List<String> required = new ArrayList<>();
+            for (Object item : requiredRaw) required.add(String.valueOf(item));
+            builder.requiredFields(required);
+        }
+
+        // additionalProperties
+        boolean additionalProps = true;
+        if (raw.containsKey("additionalProperties")) {
+            Object value = raw.get("additionalProperties");
+            if (value instanceof Boolean) additionalProps = (Boolean) value;
+        }
+        builder.additionalProperties(additionalProps);
+
+        // numeric
+        if (raw.containsKey("minimum") && raw.get("minimum") instanceof Number min) builder.minimum(min);
+        if (raw.containsKey("maximum") && raw.get("maximum") instanceof Number max) builder.maximum(max);
+        if (raw.containsKey("multipleOf") && raw.get("multipleOf") instanceof Number mult) builder.multipleOf(mult);
+        if (raw.containsKey("exclusiveMinimum") && raw.get("exclusiveMinimum") instanceof Boolean exclMin) builder.exclusiveMinimum(exclMin);
+        if (raw.containsKey("exclusiveMaximum") && raw.get("exclusiveMaximum") instanceof Boolean exclMax) builder.exclusiveMaximum(exclMax);
+
+        // string
+        if (raw.containsKey("minLength") && raw.get("minLength") instanceof Number minLen) builder.minLength(minLen.intValue());
+        if (raw.containsKey("maxLength") && raw.get("maxLength") instanceof Number maxLen) builder.maxLength(maxLen.intValue());
+        if (raw.containsKey("pattern") && raw.get("pattern") instanceof String pat) {
+            try {
+                Pattern.compile(pat);
+                builder.pattern(pat);
+            } catch (PatternSyntaxException e) {
+                logger.warning("Invalid regex pattern in schema '" + name + "': " + pat);
+            }
+        }
+        if (raw.containsKey("format") && raw.get("format") instanceof String fmt) builder.format(fmt);
+
+        // enum
+        if (raw.containsKey("enum") && raw.get("enum") instanceof List<?> enumRaw) {
+            builder.enumValues(new ArrayList<>(enumRaw));
+        }
+
+        // metadata
+        if (raw.containsKey("$schema") && raw.get("$schema") instanceof String schemaDialect) builder.schemaDialect(schemaDialect);
+        if (raw.containsKey("$id") && raw.get("$id") instanceof String id) builder.id(id);
+        if (raw.containsKey("title") && raw.get("title") instanceof String title) builder.title(title);
+        if (raw.containsKey("description") && raw.get("description") instanceof String description) builder.description(description);
+        if (raw.containsKey("version") && raw.get("version") instanceof String v) builder.version(v);
+        if (raw.containsKey("compatibility") && raw.get("compatibility") instanceof String c) builder.compatibility(c);
+
+        // type as array
+        if (raw.containsKey("type") && raw.get("type") instanceof List<?> typeRaw) {
+            List<String> typeList = new ArrayList<>();
+            for (Object item : typeRaw) typeList.add(String.valueOf(item));
+            builder.typeList(typeList);
+        }
+
+        // $ref
+        if (raw.containsKey("$ref") && raw.get("$ref") instanceof String ref) builder.ref(ref);
+
+        // composition
+        if (raw.containsKey("allOf") && raw.get("allOf") instanceof List<?> allOfRaw) {
+            List<Schema> allOfSchemas = new ArrayList<>();
+            for (Object item : allOfRaw) {
+                if (item instanceof Map<?, ?> map) allOfSchemas.add(toSchema(name + "_allOf_" + allOfSchemas.size(), castMap(map)));
+            }
+            builder.allOf(allOfSchemas);
+        }
+        if (raw.containsKey("anyOf") && raw.get("anyOf") instanceof List<?> anyOfRaw) {
+            List<Schema> anyOfSchemas = new ArrayList<>();
+            for (Object item : anyOfRaw) {
+                if (item instanceof Map<?, ?> map) anyOfSchemas.add(toSchema(name + "_anyOf_" + anyOfSchemas.size(), castMap(map)));
+            }
+            builder.anyOf(anyOfSchemas);
+        }
+        if (raw.containsKey("oneOf") && raw.get("oneOf") instanceof List<?> oneOfRaw) {
+            List<Schema> oneOfSchemas = new ArrayList<>();
+            for (Object item : oneOfRaw) {
+                if (item instanceof Map<?, ?> map) oneOfSchemas.add(toSchema(name + "_oneOf_" + oneOfSchemas.size(), castMap(map)));
+            }
+            builder.oneOf(oneOfSchemas);
+        }
+        if (raw.containsKey("not") && raw.get("not") instanceof Map<?, ?> notMap) {
+            builder.notSchema(toSchema(name + "_not", castMap(notMap)));
+        }
+        if (raw.containsKey("if") && raw.get("if") instanceof Map<?, ?> ifMap) builder.ifSchema(toSchema(name + "_if", castMap(ifMap)));
+        if (raw.containsKey("then") && raw.get("then") instanceof Map<?, ?> thenMap) builder.thenSchema(toSchema(name + "_then", castMap(thenMap)));
+        if (raw.containsKey("else") && raw.get("else") instanceof Map<?, ?> elseMap) builder.elseSchema(toSchema(name + "_else", castMap(elseMap)));
+
+        // patternProperties
+        if (raw.containsKey("patternProperties")) {
+            Object pp = raw.get("patternProperties");
+            if (pp instanceof Map<?, ?> ppMap) {
+                Map<String, Schema> patternPropertiesMap = new HashMap<>();
+                for (Map.Entry<?, ?> entry : ppMap.entrySet()) {
+                    if (entry.getValue() instanceof Map<?, ?> childMap) {
+                        patternPropertiesMap.put(String.valueOf(entry.getKey()),
+                                toSchema("pattern_" + String.valueOf(entry.getKey()), castMap(childMap)));
+                    }
+                }
+                builder.patternProperties(patternPropertiesMap);
+            }
+        }
+
+        // properties
+        if (raw.containsKey("properties")) {
+            Object props = raw.get("properties");
+            if (props instanceof Map<?, ?> propsMap) {
+                Map<String, Schema> propertiesMap = new HashMap<>();
+                for (Map.Entry<?, ?> entry : propsMap.entrySet()) {
+                    if (entry.getValue() instanceof Map<?, ?> childMap) {
+                        propertiesMap.put(String.valueOf(entry.getKey()),
+                                toSchema(String.valueOf(entry.getKey()), castMap(childMap)));
+                    }
+                }
+                builder.properties(propertiesMap);
+            }
+        }
+
+        // items
+        if (raw.containsKey("items") && raw.get("items") instanceof Map<?, ?> itemsMap) {
+            builder.itemSchema(toSchema(name + "[]", castMap(itemsMap)));
+        }
+
+        // array constraints
+        if (raw.containsKey("minItems") && raw.get("minItems") instanceof Number n) builder.minItems(n.intValue());
+        if (raw.containsKey("maxItems") && raw.get("maxItems") instanceof Number n) builder.maxItems(n.intValue());
+        if (raw.containsKey("uniqueItems") && raw.get("uniqueItems") instanceof Boolean b) builder.uniqueItems(b);
+        if (raw.containsKey("prefixItems") && raw.get("prefixItems") instanceof List<?> prefixRaw) {
+            List<Schema> prefixSchemas = new ArrayList<>();
+            for (Object o : prefixRaw) {
+                if (o instanceof Map<?, ?> map) prefixSchemas.add(toSchema(name + "_prefixItem_" + prefixSchemas.size(), castMap(map)));
+            }
+            builder.prefixItems(prefixSchemas);
+        }
+        if (raw.containsKey("additionalItems")) {
+            Object ai = raw.get("additionalItems");
+            if (ai instanceof Boolean b) {
+                // Cria schema especial usando builder
+                Schema special = Schema.builder(name + "_additionalItems", b ? SchemaType.ANY : SchemaType.NULL)
+                        .build();
+                builder.additionalItemsSchema(special);
+            } else if (ai instanceof Map<?, ?> map) {
+                builder.additionalItemsSchema(toSchema(name + "_additionalItems", castMap(map)));
+            }
+        }
+
+        // object constraints
+        if (raw.containsKey("minProperties") && raw.get("minProperties") instanceof Number n) builder.minProperties(n.intValue());
+        if (raw.containsKey("maxProperties") && raw.get("maxProperties") instanceof Number n) builder.maxProperties(n.intValue());
+        if (raw.containsKey("dependentRequired") && raw.get("dependentRequired") instanceof Map<?, ?> map) {
+            Map<String, List<String>> depReq = new HashMap<>();
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                String key = String.valueOf(entry.getKey());
+                if (entry.getValue() instanceof List<?> list) {
+                    List<String> req = new ArrayList<>();
+                    for (Object item : list) req.add(String.valueOf(item));
+                    depReq.put(key, req);
+                }
+            }
+            builder.dependentRequired(depReq);
+        }
+        if (raw.containsKey("dependentSchemas") && raw.get("dependentSchemas") instanceof Map<?, ?> map) {
+            Map<String, Schema> depSchemas = new HashMap<>();
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                String key = String.valueOf(entry.getKey());
+                if (entry.getValue() instanceof Map<?, ?> subMap) {
+                    depSchemas.put(key, toSchema(name + "_depSchema_" + key, castMap(subMap)));
+                }
+            }
+            builder.dependentSchemas(depSchemas);
+        }
+
+        // const e metadados
+        if (raw.containsKey("const")) builder.constValue(raw.get("const"));
+        if (raw.containsKey("readOnly") && raw.get("readOnly") instanceof Boolean b) builder.readOnly(b);
+        if (raw.containsKey("writeOnly") && raw.get("writeOnly") instanceof Boolean b) builder.writeOnly(b);
+
+        return builder.build();
     }
 
     private SchemaType parseType(String input) {

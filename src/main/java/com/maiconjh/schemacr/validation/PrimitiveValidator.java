@@ -2,6 +2,9 @@ package com.maiconjh.schemacr.validation;
 
 import com.maiconjh.schemacr.schemes.Schema;
 import com.maiconjh.schemacr.schemes.SchemaType;
+import com.maiconjh.schemacr.validation.misc.ConstValidator;
+import com.maiconjh.schemacr.validation.misc.ReadOnlyValidator;
+import com.maiconjh.schemacr.validation.misc.WriteOnlyValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,6 +144,24 @@ public class PrimitiveValidator implements Validator {
                         FormatValidator.getErrorMessage(schema.getFormat())
                 ));
             }
+        }
+
+        // Validate const constraint
+        if (schema.getConstValue() != null) {
+            ConstValidator constValidator = new ConstValidator(schema.getConstValue());
+            errors.addAll(constValidator.validate(data, schema, path, parentKey));
+        }
+
+        // Validate readOnly constraint
+        if (Boolean.TRUE.equals(schema.isReadOnly())) {
+            ReadOnlyValidator readOnlyValidator = new ReadOnlyValidator(true);
+            errors.addAll(readOnlyValidator.validate(data, schema, path, parentKey));
+        }
+
+        // Validate writeOnly constraint
+        if (Boolean.TRUE.equals(schema.isWriteOnly())) {
+            WriteOnlyValidator writeOnlyValidator = new WriteOnlyValidator(true);
+            errors.addAll(writeOnlyValidator.validate(data, schema, path, parentKey));
         }
 
         return errors;

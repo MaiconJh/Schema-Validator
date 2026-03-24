@@ -7,6 +7,10 @@ import java.util.regex.Pattern;
 
 import com.maiconjh.schemacr.schemes.Schema;
 import com.maiconjh.schemacr.schemes.SchemaRefResolver;
+import com.maiconjh.schemacr.validation.object.MinPropertiesValidator;
+import com.maiconjh.schemacr.validation.object.MaxPropertiesValidator;
+import com.maiconjh.schemacr.validation.object.DependentRequiredValidator;
+import com.maiconjh.schemacr.validation.object.DependentSchemasValidator;
 
 /**
  * Validates object/map nodes.
@@ -194,6 +198,30 @@ public class ObjectValidator implements Validator {
             }
         }
 
+        // Validate minProperties constraint
+        if (schema.getMinProperties() != null) {
+            MinPropertiesValidator minPropertiesValidator = new MinPropertiesValidator(schema.getMinProperties());
+            errors.addAll(minPropertiesValidator.validate(data, schema, path, parentKey));
+        }
+
+        // Validate maxProperties constraint
+        if (schema.getMaxProperties() != null) {
+            MaxPropertiesValidator maxPropertiesValidator = new MaxPropertiesValidator(schema.getMaxProperties());
+            errors.addAll(maxPropertiesValidator.validate(data, schema, path, parentKey));
+        }
+
+        // Validate dependentRequired constraint
+        if (schema.getDependentRequired() != null && !schema.getDependentRequired().isEmpty()) {
+            DependentRequiredValidator dependentRequiredValidator = new DependentRequiredValidator(schema.getDependentRequired());
+            errors.addAll(dependentRequiredValidator.validate(data, schema, path, parentKey));
+        }
+
+        // Validate dependentSchemas constraint
+        if (schema.getDependentSchemas() != null && !schema.getDependentSchemas().isEmpty()) {
+            DependentSchemasValidator dependentSchemasValidator = new DependentSchemasValidator(schema.getDependentSchemas());
+            errors.addAll(dependentSchemasValidator.validate(data, schema, path, parentKey));
+        }
+
         // Validate required fields
         for (String requiredField : schema.getRequiredFields()) {
             if (!map.containsKey(requiredField)) {
@@ -253,13 +281,24 @@ public class ObjectValidator implements Validator {
             }
             
             // If not matched by patternProperties, check additionalProperties
-            if (!matchedPattern && !schema.isAdditionalPropertiesAllowed()) {
-                errors.add(new ValidationError(
-                        path + "." + key,
-                        "additionalProperties",
-                        "forbidden",
-                        "Unknown field '" + key + "' is not allowed"
-                ));
+            if (!matchedPattern) {
+                // Check if additionalProperties is a Schema (object) or boolean
+                if (schema.getAdditionalPropertiesSchema() != null) {
+                    // additionalProperties is a Schema - validate against it
+                    Schema additionalPropsSchema = schema.getAdditionalPropertiesSchema();
+                    Validator validator = ValidatorDispatcher.forSchema(additionalPropsSchema);
+                    Object child = map.get(key);
+                    String childPath = path + "." + key;
+                    errors.addAll(validator.validate(child, additionalPropsSchema, childPath, key));
+                } else if (!schema.isAdditionalPropertiesAllowed()) {
+                    // additionalProperties is false - not allowed
+                    errors.add(new ValidationError(
+                            path + "." + key,
+                            "additionalProperties",
+                            "forbidden",
+                            "Unknown field '" + key + "' is not allowed"
+                    ));
+                }
             }
         }
 

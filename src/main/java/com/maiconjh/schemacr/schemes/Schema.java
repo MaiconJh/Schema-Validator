@@ -18,7 +18,7 @@ public class Schema {
     private final Map<String, Schema> patternProperties;
     private final Schema itemSchema;
     private final List<String> requiredFields;
-    private final boolean additionalProperties;
+    private final Object additionalProperties; // Can be Boolean or Schema
     private final Number minimum;
     private final Number maximum;
     private final boolean exclusiveMinimum;
@@ -26,42 +26,63 @@ public class Schema {
     private final Integer minLength;
     private final Integer maxLength;
     private final String pattern;
-    private final String format; // JSON Schema format (date, email, uri, etc.)
-    private final Number multipleOf; // MultipleOf constraint for numbers
+    private final String format;
+    private final Number multipleOf;
     private final List<Object> enumValues;
-    private final String schemaDialect; // $schema keyword
-    private final String id; // $id keyword
-    private final String title; // title keyword
-    private final String description; // description keyword
-    private final List<String> typeList; // type as list (e.g., ["string", "null"])
-    private final String ref; // $ref for schema references
-    private final String version; // Schema version for compatibility
-    private final String compatibility; // Compatibility flag (e.g., "1.21", "1.20")
-    private final List<Schema> allOf; // allOf composition
-    private final List<Schema> anyOf; // anyOf composition
-    private final List<Schema> oneOf; // oneOf composition
-    private final Schema notSchema; // not schema
-    private final Schema ifSchema; // if schema (conditional)
-    private final Schema thenSchema; // then schema (conditional)
-    private final Schema elseSchema; // else schema (conditional)
+    private final String schemaDialect;
+    private final String id;
+    private final String title;
+    private final String description;
+    private final List<String> typeList;
+    private final String ref;
+    private final String version;
+    private final String compatibility;
+    private final List<Schema> allOf;
+    private final List<Schema> anyOf;
+    private final List<Schema> oneOf;
+    private final Schema notSchema;
+    private final Schema ifSchema;
+    private final Schema thenSchema;
+    private final Schema elseSchema;
 
-    // Main constructor with all parameters
+    // Array constraints
+    private final Integer minItems;
+    private final Integer maxItems;
+    private final Boolean uniqueItems;
+    private final List<Schema> prefixItems;
+    private final Schema additionalItemsSchema;
+
+    // Object constraints
+    private final Integer minProperties;
+    private final Integer maxProperties;
+    private final Map<String, List<String>> dependentRequired;
+    private final Map<String, Schema> dependentSchemas;
+
+    // Const and metadata keywords
+    private final Object constValue;
+    private final Boolean readOnly;
+    private final Boolean writeOnly;
+
+    // Construtor principal (único)
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
-                  boolean additionalProperties, Number minimum, Number maximum, 
+                  Object additionalProperties, Number minimum, Number maximum, 
                   boolean exclusiveMinimum, boolean exclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, String format, Number multipleOf,
                   List<Object> enumValues, String schemaDialect, String id, String title, String description,
                   List<String> typeList, String ref, String version, String compatibility,
                   List<Schema> allOf, List<Schema> anyOf, List<Schema> oneOf,
-                  Schema notSchema, Schema ifSchema, Schema thenSchema, Schema elseSchema) {
+                  Schema notSchema, Schema ifSchema, Schema thenSchema, Schema elseSchema,
+                  Integer minItems, Integer maxItems, Boolean uniqueItems, List<Schema> prefixItems, Schema additionalItemsSchema,
+                  Integer minProperties, Integer maxProperties, Map<String, List<String>> dependentRequired, Map<String, Schema> dependentSchemas,
+                  Object constValue, Boolean readOnly, Boolean writeOnly) {
         this.name = name;
         this.type = type;
         this.properties = properties == null ? Collections.emptyMap() : Collections.unmodifiableMap(properties);
         this.patternProperties = patternProperties == null ? Collections.emptyMap() : Collections.unmodifiableMap(patternProperties);
         this.itemSchema = itemSchema;
         this.requiredFields = requiredFields == null ? Collections.emptyList() : Collections.unmodifiableList(requiredFields);
-        this.additionalProperties = additionalProperties;
+        this.additionalProperties = additionalProperties != null ? additionalProperties : true;
         this.minimum = minimum;
         this.maximum = maximum;
         this.exclusiveMinimum = exclusiveMinimum;
@@ -87,377 +108,219 @@ public class Schema {
         this.ifSchema = ifSchema;
         this.thenSchema = thenSchema;
         this.elseSchema = elseSchema;
+
+        // Array constraints
+        this.minItems = minItems;
+        this.maxItems = maxItems;
+        this.uniqueItems = uniqueItems;
+        this.prefixItems = prefixItems == null ? Collections.emptyList() : Collections.unmodifiableList(prefixItems);
+        this.additionalItemsSchema = additionalItemsSchema;
+
+        // Object constraints
+        this.minProperties = minProperties;
+        this.maxProperties = maxProperties;
+        this.dependentRequired = dependentRequired == null ? Collections.emptyMap() : Collections.unmodifiableMap(dependentRequired);
+        this.dependentSchemas = dependentSchemas == null ? Collections.emptyMap() : Collections.unmodifiableMap(dependentSchemas);
+
+        // Const and metadata
+        this.constValue = constValue;
+        this.readOnly = readOnly;
+        this.writeOnly = writeOnly;
     }
 
-    // Simplified constructor: name, type, properties, itemSchema
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, Schema itemSchema) {
-        this(name, type, properties, null, itemSchema, null, true,
-             null, null, false, false,
-             null, null, null, null, null,
-             null, null, null, null, null,
-             null, null, null, null,
-             null, null, null, null, null, null, null);
+    // ========== Getters (todos os campos) ==========
+    public String getName() { return name; }
+    public SchemaType getType() { return type; }
+    public Map<String, Schema> getProperties() { return properties; }
+    public Map<String, Schema> getPatternProperties() { return patternProperties; }
+    public Schema getItemSchema() { return itemSchema; }
+    public List<String> getRequiredFields() { return requiredFields; }
+    public boolean isAdditionalPropertiesAllowed() { 
+        if (additionalProperties == null) return true;
+        if (additionalProperties instanceof Boolean) return (Boolean) additionalProperties;
+        return additionalProperties instanceof Schema; // If it's a Schema, additional properties are allowed
+    }
+    public Schema getAdditionalPropertiesSchema() {
+        if (additionalProperties instanceof Schema) {
+            return (Schema) additionalProperties;
+        }
+        return null;
+    }
+    public boolean hasAdditionalPropertiesSchema() {
+        return additionalProperties instanceof Schema;
+    }
+    public Number getMinimum() { return minimum; }
+    public Number getMaximum() { return maximum; }
+    public boolean isExclusiveMinimum() { return exclusiveMinimum; }
+    public boolean isExclusiveMaximum() { return exclusiveMaximum; }
+    public Integer getMinLength() { return minLength; }
+    public Integer getMaxLength() { return maxLength; }
+    public String getPattern() { return pattern; }
+    public String getFormat() { return format; }
+    public boolean hasFormat() { return format != null && !format.isEmpty(); }
+    public Number getMultipleOf() { return multipleOf; }
+    public List<Object> getEnumValues() { return enumValues; }
+    public boolean isValidEnum(Object value) { return enumValues.isEmpty() || enumValues.contains(value); }
+    public String getRef() { return ref; }
+    public boolean isRef() { return ref != null && !ref.isEmpty(); }
+    public String getVersion() { return version; }
+    public String getCompatibility() { return compatibility; }
+    public List<Schema> getAllOf() { return allOf; }
+    public List<Schema> getAnyOf() { return anyOf; }
+    public List<Schema> getOneOf() { return oneOf; }
+    public boolean hasAllOf() { return !allOf.isEmpty(); }
+    public boolean hasAnyOf() { return !anyOf.isEmpty(); }
+    public boolean hasOneOf() { return !oneOf.isEmpty(); }
+    public Schema getNot() { return notSchema; }
+    public boolean hasNot() { return notSchema != null; }
+    public Schema getIfSchema() { return ifSchema; }
+    public Schema getThenSchema() { return thenSchema; }
+    public Schema getElseSchema() { return elseSchema; }
+    public boolean hasConditional() { return ifSchema != null; }
+    public String getSchemaDialect() { return schemaDialect; }
+    public String getId() { return id; }
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+    public boolean hasTypeUnion() { return typeList != null && !typeList.isEmpty(); }
+    public List<String> getAllowedTypes() { return typeList != null ? typeList : Collections.emptyList(); }
+
+    // Array getters
+    public Integer getMinItems() { return minItems; }
+    public Integer getMaxItems() { return maxItems; }
+    public Boolean isUniqueItems() { return uniqueItems; }
+    public List<Schema> getPrefixItems() { return prefixItems; }
+    public Schema getAdditionalItemsSchema() { return additionalItemsSchema; }
+    public boolean hasArrayConstraints() { return minItems != null || maxItems != null || uniqueItems != null; }
+
+    // Object getters
+    public Integer getMinProperties() { return minProperties; }
+    public Integer getMaxProperties() { return maxProperties; }
+    public Map<String, List<String>> getDependentRequired() { return dependentRequired; }
+    public Map<String, Schema> getDependentSchemas() { return dependentSchemas; }
+    public boolean hasObjectConstraints() { return minProperties != null || maxProperties != null || !dependentRequired.isEmpty() || !dependentSchemas.isEmpty(); }
+
+    // Const & metadata getters
+    public Object getConstValue() { return constValue; }
+    public boolean hasConst() { return constValue != null; }
+    public Boolean isReadOnly() { return readOnly; }
+    public Boolean isWriteOnly() { return writeOnly; }
+    public boolean hasReadWriteOnly() { return readOnly != null || writeOnly != null; }
+
+    // ========== Builder ==========
+    public static Builder builder(String name, SchemaType type) {
+        return new Builder(name, type);
     }
 
-    // Constructor with oneOf composition
-    public Schema(String name, SchemaType type, List<Schema> oneOf) {
-        this(name, type, null, null, null, null, true,
-             null, null, false, false,
-             null, null, null, null, null,
-             null, null, null, null, null,
-             null, null, null, null,
-             null, null, oneOf, null, null, null, null);
-    }
+    public static class Builder {
+        private final String name;
+        private final SchemaType type;
+        private Map<String, Schema> properties = Collections.emptyMap();
+        private Map<String, Schema> patternProperties = Collections.emptyMap();
+        private Schema itemSchema;
+        private List<String> requiredFields = Collections.emptyList();
+        private Object additionalProperties = true; // Can be Boolean or Schema
+        private Number minimum;
+        private Number maximum;
+        private boolean exclusiveMinimum = false;
+        private boolean exclusiveMaximum = false;
+        private Integer minLength;
+        private Integer maxLength;
+        private String pattern;
+        private String format;
+        private Number multipleOf;
+        private List<Object> enumValues = Collections.emptyList();
+        private String schemaDialect;
+        private String id;
+        private String title;
+        private String description;
+        private List<String> typeList = Collections.emptyList();
+        private String ref;
+        private String version;
+        private String compatibility;
+        private List<Schema> allOf = Collections.emptyList();
+        private List<Schema> anyOf = Collections.emptyList();
+        private List<Schema> oneOf = Collections.emptyList();
+        private Schema notSchema;
+        private Schema ifSchema;
+        private Schema thenSchema;
+        private Schema elseSchema;
+        // Array
+        private Integer minItems;
+        private Integer maxItems;
+        private Boolean uniqueItems;
+        private List<Schema> prefixItems = Collections.emptyList();
+        private Schema additionalItemsSchema;
+        // Object
+        private Integer minProperties;
+        private Integer maxProperties;
+        private Map<String, List<String>> dependentRequired = Collections.emptyMap();
+        private Map<String, Schema> dependentSchemas = Collections.emptyMap();
+        // Const & metadata
+        private Object constValue;
+        private Boolean readOnly;
+        private Boolean writeOnly;
 
-    // Constructor: name, type, properties, itemSchema, requiredFields
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Schema itemSchema, List<String> requiredFields) {
-        this(name, type, properties, null, itemSchema, requiredFields, true,
-             null, null, false, false,
-             null, null, null, null, null,
-             null, null, null, null, null,
-             null, null, null, null,
-             null, null, null, null, null, null, null);
-    }
+        private Builder(String name, SchemaType type) {
+            this.name = name;
+            this.type = type;
+        }
 
-    // Constructor: name, type, properties, itemSchema, requiredFields, additionalProperties
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Schema itemSchema, List<String> requiredFields, boolean additionalProperties) {
-        this(name, type, properties, null, itemSchema, requiredFields, additionalProperties,
-             null, null, false, false,
-             null, null, null, null, null,
-             null, null, null, null, null,
-             null, null, null, null,
-             null, null, null, null, null, null, null);
-    }
+        public Builder properties(Map<String, Schema> properties) { this.properties = properties; return this; }
+        public Builder patternProperties(Map<String, Schema> patternProperties) { this.patternProperties = patternProperties; return this; }
+        public Builder itemSchema(Schema itemSchema) { this.itemSchema = itemSchema; return this; }
+        public Builder requiredFields(List<String> requiredFields) { this.requiredFields = requiredFields; return this; }
+        public Builder additionalProperties(boolean additionalProperties) { this.additionalProperties = additionalProperties; return this; }
+        public Builder additionalProperties(Schema additionalPropertiesSchema) { this.additionalProperties = additionalPropertiesSchema; return this; }
+        public Builder minimum(Number minimum) { this.minimum = minimum; return this; }
+        public Builder maximum(Number maximum) { this.maximum = maximum; return this; }
+        public Builder exclusiveMinimum(boolean exclusiveMinimum) { this.exclusiveMinimum = exclusiveMinimum; return this; }
+        public Builder exclusiveMaximum(boolean exclusiveMaximum) { this.exclusiveMaximum = exclusiveMaximum; return this; }
+        public Builder minLength(Integer minLength) { this.minLength = minLength; return this; }
+        public Builder maxLength(Integer maxLength) { this.maxLength = maxLength; return this; }
+        public Builder pattern(String pattern) { this.pattern = pattern; return this; }
+        public Builder format(String format) { this.format = format; return this; }
+        public Builder multipleOf(Number multipleOf) { this.multipleOf = multipleOf; return this; }
+        public Builder enumValues(List<Object> enumValues) { this.enumValues = enumValues; return this; }
+        public Builder schemaDialect(String schemaDialect) { this.schemaDialect = schemaDialect; return this; }
+        public Builder id(String id) { this.id = id; return this; }
+        public Builder title(String title) { this.title = title; return this; }
+        public Builder description(String description) { this.description = description; return this; }
+        public Builder typeList(List<String> typeList) { this.typeList = typeList; return this; }
+        public Builder ref(String ref) { this.ref = ref; return this; }
+        public Builder version(String version) { this.version = version; return this; }
+        public Builder compatibility(String compatibility) { this.compatibility = compatibility; return this; }
+        public Builder allOf(List<Schema> allOf) { this.allOf = allOf; return this; }
+        public Builder anyOf(List<Schema> anyOf) { this.anyOf = anyOf; return this; }
+        public Builder oneOf(List<Schema> oneOf) { this.oneOf = oneOf; return this; }
+        public Builder notSchema(Schema notSchema) { this.notSchema = notSchema; return this; }
+        public Builder ifSchema(Schema ifSchema) { this.ifSchema = ifSchema; return this; }
+        public Builder thenSchema(Schema thenSchema) { this.thenSchema = thenSchema; return this; }
+        public Builder elseSchema(Schema elseSchema) { this.elseSchema = elseSchema; return this; }
+        // Array
+        public Builder minItems(Integer minItems) { this.minItems = minItems; return this; }
+        public Builder maxItems(Integer maxItems) { this.maxItems = maxItems; return this; }
+        public Builder uniqueItems(Boolean uniqueItems) { this.uniqueItems = uniqueItems; return this; }
+        public Builder prefixItems(List<Schema> prefixItems) { this.prefixItems = prefixItems; return this; }
+        public Builder additionalItemsSchema(Schema additionalItemsSchema) { this.additionalItemsSchema = additionalItemsSchema; return this; }
+        // Object
+        public Builder minProperties(Integer minProperties) { this.minProperties = minProperties; return this; }
+        public Builder maxProperties(Integer maxProperties) { this.maxProperties = maxProperties; return this; }
+        public Builder dependentRequired(Map<String, List<String>> dependentRequired) { this.dependentRequired = dependentRequired; return this; }
+        public Builder dependentSchemas(Map<String, Schema> dependentSchemas) { this.dependentSchemas = dependentSchemas; return this; }
+        // Const & metadata
+        public Builder constValue(Object constValue) { this.constValue = constValue; return this; }
+        public Builder readOnly(Boolean readOnly) { this.readOnly = readOnly; return this; }
+        public Builder writeOnly(Boolean writeOnly) { this.writeOnly = writeOnly; return this; }
 
-    // Constructor with numeric/string constraints
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Schema itemSchema, List<String> requiredFields, boolean additionalProperties,
-                  Number minimum, Number maximum, boolean exclusiveMinimum, boolean exclusiveMaximum,
-                  Integer minLength, Integer maxLength, String pattern, List<Object> enumValues) {
-        this(name, type, properties, null, itemSchema, requiredFields, additionalProperties,
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum,
-             minLength, maxLength, pattern, null, null, enumValues,
-             null, null, null, null, null,
-             null, null, null, null,
-             null, null, null, null, null, null);
-    }
-
-    // Constructor with patternProperties
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, true,
-             null, null, false, false,
-             null, null, null, null, null,
-             null, null, null, null, null,
-             null, null, null, null,
-             null, null, null, null, null, null, null);
-    }
-
-    // Constructor with patternProperties and additionalProperties
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
-                  boolean additionalProperties) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties,
-             null, null, false, false,
-             null, null, null, null, null,
-             null, null, null, null, null,
-             null, null, null, null,
-             null, null, null, null, null, null, null);
-    }
-
-    // Constructor with numeric/string constraints and $ref
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
-                  boolean additionalProperties, Number minimum, Number maximum, 
-                  boolean exclusiveMinimum, boolean exclusiveMaximum,
-                  Integer minLength, Integer maxLength, String pattern, List<Object> enumValues, String ref) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties,
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum,
-             minLength, maxLength, pattern, null, null, enumValues,
-             null, null, null, null, null,
-             ref, null, null, null,
-             null, null, null, null, null, null);
-    }
-
-    // Constructor with format, multipleOf, version, compatibility, allOf, anyOf
-    public Schema(String name, SchemaType type, Map<String, Schema> properties, 
-                  Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
-                  boolean additionalProperties, Number minimum, Number maximum, 
-                  boolean exclusiveMinimum, boolean exclusiveMaximum,
-                  Integer minLength, Integer maxLength, String pattern, String format, Number multipleOf,
-                  List<Object> enumValues, String ref, String version, String compatibility, List<Schema> allOf, List<Schema> anyOf) {
-        this(name, type, properties, patternProperties, itemSchema, requiredFields, additionalProperties,
-             minimum, maximum, exclusiveMinimum, exclusiveMaximum,
-             minLength, maxLength, pattern, format, multipleOf, enumValues,
-             null, null, null, null, null,
-             ref, version, compatibility,
-             allOf, anyOf, null, null, null, null, null);
-    }
-
-    // Getters (unchanged)
-    public String getName() {
-        return name;
-    }
-
-    public SchemaType getType() {
-        return type;
-    }
-
-    public Map<String, Schema> getProperties() {
-        return properties;
-    }
-
-    public Map<String, Schema> getPatternProperties() {
-        return patternProperties;
-    }
-
-    public Schema getItemSchema() {
-        return itemSchema;
-    }
-
-    public List<String> getRequiredFields() {
-        return requiredFields;
-    }
-
-    public boolean isAdditionalPropertiesAllowed() {
-        return additionalProperties;
-    }
-
-    public Number getMinimum() {
-        return minimum;
-    }
-
-    public Number getMaximum() {
-        return maximum;
-    }
-
-    public boolean isExclusiveMinimum() {
-        return exclusiveMinimum;
-    }
-
-    public boolean isExclusiveMaximum() {
-        return exclusiveMaximum;
-    }
-
-    public Integer getMinLength() {
-        return minLength;
-    }
-
-    public Integer getMaxLength() {
-        return maxLength;
-    }
-
-    public String getPattern() {
-        return pattern;
-    }
-
-    /**
-     * Returns the format constraint (e.g., "email", "uri", "date-time").
-     * @return the format string or null
-     */
-    public String getFormat() {
-        return format;
-    }
-
-    /**
-     * Returns the multipleOf constraint for numeric types.
-     * @return the multipleOf value or null
-     */
-    public Number getMultipleOf() {
-        return multipleOf;
-    }
-
-    /**
-     * Checks if this schema has a format constraint.
-     * @return true if format is defined
-     */
-    public boolean hasFormat() {
-        return format != null && !format.isEmpty();
-    }
-
-    public List<Object> getEnumValues() {
-        return enumValues;
-    }
-
-    public boolean isValidEnum(Object value) {
-        return enumValues.isEmpty() || enumValues.contains(value);
-    }
-
-    /**
-     * Returns the $ref value for schema references.
-     * @return the reference path or null
-     */
-    public String getRef() {
-        return ref;
-    }
-
-    /**
-     * Checks if this schema is a reference ($ref).
-     * @return true if this schema has a reference
-     */
-    public boolean isRef() {
-        return ref != null && !ref.isEmpty();
-    }
-
-    /**
-     * Returns the schema version.
-     * @return the version string or null
-     */
-    public String getVersion() {
-        return version;
-    }
-
-    /**
-     * Returns the compatibility flag (e.g., "1.21", "1.20").
-     * @return the compatibility string or null
-     */
-    public String getCompatibility() {
-        return compatibility;
-    }
-
-    /**
-     * Returns the allOf schemas for composition.
-     * @return list of allOf schemas, or empty list if not defined
-     */
-    public List<Schema> getAllOf() {
-        return allOf;
-    }
-
-    /**
-     * Returns the anyOf schemas for composition.
-     * @return list of anyOf schemas, or empty list if not defined
-     */
-    public List<Schema> getAnyOf() {
-        return anyOf;
-    }
-
-    /**
-     * Returns the oneOf schemas for composition.
-     * @return list of oneOf schemas, or empty list if not defined
-     */
-    public List<Schema> getOneOf() {
-        return oneOf;
-    }
-
-    /**
-     * Checks if this schema has allOf composition.
-     * @return true if allOf is defined and not empty
-     */
-    public boolean hasAllOf() {
-        return !allOf.isEmpty();
-    }
-
-    /**
-     * Checks if this schema has anyOf composition.
-     * @return true if anyOf is defined and not empty
-     */
-    public boolean hasAnyOf() {
-        return !anyOf.isEmpty();
-    }
-
-    /**
-     * Checks if this schema has oneOf composition.
-     * @return true if oneOf is defined and not empty
-     */
-    public boolean hasOneOf() {
-        return !oneOf.isEmpty();
-    }
-
-    /**
-     * Returns the not schema.
-     * @return the not schema or null
-     */
-    public Schema getNot() {
-        return notSchema;
-    }
-
-    /**
-     * Checks if this schema has a not clause.
-     * @return true if not schema is defined
-     */
-    public boolean hasNot() {
-        return notSchema != null;
-    }
-
-    /**
-     * Returns the if schema for conditional validation.
-     * @return the if schema or null
-     */
-    public Schema getIfSchema() {
-        return ifSchema;
-    }
-
-    /**
-     * Returns the then schema for conditional validation.
-     * @return the then schema or null
-     */
-    public Schema getThenSchema() {
-        return thenSchema;
-    }
-
-    /**
-     * Returns the else schema for conditional validation.
-     * @return the else schema or null
-     */
-    public Schema getElseSchema() {
-        return elseSchema;
-    }
-
-    /**
-     * Checks if this schema has conditional validation (if/then/else).
-     * @return true if if schema is defined
-     */
-    public boolean hasConditional() {
-        return ifSchema != null;
-    }
-
-    /**
-     * Returns the schema dialect (e.g., "https://json-schema.org/draft/2020-12/schema").
-     * @return the schema dialect or null
-     */
-    public String getSchemaDialect() {
-        return schemaDialect;
-    }
-
-    /**
-     * Returns the schema ID (e.g., "https://example.com/schemas/user.json").
-     * @return the schema ID or null
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Returns the schema title.
-     * @return the title or null
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Returns the schema description.
-     * @return the description or null
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Checks if this schema has a type union (array of types).
-     * @return true if type is an array
-     */
-    public boolean hasTypeUnion() {
-        return typeList != null && !typeList.isEmpty();
-    }
-
-    /**
-     * Returns the allowed types for this schema.
-     * @return list of types or empty list
-     */
-    public List<String> getAllowedTypes() {
-        return typeList != null ? typeList : Collections.emptyList();
+        public Schema build() {
+            return new Schema(name, type, properties, patternProperties, itemSchema, requiredFields,
+                    additionalProperties, minimum, maximum, exclusiveMinimum, exclusiveMaximum,
+                    minLength, maxLength, pattern, format, multipleOf, enumValues,
+                    schemaDialect, id, title, description, typeList, ref, version, compatibility,
+                    allOf, anyOf, oneOf, notSchema, ifSchema, thenSchema, elseSchema,
+                    minItems, maxItems, uniqueItems, prefixItems, additionalItemsSchema,
+                    minProperties, maxProperties, dependentRequired, dependentSchemas,
+                    constValue, readOnly, writeOnly);
+        }
     }
 }

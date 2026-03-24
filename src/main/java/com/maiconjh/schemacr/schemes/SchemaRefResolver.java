@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -313,16 +314,89 @@ public class SchemaRefResolver {
 
     /**
      * Navigates to a specific part of a schema.
+     *
+     * <p>Supports navigation to:
+     * <ul>
+     *     <li>properties - object properties</li>
+     *     <li>items - array item schema</li>
+     *     <li>prefixItems/N - positional array schemas (Draft 2020-12)</li>
+     *     <li>allOf/N - allOf composition schemas</li>
+     *     <li>anyOf/N - anyOf composition schemas</li>
+     * </ul>
+     *
+     * @param part the navigation part (can include /N for array index)
+     * @param current the current schema to navigate from
+     * @return the navigated schema, or null if not found
      */
     private Schema navigateTo(String part, Schema current) {
+        // Handle array-style navigation: prefixItems/0, allOf/1, anyOf/2, etc.
+        if (part.contains("/")) {
+            String[] parts = part.split("/", 2);
+            String container = parts[0];
+            String indexStr = parts.length > 1 ? parts[1] : null;
+
+            // Navigate to the container first, then get by index
+            Schema containerSchema = navigateTo(container, current);
+            if (containerSchema == null || indexStr == null) {
+                return containerSchema;
+            }
+
+            try {
+                int index = Integer.parseInt(indexStr);
+
+                // Handle prefixItems list
+                if ("prefixItems".equals(container)) {
+                    List<Schema> prefixItems = containerSchema.getPrefixItems();
+                    if (prefixItems != null && index >= 0 && index < prefixItems.size()) {
+                        return prefixItems.get(index);
+                    }
+                }
+
+                // Handle allOf list
+                if ("allOf".equals(container)) {
+                    List<Schema> allOf = containerSchema.getAllOf();
+                    if (allOf != null && index >= 0 && index < allOf.size()) {
+                        return allOf.get(index);
+                    }
+                }
+
+                // Handle anyOf list
+                if ("anyOf".equals(container)) {
+                    List<Schema> anyOf = containerSchema.getAnyOf();
+                    if (anyOf != null && index >= 0 && index < anyOf.size()) {
+                        return anyOf.get(index);
+                    }
+                }
+            } catch (NumberFormatException e) {
+                // Invalid index format, return null
+            }
+            return null;
+        }
+
+        // Standard navigation
         if (current.getProperties() != null && current.getProperties().containsKey(part)) {
             return current.getProperties().get(part);
         }
-        
+
         if ("items".equals(part) && current.getItemSchema() != null) {
             return current.getItemSchema();
         }
-        
+
+        // Handle prefixItems container (returns the schema with prefixItems)
+        if ("prefixItems".equals(part) && !current.getPrefixItems().isEmpty()) {
+            return current;
+        }
+
+        // Handle allOf container
+        if ("allOf".equals(part) && current.hasAllOf()) {
+            return current;
+        }
+
+        // Handle anyOf container
+        if ("anyOf".equals(part) && current.hasAnyOf()) {
+            return current;
+        }
+
         return null;
     }
 
