@@ -68,7 +68,7 @@ Unknown format names currently pass validation (no error).
 
 
 > [!IMPORTANT]
-Since version **0.5.0**, `FormatValidator` uses **real Bukkit registries** for semantic validation when the server is running. **You must call `FormatValidator.initializeCaches()` in your plugin's `onEnable()`** after the server is fully loaded to populate the internal caches.
+Since version **1.0.0**, `FormatValidator` uses **real Bukkit registries** for semantic validation when the server is running. **You must call `FormatValidator.initializeCaches()` in your plugin's `onEnable()`** after the server is fully loaded to populate the internal caches.
 
 ### How it works
 
