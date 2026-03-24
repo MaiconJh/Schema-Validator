@@ -23,9 +23,14 @@ public class MinPropertiesValidator implements Validator {
     @Override
     public List<ValidationError> validate(Object data, Schema schema, String path, String parentKey) {
         List<ValidationError> errors = new ArrayList<>();
-        if (data instanceof Map<?, ?> map && map.size() < minProperties) {
+        // Only validate if data is a Map
+        if (!(data instanceof Map<?, ?>)) {
+            return errors;
+        }
+        Map<?, ?> map = (Map<?, ?>) data;
+        if (map.size() < minProperties) {
             errors.add(new ValidationError(path, "minProperties", String.valueOf(map.size()),
-                    "Object must have at least " + minProperties + " properties"));
+                    "Object must have at least " + minProperties + " properties, but found " + map.size()));
         }
         return errors;
     }

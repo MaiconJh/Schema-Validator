@@ -23,9 +23,14 @@ public class MaxPropertiesValidator implements Validator {
     @Override
     public List<ValidationError> validate(Object data, Schema schema, String path, String parentKey) {
         List<ValidationError> errors = new ArrayList<>();
-        if (data instanceof Map<?, ?> map && map.size() > maxProperties) {
+        // Only validate if data is a Map
+        if (!(data instanceof Map<?, ?>)) {
+            return errors;
+        }
+        Map<?, ?> map = (Map<?, ?>) data;
+        if (map.size() > maxProperties) {
             errors.add(new ValidationError(path, "maxProperties", String.valueOf(map.size()),
-                    "Object must have at most " + maxProperties + " properties"));
+                    "Object must have at most " + maxProperties + " properties, but found " + map.size()));
         }
         return errors;
     }

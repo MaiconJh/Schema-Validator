@@ -1420,7 +1420,7 @@ public Schema navigateTo(Map<String, Object> schema, String jsonPointer) {
 
 #### Critérios de Teste
 
-| Cenário | $ref指向 | Resultado |
+| Cenário | $ref | Resultado |
 |---------|---------|-----------|
 | $ref pointing to prefixItems | #/prefixItems/0 | Schema resolvido corretamente |
 | $ref pointing to allOf | #/definitions/SchemaName → allOf | Funciona em composições |

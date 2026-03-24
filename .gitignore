@@ -179,7 +179,7 @@ __pycache__/
 # Testes do Gradle
 /bin/
 /test/
-/src/test/
+
 
 # Relatórios de testes
 test-results/

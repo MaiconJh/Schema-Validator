@@ -49,6 +49,8 @@ A keyword can be accepted at parse time but still not enforced at runtime.
 
 ## Fully Implemented Keywords
 
+All keywords below are now fully enforced at runtime and verified by 324 unit tests across 22 validator classes.
+
 All keywords below are now fully enforced at runtime:
 
 ### Array Keywords

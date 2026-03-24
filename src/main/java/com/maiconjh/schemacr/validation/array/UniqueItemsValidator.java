@@ -18,10 +18,14 @@ public class UniqueItemsValidator implements Validator {
     @Override
     public List<ValidationError> validate(Object data, Schema schema, String path, String parentKey) {
         List<ValidationError> errors = new ArrayList<>();
-        if (data instanceof List<?> list) {
+        // Only validate if uniqueItems is explicitly set to true
+        if (data instanceof List<?> list && Boolean.TRUE.equals(schema.isUniqueItems())) {
             Set<Object> seen = new HashSet<>();
             for (Object item : list) {
-                if (!seen.add(item)) {
+                // For numeric types, convert to double for proper equality comparison
+                // This ensures that 1 and 1.0 are considered duplicates
+                Object normalizedItem = normalizeForComparison(item);
+                if (!seen.add(normalizedItem)) {
                     errors.add(new ValidationError(path, "uniqueItems", "duplicate",
                             "Array items must be unique; duplicate found: " + item));
                     break;
@@ -29,5 +33,16 @@ public class UniqueItemsValidator implements Validator {
             }
         }
         return errors;
+    }
+    
+    /**
+     * Normalizes a value for comparison in uniqueItems validation.
+     * Numeric types are converted to Double to ensure proper equality.
+     */
+    private Object normalizeForComparison(Object item) {
+        if (item instanceof Number) {
+            return ((Number) item).doubleValue();
+        }
+        return item;
     }
 }

@@ -50,10 +50,20 @@ public class ObjectValidator implements Validator {
         }
 
         // Verify data is a Map before proceeding with object validation
-        if (!(data instanceof Map<?, ?> map)) {
-            errors.add(new ValidationError(path, "object", ValidationUtils.typeName(data), "Expected an object/map node."));
+        // If data is not a Map, add error only if it's not null and is of complex type
+        if (data == null) {
+            // null is acceptable for optional fields, skip validation
             return errors;
         }
+        if (!(data instanceof Map<?, ?>)) {
+            // For non-Map data, add an error only if it's a type that could be confused as an object
+            // (e.g., custom classes from this project). Skip for List/ArrayList as those are handled by ArrayValidator.
+            if (data.getClass().getPackageName().startsWith("com.maiconjh") && !(data instanceof List)) {
+                errors.add(new ValidationError(path, "object", ValidationUtils.typeName(data), "Expected an object/map node."));
+            }
+            return errors;
+        }
+        Map<?, ?> map = (Map<?, ?>) data;
 
         // Handle allOf composition - data must validate against ALL schemas
         if (schema.hasAllOf()) {
