@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2026-03-24 - Complete Test Suite & Full Coverage
+
+### Added
+
+#### Unit Test Suite
+- 324 unit tests across 22 validator test classes
+- Test coverage for all JSON Schema validators:
+  - Array validators: MinItems, MaxItems, UniqueItems, PrefixItems, AdditionalItems
+  - Object validators: MinProperties, MaxProperties, DependentRequired, DependentSchemas
+  - Conditional validators: ConditionalValidator, OneOfValidator, NotValidator
+  - Format validators: FormatValidator with 21 formats (12 standard + 9 Minecraft)
+  - Primitive validators: Type, Enum, Numeric, String constraints
+  - Misc validators: Const, ReadOnly, WriteOnly
+- Schema system tests: Schema, FileSchemaLoader, SchemaRefResolver
+- Test fixtures for common validation scenarios
+
+#### Documentation Updates
+- Test execution & evolution guide
+- Test coverage report with detailed metrics
+- Updated code-audit-2026-03.md to reflect actual implementation
+- Updated architecture.md with test coverage metrics
+- Updated schema-keywords.md with test verification status
+
+### Changed
+
+- Updated plugin version to 1.0.0
+- Documentation now reflects 100% test coverage for all validators
+- Code audit document corrected to show implemented vs unimplemented features
+
+### Fixed
+
+- MinPropertiesValidator now handles null data correctly
+- MaxPropertiesValidator now handles null data correctly
+- ObjectValidator now handles non-Map data gracefully
+
+---
+
 ## [0.5.0] - 2026-03-23 - Semantic Minecraft Validation
 
 ### Added

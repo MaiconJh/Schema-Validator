@@ -17,6 +17,43 @@ This addon was created with **Artificial Intelligence assistance**. Use with cau
 - [Skript 2.14+](https://github.com/SkriptLang/Skript)
 - Paper 1.21+ ou Spigot 1.21+
 
+---
+
+## ✨ What's New in v1.0.0 - Complete Test Suite & Full Coverage
+
+### 🎯 Major Features Added
+
+#### 1. Complete Unit Test Suite
+
+Comprehensive test coverage for all JSON Schema validators:
+
+- **324 unit tests** across **22 test classes**
+- **100% pass rate** on all validators
+- Test classes for:
+  - Array validators: MinItems, MaxItems, UniqueItems, PrefixItems, AdditionalItems
+  - Object validators: MinProperties, MaxProperties, DependentRequired, DependentSchemas
+  - Conditional validators: ConditionalValidator, OneOfValidator, NotValidator
+  - Format validators: 21 formats (12 standard + 9 Minecraft-specific)
+  - Primitive validators: Type, Enum, Numeric, String constraints
+  - Misc validators: Const, ReadOnly, WriteOnly
+  - Schema system: Schema, FileSchemaLoader, SchemaRefResolver
+
+#### 2. Documentation Updates
+
+- Test execution & evolution guide with detailed instructions
+- Test coverage report with comprehensive metrics
+- Updated architecture documentation with test coverage status
+- Updated schema-keywords documentation with verification status
+- Corrected code-audit-2026-03.md to reflect actual implementation
+
+#### 3. Bug Fixes
+
+- MinPropertiesValidator now handles null data correctly
+- MaxPropertiesValidator now handles null data correctly
+- ObjectValidator now handles non-Map data gracefully
+
+---
+
 ## ✨ What's New in v0.5.0 - Semantic Minecraft Validation
 
 ### 🎯 Major Features Added
