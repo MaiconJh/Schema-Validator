@@ -115,28 +115,54 @@
   // Sidebar Toggle (Mobile)
   // --------------------------------------------------------------------------
   function initSidebar() {
-    if (sidebarToggle && sidebar) {
-      // Add hamburger icon
-      sidebarToggle.innerHTML = getIcon('menu');
-      sidebarToggle.setAttribute('aria-label', 'Toggle navigation menu');
-      
-      sidebarToggle.addEventListener('click', () => {
-        const isOpen = sidebar.classList.toggle('open');
-        sidebarToggle.setAttribute('aria-expanded', String(isOpen));
-        sidebarToggle.innerHTML = getIcon(isOpen ? 'chevron-left' : 'menu');
-      });
-      
-      // Close sidebar when clicking outside
-      document.addEventListener('click', (e) => {
-        if (sidebar.classList.contains('open') && 
-            !sidebar.contains(e.target) && 
-            !sidebarToggle.contains(e.target)) {
-          sidebar.classList.remove('open');
-          sidebarToggle.setAttribute('aria-expanded', 'false');
-          sidebarToggle.innerHTML = getIcon('menu');
-        }
-      });
+    if (!sidebarToggle || !sidebar) return;
+
+    // Create a backdrop element so users can tap outside to close the sidebar
+    const backdrop = document.createElement('div');
+    backdrop.className = 'sidebar-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(backdrop);
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      backdrop.classList.add('open');
+      sidebarToggle.setAttribute('aria-expanded', 'true');
+      sidebarToggle.innerHTML = getIcon('chevron-left');
     }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('open');
+      sidebarToggle.setAttribute('aria-expanded', 'false');
+      sidebarToggle.innerHTML = getIcon('menu');
+    }
+
+    sidebarToggle.innerHTML = getIcon('menu');
+    sidebarToggle.setAttribute('aria-label', 'Toggle navigation menu');
+
+    sidebarToggle.addEventListener('click', () => {
+      if (sidebar.classList.contains('open')) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    });
+
+    // Clicking the backdrop closes the sidebar
+    backdrop.addEventListener('click', closeSidebar);
+
+    // Close sidebar when a nav link is clicked
+    sidebar.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => closeSidebar());
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+        closeSidebar();
+        sidebarToggle.focus();
+      }
+    });
   }
 
   // --------------------------------------------------------------------------
@@ -954,7 +980,92 @@
   }
 
   // --------------------------------------------------------------------------
+  // Hide Header on Scroll (only on mobile/small screens)
+  // --------------------------------------------------------------------------
   // Initialize All
+  // --------------------------------------------------------------------------
+  // Header height observer
+  // Keeps --header-actual-height in sync with the real rendered height so
+  // the sidebar top offset and smooth-scroll calculations are always correct,
+  // even when the header wraps onto a second line on small screens.
+  // --------------------------------------------------------------------------
+  function initHeaderHeightObserver() {
+    const header = document.querySelector('.header');
+    if (!header) return;
+
+    function updateHeaderHeight() {
+      const h = header.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--header-actual-height', h + 'px');
+    }
+
+    // Set immediately and then watch for layout changes
+    updateHeaderHeight();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(updateHeaderHeight).observe(header);
+    } else {
+      // Fallback for browsers without ResizeObserver
+      window.addEventListener('resize', updateHeaderHeight);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Mobile search toggle
+  // On screens < 540px the search bar is hidden. A small search icon button
+  // is injected into .header-actions. Tapping it toggles .search-open on the
+  // header, sliding the bar open below the main row.
+  // --------------------------------------------------------------------------
+  function initMobileSearchToggle() {
+    const header = document.querySelector('.header');
+    const headerActions = document.querySelector('.header-actions');
+    const headerSearch = document.querySelector('.header-search');
+    if (!header || !headerActions || !headerSearch) return;
+
+    // Create the toggle button
+    const btn = document.createElement('button');
+    btn.className = 'header-search-toggle';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Toggle search');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', 'search-input');
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>`;
+
+    // Insert before the sidebar toggle (last child) or append
+    const sidebarBtn = headerActions.querySelector('#sidebar-toggle');
+    if (sidebarBtn) {
+      headerActions.insertBefore(btn, sidebarBtn);
+    } else {
+      headerActions.appendChild(btn);
+    }
+
+    btn.addEventListener('click', () => {
+      const isOpen = header.classList.toggle('search-open');
+      btn.setAttribute('aria-expanded', String(isOpen));
+
+      if (isOpen) {
+        // Focus the input after the CSS transition completes
+        setTimeout(() => {
+          const input = document.getElementById('search-input');
+          if (input) input.focus();
+        }, 50);
+      }
+
+      // After toggling, update header height so sidebar stays in sync
+      const h = header.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--header-actual-height', h + 'px');
+    });
+
+    // Close the search bar when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!header.contains(e.target) && header.classList.contains('search-open')) {
+        header.classList.remove('search-open');
+        btn.setAttribute('aria-expanded', 'false');
+        const h = header.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--header-actual-height', h + 'px');
+      }
+    });
+  }
+
   // --------------------------------------------------------------------------
   function init() {
     initTheme();
@@ -965,31 +1076,37 @@
     initTables();
     initCallouts();
     initCodeBlocks();
-    
+    initHeaderHeightObserver();
+    initMobileSearchToggle();
+
     // Add theme toggle listener
     if (themeToggle) {
       themeToggle.addEventListener('change', toggleTheme);
     }
-    
+
     // Add smooth scroll for anchor links (with proper offset calculation)
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       anchor.addEventListener('click', (e) => {
         const targetId = anchor.getAttribute('href');
         if (targetId === '#') return;
-        
+
         const target = document.querySelector(targetId);
         if (target) {
           e.preventDefault();
-          const headerOffset = 64;
+          // Use the real header height instead of the hardcoded 64px
+          const headerOffset = parseFloat(
+            getComputedStyle(document.documentElement)
+              .getPropertyValue('--header-actual-height')
+          ) || 64;
           const elementPosition = target.getBoundingClientRect().top;
           const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-          
+
           window.scrollTo({
             top: offsetPosition,
             behavior: 'smooth'
           });
-          
-          // Update URL without causing jump [citation:3]
+
+          // Update URL without causing jump
           window.history.pushState(null, '', targetId);
         }
       });

@@ -775,7 +775,11 @@ body::after {
   background: var(--surface-glass-strong);
   border-bottom: 1px solid var(--glass-border);
   box-shadow: var(--shadow-soft-depth);
-  transition: all var(--transition-normal);
+}
+
+/* Floating expand button for mobile */
+.header-expand-btn {
+  display: none;
 }
 
 @supports ((-webkit-backdrop-filter: blur(8px)) or (backdrop-filter: blur(8px))) {
@@ -793,7 +797,7 @@ body::after {
   height: 100%;
   width: 100%;
   padding: 0 var(--space-6);
-  position: relative; /* contexto para o posicionamento absoluto da busca */
+  position: relative;
 }
 
 .header-logo {
@@ -825,16 +829,170 @@ body::after {
   z-index: 1;
 }
 
-/* Em telas menores, voltamos a um layout mais compacto para evitar sobreposição */
-@media (max-width: 1024px) {
-  .header-search {
-    position: static;
-    transform: none;
-    margin: 0 auto;
+/* ==========================================================================
+   HEADER RESPONSIVO — abordagem single-row sempre
+   O header NUNCA quebra em múltiplas linhas. Em vez disso, elementos são
+   progressivamente compactados/ocultados conforme a viewport encolhe:
+     > 900px  : logo completo + search centralizada + actions
+     601–900px : badge some, search encolhe para ocupar espaço disponível
+     ≤ 600px  : logo-text some, search vira dropdown via lupa (toggle)
+   O header mantém sempre height: var(--header-height).
+   ========================================================================== */
+
+/* ── Faixa 601px–900px: sem badge, search encolhe mas permanece visível ── */
+@media (max-width: 900px) {
+  .header {
+    height: var(--header-height);
+    overflow: visible;
   }
+
   .header-inner {
-    justify-content: space-between;
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: 0 var(--space-4);
+    gap: var(--space-3);
   }
+
+  .docs-version-badge {
+    display: none;
+  }
+
+  /* Tira o posicionamento absoluto centralizado e deixa a search
+     participar do fluxo flex, crescendo no espaço disponível */
+  .header-search {
+    position: relative;
+    left: auto;
+    transform: none;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .header-search-input {
+    width: 100%;
+    max-width: none;
+  }
+
+  .header-search-input:focus {
+    width: 100%;
+  }
+
+  /* Sidebar usa altura real medida pelo JS */
+  .sidebar {
+    top: var(--header-actual-height, var(--header-height)) !important;
+    height: calc(100vh - var(--header-actual-height, var(--header-height))) !important;
+  }
+}
+
+/* ── ≤ 600px: logo-text compacta, search vira dropdown via lupa ─────────── */
+@media (max-width: 600px) {
+  .header {
+    height: var(--header-height);
+    overflow: visible;
+  }
+
+  .header-inner {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+    height: 100%;
+  }
+
+  /* Trunca o texto do logo mas não some — fica com max-width limitado */
+  .header-logo {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .header-logo-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 110px;
+    font-size: var(--text-base);
+  }
+
+  /* Abaixo de 400px some o texto, mantém só o ícone */
+  @media (max-width: 400px) {
+    .header-logo-text {
+      display: none;
+    }
+  }
+
+  /* Search vira dropdown — oculta por padrão */
+  .header-search {
+    display: none;
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin-top: 0 !important;
+    padding: var(--space-2) var(--space-3) !important;
+    background: var(--surface-glass-strong) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    box-shadow: var(--shadow-md) !important;
+    z-index: var(--z-sticky) !important;
+    flex: none !important;
+    transform: none !important;
+    backdrop-filter: saturate(1.2) blur(10px);
+    -webkit-backdrop-filter: saturate(1.2) blur(10px);
+  }
+
+  /* Aberto quando JS adiciona .search-open ao header */
+  .header.search-open .header-search {
+    display: block !important;
+  }
+
+  .header-search-input {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  /* Botão lupa visível */
+  .header-search-toggle {
+    display: flex !important;
+  }
+
+  /* BB-8 um pouco menor */
+  .bb8-toggle {
+    --toggle-size: 4.8px !important;
+  }
+
+  .sidebar {
+    top: var(--header-actual-height, var(--header-height)) !important;
+    height: calc(100vh - var(--header-actual-height, var(--header-height))) !important;
+  }
+}
+
+/* Search toggle button — visible only on very small screens (< 540px).
+   The button is injected by JS into .header-actions.             */
+.header-search-toggle {
+  display: none; /* shown via @media (max-width: 540px) */
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.header-search-toggle:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.header-search-toggle svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
 }
 
 .header-logo:hover {
@@ -918,6 +1076,14 @@ body::after {
   border-color: var(--color-accent-primary);
   box-shadow: 0 0 0 3px var(--color-accent-subtle);
   width: 320px;
+}
+
+/* Input em telas pequenas */
+@media (max-width: 1024px) {
+  .header .header-search-input {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 .header-search-icon {
@@ -2074,23 +2240,40 @@ h3:focus-within .heading-anchor {
   .shell {
     grid-template-columns: 1fr;
   }
-  
+
   .sidebar {
     position: fixed;
     left: 0;
-    top: var(--header-height);
+    /* Use the JS-measured real height; fall back to the CSS variable */
+    top: var(--header-actual-height, var(--header-height));
     width: var(--sidebar-width);
-    height: calc(100vh - var(--header-height));
+    height: calc(100vh - var(--header-actual-height, var(--header-height)));
     transform: translateX(-100%);
     transition: transform var(--transition-normal);
     z-index: var(--z-dropdown);
     box-shadow: var(--shadow-xl);
   }
-  
+
   .sidebar.open {
     transform: translateX(0);
   }
-  
+
+  /* Backdrop: tapping outside the open sidebar closes it */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    top: var(--header-actual-height, var(--header-height));
+    background: rgb(0 0 0 / 0.35);
+    z-index: calc(var(--z-dropdown) - 1);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .sidebar-backdrop.open {
+    display: block;
+  }
+
   .main {
     padding: var(--space-6) var(--space-6);
   }
@@ -2106,39 +2289,29 @@ h3:focus-within .heading-anchor {
     margin-left: 0;
   }
 
-  .header-search-input {
-    width: 180px;
-  }
+  /* docs-version-badge já some via o bloco de header < 768px acima */
 
-  .docs-version-badge {
-    display: none;
-  }
-  
-  .header-search-input:focus {
-    width: 200px;
-  }
-  
   .main {
     padding: var(--space-4) var(--space-4);
   }
-  
+
   .article-title {
     font-size: var(--text-3xl);
   }
-  
+
   .article-lead {
     font-size: var(--text-lg);
   }
-  
+
   .nav-arrows {
     grid-template-columns: 1fr;
   }
-  
+
   .nav-arrow.prev,
   .nav-arrow.next {
     grid-column: 1;
   }
-  
+
   .nav-arrow.next {
     text-align: left;
     align-items: flex-start;
