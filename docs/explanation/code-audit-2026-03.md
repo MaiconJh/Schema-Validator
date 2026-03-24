@@ -1,86 +1,86 @@
-# Auditoria Técnica Abrangente — Schema-Validator
+# Comprehensive Technical Audit — Schema-Validator
 
-**Data da auditoria:** 2026-03-24 (UTC)  
-**Última atualização:** 2026-03-24  
-**Projeto auditado:** `Schema-Validator` (Plugin Minecraft/Bukkit)  
-**Versão estimada:** 0.5.0  
-**Diretório base:** `src/main/java/com/maiconjh/schemacr/`
-
----
-
-## 1. Escopo e Metodologia
-
-Esta auditoria foi conduzida por **inspeção direta do código-fonte** do plugin, analisando:
-
-- **Parser** (`FileSchemaLoader.java`): keywords reconhecidas no parsing
-- **Modelo** (`Schema.java`): campos disponíveis para representar constraints
-- **Validadores** (`PrimitiveValidator`, `ObjectValidator`, `ArrayValidator`, etc.): enforcement em runtime
-- **Registro de keywords** (`SupportedKeywordsRegistry.java`): keywords declaradas como "suportadas"
-- **Documentação** (`docs/pages/`, `docs/explanation/`): Claims de funcionalidades
-
-O objetivo é identificar gaps entre o que está **documentado**, o que está **registrado como suportado**, e o que está **realmente implementado**.
+**Audit date:** 2026-03-24 (UTC)  
+**Last updated:** 2026-03-24  
+**Project audited:** `Schema-Validator` (Minecraft/Bukkit Plugin)  
+**Estimated version:** 0.5.0  
+**Base directory:** `src/main/java/com/maiconjh/schemacr/`
 
 ---
 
-## 2. Análise Detalhada por Componente
+## 1. Scope and Methodology
 
-### 2.1 Camada de Parsing (`FileSchemaLoader.java`)
+This audit was conducted by **direct source code inspection** of the plugin, analyzing:
 
-**Arquivo:** [`FileSchemaLoader.java`](src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java) (479 linhas)
+- **Parser** (`FileSchemaLoader.java`): keywords recognized in parsing
+- **Model** (`Schema.java`): fields available to represent constraints
+- **Validators** (`PrimitiveValidator`, `ObjectValidator`, `ArrayValidator`, etc.): runtime enforcement
+- **Keywords registry** (`SupportedKeywordsRegistry.java`): keywords declared as "supported"
+- **Documentation** (`docs/pages/`, `docs/explanation/`): functionality claims
 
-#### Keywords Realmente Parseadas
+The goal is to identify gaps between what is **documented**, what is **registered as supported**, and what is **actually implemented**.
 
-| Keyword | Status | Evidência |
+---
+
+## 2. Detailed Analysis by Component
+
+### 2.1 Parsing Layer (`FileSchemaLoader.java`)
+
+**File:** [`FileSchemaLoader.java`](src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java) (479 lines)
+
+#### Keywords Actually Parsed
+
+| Keyword | Status | Evidence |
 |---------|--------|----------|
-| `type` | ✅ Parseado | Linha 151: `parseType()` |
-| `properties` | ✅ Parseado | Linhas 340-350 |
-| `required` | ✅ Parseado | Linhas 158-163 |
-| `additionalProperties` | ✅ Parseado (bool) | Linhas 166-172 |
-| `patternProperties` | ✅ Parseado | Linhas 327-338 |
-| `items` | ✅ Parseado | Linhas 352-354 |
-| `minimum`, `maximum` | ✅ Parseado | Linhas 174-186 |
-| `exclusiveMinimum`, `exclusiveMaximum` | ✅ Parseado (bool) | Linhas 190-195 |
-| `multipleOf` | ✅ Parseado | Linha 187-189 |
-| `minLength`, `maxLength` | ✅ Parseado | Linhas 197-208 |
-| `pattern` | ✅ Parseado | Linhas 209-217 |
-| `format` | ✅ Parseado | Linhas 218-220 |
-| `enum` | ✅ Parseado | Linhas 222-226 |
-| `$ref` | ✅ Parseado | Linhas 261-265 |
-| `allOf`, `anyOf`, `oneOf` | ✅ Parseado | Linhas 277-305 |
-| `not` | ✅ Parseado | Linhas 307-311 |
-| `if`, `then`, `else` | ✅ Parseado | Linhas 313-325 |
-| `definitions`, `$defs` | ✅ Parseado | Linhas 90-109 |
-| `$schema`, `$id` | ✅ Parseado | Linhas 228-238 |
-| `title`, `description` | ✅ Parseado | Linhas 240-250 |
-| `type` (array) | ✅ Parseado | Linhas 252-259 |
+| `type` | ✅ Parsed | Line 151: `parseType()` |
+| `properties` | ✅ Parsed | Lines 340-350 |
+| `required` | ✅ Parsed | Lines 158-163 |
+| `additionalProperties` | ✅ Parsed (bool) | Lines 166-172 |
+| `patternProperties` | ✅ Parsed | Lines 327-338 |
+| `items` | ✅ Parsed | Lines 352-354 |
+| `minimum`, `maximum` | ✅ Parsed | Lines 174-186 |
+| `exclusiveMinimum`, `exclusiveMaximum` | ✅ Parsed (bool) | Lines 190-195 |
+| `multipleOf` | ✅ Parsed | Line 187-189 |
+| `minLength`, `maxLength` | ✅ Parsed | Lines 197-208 |
+| `pattern` | ✅ Parsed | Lines 209-217 |
+| `format` | ✅ Parsed | Lines 218-220 |
+| `enum` | ✅ Parsed | Lines 222-226 |
+| `$ref` | ✅ Parsed | Lines 261-265 |
+| `allOf`, `anyOf`, `oneOf` | ✅ Parsed | Lines 277-305 |
+| `not` | ✅ Parsed | Lines 307-311 |
+| `if`, `then`, `else` | ✅ Parsed | Lines 313-325 |
+| `definitions`, `$defs` | ✅ Parsed | Lines 90-109 |
+| `$schema`, `$id` | ✅ Parsed | Lines 228-238 |
+| `title`, `description` | ✅ Parsed | Lines 240-250 |
+| `type` (array) | ✅ Parsed | Lines 252-259 |
 
-#### Keywords Parseadas (Atualizado em 2026-03-24)
+#### Parsed Keywords (Updated 2026-03-24)
 
-| Keyword | Status | Evidência | Testes |
-|---------|--------|-----------|--------|
-| `minItems` | ✅ Parseado | FileSchemaLoader.java:275 | MinItemsValidatorTest (7 testes) |
-| `maxItems` | ✅ Parseado | FileSchemaLoader.java:276 | MaxItemsValidatorTest (7 testes) |
-| `uniqueItems` | ✅ Parseado | FileSchemaLoader.java:277 | UniqueItemsValidatorTest (9 testes) |
-| `prefixItems` | ✅ Parseado | FileSchemaLoader.java:278-284 | PrefixItemsValidatorTest (8 testes) |
-| `additionalItems` | ✅ Parseado | FileSchemaLoader.java:285-295 | AdditionalItemsValidatorTest (9 testes) |
-| `const` | ✅ Parseado | Schema.java:62 | ConstValidatorTest (10 testes) |
-| `readOnly` | ✅ Parseado | Schema.java:63 | ReadOnlyValidatorTest (7 testes) |
-| `writeOnly` | ✅ Parseado | Schema.java:64 | WriteOnlyValidatorTest (7 testes) |
-| `minProperties` | ✅ Parseado | FileSchemaLoader.java:298 | MinPropertiesValidatorTest (8 testes) |
-| `maxProperties` | ✅ Parseado | FileSchemaLoader.java:299 | MaxPropertiesValidatorTest (10 testes) |
-| `dependentRequired` | ✅ Parseado | FileSchemaLoader.java:300-311 | DependentRequiredValidatorTest (13 testes) |
-| `dependentSchemas` | ✅ Parseado | FileSchemaLoader.java:312-321 | DependentSchemasValidatorTest (14 testes) |
+| Keyword | Status | Evidence | Tests |
+|---------|--------|-----------|-------|
+| `minItems` | ✅ Parsed | FileSchemaLoader.java:275 | MinItemsValidatorTest (7 tests) |
+| `maxItems` | ✅ Parsed | FileSchemaLoader.java:276 | MaxItemsValidatorTest (7 tests) |
+| `uniqueItems` | ✅ Parsed | FileSchemaLoader.java:277 | UniqueItemsValidatorTest (9 tests) |
+| `prefixItems` | ✅ Parsed | FileSchemaLoader.java:278-284 | PrefixItemsValidatorTest (8 tests) |
+| `additionalItems` | ✅ Parsed | FileSchemaLoader.java:285-295 | AdditionalItemsValidatorTest (9 tests) |
+| `const` | ✅ Parsed | Schema.java:62 | ConstValidatorTest (10 tests) |
+| `readOnly` | ✅ Parsed | Schema.java:63 | ReadOnlyValidatorTest (7 tests) |
+| `writeOnly` | ✅ Parsed | Schema.java:64 | WriteOnlyValidatorTest (7 tests) |
+| `minProperties` | ✅ Parsed | FileSchemaLoader.java:298 | MinPropertiesValidatorTest (8 tests) |
+| `maxProperties` | ✅ Parsed | FileSchemaLoader.java:299 | MaxPropertiesValidatorTest (10 tests) |
+| `dependentRequired` | ✅ Parsed | FileSchemaLoader.java:300-311 | DependentRequiredValidatorTest (13 tests) |
+| `dependentSchemas` | ✅ Parsed | FileSchemaLoader.java:312-321 | DependentSchemasValidatorTest (14 tests) |
 
 ---
 
-### 2.2 Modelo de Dados (`Schema.java`)
+### 2.2 Data Model (`Schema.java`)
 
-**Arquivo:** [`Schema.java`](src/main/java/com/maiconjh/schemacr/schemes/Schema.java) (463 linhas)
+**File:** [`Schema.java`](src/main/java/com/maiconjh/schemacr/schemes/Schema.java) (463 lines)
 
-#### Campos Implementados
+#### Implemented Fields
 
 ```java
-// Tipo e estrutura
+// Type and structure
 private final SchemaType type;
 private final Map<String, Schema> properties;
 private final Map<String, Schema> patternProperties;
@@ -88,20 +88,20 @@ private final Schema itemSchema;
 private final List<String> requiredFields;
 private final boolean additionalProperties;
 
-// Constraints numéricos
+// Numeric constraints
 private final Number minimum;
 private final Number maximum;
 private final boolean exclusiveMinimum;
 private final boolean exclusiveMaximum;
 private final Number multipleOf;
 
-// Constraints de string
+// String constraints
 private final Integer minLength;
 private final Integer maxLength;
 private final String pattern;
 private final String format;
 
-// Constraints diversos
+// Miscellaneous constraints
 private final List<Object> enumValues;
 
 // Metadata
@@ -114,129 +114,129 @@ private final String ref;
 private final String version;
 private final String compatibility;
 
-// Composição
+// Composition
 private final List<Schema> allOf;
 private final List<Schema> anyOf;
 private final List<Schema> oneOf;
 private final Schema notSchema;
 
-// Condicional
+// Conditional
 private final Schema ifSchema;
 private final Schema thenSchema;
 private final Schema elseSchema;
 ```
 
-#### Campos AUSENTES (não implementados no modelo)
+#### NOT IMPLEMENTED (not in model)
 
-#### Campos Implementados (Atualizado 2026-03-24)
+#### Implemented Fields (Updated 2026-03-24)
 
 ```java
-// Array constraints (linhas 48-53)
+// Array constraints (lines 48-53)
 private final Integer minItems;
 private final Integer maxItems;
 private final Boolean uniqueItems;
 private final List<Schema> prefixItems;
 private final Schema additionalItemsSchema;
 
-// Object constraints (linhas 55-59)
+// Object constraints (lines 55-59)
 private final Integer minProperties;
 private final Integer maxProperties;
 private final Map<String, List<String>> dependentRequired;
 private final Map<String, Schema> dependentSchemas;
 
-// Const and metadata keywords (linhas 61-64)
+// Const and metadata keywords (lines 61-64)
 private final Object constValue;
 private final Boolean readOnly;
 private final Boolean writeOnly;
 ```
 
-#### Campos Ausentes (Apenas metadata - não afetam validação)
+#### Missing Fields (Metadata only - does not affect validation)
 
-| Campo | Tipo esperado | Keyword JSON Schema | Status | Notas |
+| Field | Expected Type | JSON Schema Keyword | Status | Notes |
 |-------|---------------|---------------------|--------|-------|
-| `default` | `Object` | `default` | ⚠️ Parseado (Schema.java:65) | Metadata only - não afeta validação |
-| `examples` | `List<Object>` | `examples` | ⚠️ Parseado (Schema.java:66) | Metadata only - não afeta validação |
-| `deprecated` | `Boolean` | `deprecated` | ⚠️ Parseado (Schema.java:67) | Metadata only - não afeta validação |
-| `comment` | `String` | `comment` | ❌ Não parseado | Metadata only - não afeta validação |
+| `default` | `Object` | `default` | ⚠️ Parsed (Schema.java:65) | Metadata only - does not affect validation |
+| `examples` | `List<Object>` | `examples` | ⚠️ Parsed (Schema.java:66) | Metadata only - does not affect validation |
+| `deprecated` | `Boolean` | `deprecated` | ⚠️ Parsed (Schema.java:67) | Metadata only - does not affect validation |
+| `comment` | `String` | `comment` | ❌ Not parsed | Metadata only - does not affect validation |
 
 ---
 
-### 2.3 Validadores (`validation/`)
+### 2.3 Validators (`validation/`)
 
-#### 2.3.1 `PrimitiveValidator.java` (173 linhas)
+#### 2.3.1 `PrimitiveValidator.java` (173 lines)
 
-**Status:** ✅ **IMPLEMENTADO** (Atualizado 2026-03-24)
+**Status:** ✅ **IMPLEMENTED** (Updated 2026-03-24)
 
-Valida:
-- Tipos primitivos (STRING, NUMBER, INTEGER, BOOLEAN, NULL, ANY)
+Validates:
+- Primitive types (STRING, NUMBER, INTEGER, BOOLEAN, NULL, ANY)
 - Enum constraints
-- Constraints numéricos (minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf)
-- Constraints de string (minLength, maxLength, pattern, format)
-- `const` — ConstValidator (4 testes)
-- `readOnly` — ReadOnlyValidator (4 testes)
-- `writeOnly` — WriteOnlyValidator (4 testes)
+- Numeric constraints (minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf)
+- String constraints (minLength, maxLength, pattern, format)
+- `const` — ConstValidator (4 tests)
+- `readOnly` — ReadOnlyValidator (4 tests)
+- `writeOnly` — WriteOnlyValidator (4 tests)
 
-**Funcionalidades Implementadas:**
+**Implemented Functionality:**
 
-| Keyword | Status | Validador | Testes |
-|---------|--------|-----------|--------|
-| `const` | ✅ | ConstValidator | ConstValidatorTest (4 testes) |
-| `readOnly` | ✅ | ReadOnlyValidator | ReadOnlyValidatorTest (4 testes) |
-| `writeOnly` | ✅ | WriteOnlyValidator | WriteOnlyValidatorTest (4 testes) |
+| Keyword | Status | Validator | Tests |
+|---------|--------|-----------|-------|
+| `const` | ✅ | ConstValidator | ConstValidatorTest (4 tests) |
+| `readOnly` | ✅ | ReadOnlyValidator | ReadOnlyValidatorTest (4 tests) |
+| `writeOnly` | ✅ | WriteOnlyValidator | WriteOnlyValidatorTest (4 tests) |
 
-#### 2.3.2 `ObjectValidator.java` (268 linhas)
+#### 2.3.2 `ObjectValidator.java` (268 lines)
 
-**Status:** ✅ **IMPLEMENTADO** (Atualizado 2026-03-24)
+**Status:** ✅ **IMPLEMENTED** (Updated 2026-03-24)
 
-Valida:
-- ✅ `$ref` com resolução
+Validates:
+- ✅ `$ref` with resolution
 - ✅ `allOf`, `anyOf`, `oneOf`, `not`
 - ✅ `if`/`then`/`else`
 - ✅ `required`, `properties`, `patternProperties`
-- ✅ `additionalProperties` (boolean e schema)
-- ✅ `minProperties` — MinPropertiesValidator (6 testes)
-- ✅ `maxProperties` — MaxPropertiesValidator (6 testes)
-- ✅ `dependentRequired` — DependentRequiredValidator (6 testes)
-- ✅ `dependentSchemas` — DependentSchemasValidator (6 testes)
+- ✅ `additionalProperties` (boolean and schema)
+- ✅ `minProperties` — MinPropertiesValidator (6 tests)
+- ✅ `maxProperties` — MaxPropertiesValidator (6 tests)
+- ✅ `dependentRequired` — DependentRequiredValidator (6 tests)
+- ✅ `dependentSchemas` — DependentSchemasValidator (6 tests)
 
-**Funcionalidades Implementadas:**
+**Implemented Functionality:**
 
-| Keyword | Status | Validador | Testes |
-|---------|--------|-----------|--------|
-| `minProperties` | ✅ | MinPropertiesValidator | MinPropertiesValidatorTest (6 testes) |
-| `maxProperties` | ✅ | MaxPropertiesValidator | MaxPropertiesValidatorTest (6 testes) |
-| `dependentRequired` | ✅ | DependentRequiredValidator | DependentRequiredValidatorTest (6 testes) |
-| `dependentSchemas` | ✅ | DependentSchemasValidator | DependentSchemasValidatorTest (6 testes) |
-| `additionalProperties` (schema) | ✅ | Implementado no ObjectValidator | - |
+| Keyword | Status | Validator | Tests |
+|---------|--------|-----------|-------|
+| `minProperties` | ✅ | MinPropertiesValidator | MinPropertiesValidatorTest (6 tests) |
+| `maxProperties` | ✅ | MaxPropertiesValidator | MaxPropertiesValidatorTest (6 tests) |
+| `dependentRequired` | ✅ | DependentRequiredValidator | DependentRequiredValidatorTest (6 tests) |
+| `dependentSchemas` | ✅ | DependentSchemasValidator | DependentSchemasValidatorTest (6 tests) |
+| `additionalProperties` (schema) | ✅ | Implemented in ObjectValidator | - |
 
-#### 2.3.3 `ArrayValidator.java` (36 linhas)
+#### 2.3.3 `ArrayValidator.java` (36 lines)
 
-**Status:** ✅ **IMPLEMENTADO** (Atualizado 2026-03-24)
+**Status:** ✅ **IMPLEMENTED** (Updated 2026-03-24)
 
 ```java
-// Validação implementada via validators especializados:
-// - MinItemsValidator (linhas 27-31)
-// - MaxItemsValidator (linhas 33-37)
-// - UniqueItemsValidator (linhas 39-43)
-// - PrefixItemsValidator (linhas 45-49)
-// - AdditionalItemsValidator (linhas 51-57)
+// Validation implemented via specialized validators:
+// - MinItemsValidator (lines 27-31)
+// - MaxItemsValidator (lines 33-37)
+// - UniqueItemsValidator (lines 39-43)
+// - PrefixItemsValidator (lines 45-49)
+// - AdditionalItemsValidator (lines 51-57)
 ```
 
-**Funcionalidades Implementadas:**
+**Implemented Functionality:**
 
-| Keyword | Status | Validador | Testes |
-|---------|--------|-----------|--------|
-| `minItems` | ✅ | MinItemsValidator | MinItemsValidatorTest (7 testes) |
-| `maxItems` | ✅ | MaxItemsValidator | MaxItemsValidatorTest (7 testes) |
-| `uniqueItems` | ✅ | UniqueItemsValidator | UniqueItemsValidatorTest (9 testes) |
-| `prefixItems` | ✅ | PrefixItemsValidator | PrefixItemsValidatorTest (8 testes) |
-| `additionalItems` | ✅ | AdditionalItemsValidator | AdditionalItemsValidatorTest (9 testes) |
+| Keyword | Status | Validator | Tests |
+|---------|--------|-----------|-------|
+| `minItems` | ✅ | MinItemsValidator | MinItemsValidatorTest (7 tests) |
+| `maxItems` | ✅ | MaxItemsValidator | MaxItemsValidatorTest (7 tests) |
+| `uniqueItems` | ✅ | UniqueItemsValidator | UniqueItemsValidatorTest (9 tests) |
+| `prefixItems` | ✅ | PrefixItemsValidator | PrefixItemsValidatorTest (8 tests) |
+| `additionalItems` | ✅ | AdditionalItemsValidator | AdditionalItemsValidatorTest (9 tests) |
 
-#### 2.3.4 `FormatValidator.java` (~681 linhas)
+#### 2.3.4 `FormatValidator.java` (~681 lines)
 
-**Status:** ✅ **Completo para formatos suportados**
+**Status:** ✅ **Complete for supported formats**
 
-Formatos padrão implementados (expressões regulares):
+Standard formats implemented (regular expressions):
 - `date-time`, `date`, `time`, `duration`
 - `email`, `idn-email`
 - `hostname`, `idn-hostname`
@@ -245,165 +245,165 @@ Formatos padrão implementados (expressões regulares):
 - `json-pointer`, `relative-json-pointer`
 - `uuid`, `regex`
 
-Formatos Minecraft implementados (semântico com registries):
+Minecraft formats implemented (semantic with registries):
 - `minecraft-item`, `minecraft-block`, `minecraft-entity`
 - `minecraft-attribute`, `minecraft-effect`, `minecraft-enchantment`
 - `minecraft-biome`, `minecraft-dimension`, `minecraft-particle`
 - `minecraft-sound`, `minecraft-potion`, `minecraft-recipe`, `minecraft-tag`
 
-**Limitações:**
-- Formatos desconhecidos retornam `true` (passam sem validação)
-- `idn-email` e `idn-hostname` reutilizam regex ASCII
+**Limitations:**
+- Unknown formats return `true` (pass without validation)
+- `idn-email` and `idn-hostname` reuse ASCII regex
 
-#### 2.3.5 Validadores Especializados
+#### 2.3.5 Specialized Validators
 
-| Validador | Arquivo | Status |
-|-----------|---------|--------|
-| `ConditionalValidator` | [`ConditionalValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ConditionalValidator.java) | ✅ Implementado (duplicado no ObjectValidator) |
-| `OneOfValidator` | [`OneOfValidator.java`](src/main/java/com/maiconjh/schemacr/validation/OneOfValidator.java) | ✅ Implementado (duplicado no ObjectValidator) |
-| `NotValidator` | [`NotValidator.java`](src/main/java/com/maiconjh/schemacr/validation/NotValidator.java) | ✅ Implementado (duplicado no ObjectValidator) |
+| Validator | File | Status |
+|-----------|------|--------|
+| `ConditionalValidator` | [`ConditionalValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ConditionalValidator.java) | ✅ Implemented (duplicated in ObjectValidator) |
+| `OneOfValidator` | [`OneOfValidator.java`](src/main/java/com/maiconjh/schemacr/validation/OneOfValidator.java) | ✅ Implemented (duplicated in ObjectValidator) |
+| `NotValidator` | [`NotValidator.java`](src/main/java/com/maiconjh/schemacr/validation/NotValidator.java) | ✅ Implemented (duplicated in ObjectValidator) |
 
-**Observação:** Os validadores especializados existem mas não são utilizados — o `ObjectValidator` já implementa toda a lógica diretamente.
+**Note:** Specialized validators exist but are not used — `ObjectValidator` already implements all the logic directly.
 
 ---
 
-### 2.4 Resolução de Referências (`SchemaRefResolver.java`)
+### 2.4 Reference Resolution (`SchemaRefResolver.java`)
 
-**Arquivo:** [`SchemaRefResolver.java`](src/main/java/com/maiconjh/schemacr/schemes/SchemaRefResolver.java) (391 linhas)
+**File:** [`SchemaRefResolver.java`](src/main/java/com/maiconjh/schemacr/schemes/SchemaRefResolver.java) (391 lines)
 
-**Status:** ✅ **Parcialmente funcional**
+**Status:** ✅ **Partially functional**
 
-Implementado:
-- ✅ Referências locais `#/definitions/...`
-- ✅ Referências com JSON Pointer `#/properties/name`
-- ✅ Suporte a `definitions` e `$defs`
-- ✅ Escaping `~0` e `~1`
-- ✅ Referências externas por path
-- ✅ Referências por URL com cache
-- ✅ Detecção de referências circulares
+Implemented:
+- ✅ Local references `#/definitions/...`
+- ✅ JSON Pointer references `#/properties/name`
+- ✅ `definitions` and `$defs` support
+- ✅ `~0` and `~1` escaping
+- ✅ External path references
+- ✅ URL references with cache
+- ✅ Circular reference detection
 
-Limitação:
-- ⚠️ `navigateTo()` (linhas 317-327) apenas suporta navegação por:
+Limitation:
+- ⚠️ `navigateTo()` (lines 317-327) only supports navigation by:
   - `properties/<key>`
   - `items`
-- Não suporta navegação por `prefixItems`, `allOf`, `anyOf`, etc.
+- Does not support navigation by `prefixItems`, `allOf`, `anyOf`, etc.
 
 ---
 
-### 2.5 Registro de Keywords (`SupportedKeywordsRegistry.java`)
+### 2.5 Keywords Registry (`SupportedKeywordsRegistry.java`)
 
-**Arquivo:** [`SupportedKeywordsRegistry.java`](src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java) (342 linhas)
+**File:** [`SupportedKeywordsRegistry.java`](src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java) (342 lines)
 
-**Status:** ✅ **ATUALIZADO** (2026-03-24) - Todas as keywords abaixo agora estão implementadas
+**Status:** ✅ **UPDATED** (2026-03-24) - All keywords below are now implemented
 
-Este registry lista **51 keywords** como "suportadas". As seguintes funcionalidades foram implementadas conforme testes:
+This registry lists **51 keywords** as "supported". The following functionality has been implemented as verified by tests:
 
-#### Keywords que ESTÃO implementadas (verificado via 324 testes)
+#### Keywords that ARE implemented (verified via 324 tests)
 
-| Keyword | Parser | Modelo | Validador | Testes |
-|---------|--------|--------|-----------|--------|
-| `minItems` | ✅ | ✅ | ✅ | MinItemsValidatorTest (7 testes) |
-| `maxItems` | ✅ | ✅ | ✅ | MaxItemsValidatorTest (7 testes) |
-| `uniqueItems` | ✅ | ✅ | ✅ | UniqueItemsValidatorTest (9 testes) |
-| `additionalItems` | ✅ | ✅ | ✅ | AdditionalItemsValidatorTest (9 testes) |
-| `prefixItems` | ✅ | ✅ | ✅ | PrefixItemsValidatorTest (8 testes) |
-| `minProperties` | ✅ | ✅ | ✅ | MinPropertiesValidatorTest (6 testes) |
-| `maxProperties` | ✅ | ✅ | ✅ | MaxPropertiesValidatorTest (6 testes) |
-| `dependentRequired` | ✅ | ✅ | ✅ | DependentRequiredValidatorTest (6 testes) |
-| `dependentSchemas` | ✅ | ✅ | ✅ | DependentSchemasValidatorTest (6 testes) |
-| `const` | ✅ | ✅ | ✅ | ConstValidatorTest (4 testes) |
-| `readOnly` | ✅ | ✅ | ✅ | ReadOnlyValidatorTest (4 testes) |
-| `writeOnly` | ✅ | ✅ | ✅ | WriteOnlyValidatorTest (4 testes) |
+| Keyword | Parser | Model | Validator | Tests |
+|---------|--------|-------|----------|-------|
+| `minItems` | ✅ | ✅ | ✅ | MinItemsValidatorTest (7 tests) |
+| `maxItems` | ✅ | ✅ | ✅ | MaxItemsValidatorTest (7 tests) |
+| `uniqueItems` | ✅ | ✅ | ✅ | UniqueItemsValidatorTest (9 tests) |
+| `additionalItems` | ✅ | ✅ | ✅ | AdditionalItemsValidatorTest (9 tests) |
+| `prefixItems` | ✅ | ✅ | ✅ | PrefixItemsValidatorTest (8 tests) |
+| `minProperties` | ✅ | ✅ | ✅ | MinPropertiesValidatorTest (6 tests) |
+| `maxProperties` | ✅ | ✅ | ✅ | MaxPropertiesValidatorTest (6 tests) |
+| `dependentRequired` | ✅ | ✅ | ✅ | DependentRequiredValidatorTest (6 tests) |
+| `dependentSchemas` | ✅ | ✅ | ✅ | DependentSchemasValidatorTest (6 tests) |
+| `const` | ✅ | ✅ | ✅ | ConstValidatorTest (4 tests) |
+| `readOnly` | ✅ | ✅ | ✅ | ReadOnlyValidatorTest (4 tests) |
+| `writeOnly` | ✅ | ✅ | ✅ | WriteOnlyValidatorTest (4 tests) |
 
-#### Keywords ainda não implementadas
+#### Keywords not yet implemented
 
 | Keyword | Status |
 |---------|--------|
-| `default` | ❌ Não implementado |
-| `examples` | ❌ Não implementado |
-| `deprecated` | ❌ Não implementado |
-| `comment` | ❌ Não implementado |
+| `default` | ❌ Not implemented |
+| `examples` | ❌ Not implemented |
+| `deprecated` | ❌ Not implemented |
+| `comment` | ❌ Not implemented |
 
-## 3. Matriz: Documentado vs Implementado
+## 3. Matrix: Documented vs Implemented
 
-### 3.1 Afirmações do Audit Anterior (`limitations-audit-195410.md`)
+### 3.1 Previous Audit Claims (`limitations-audit-195410.md`)
 
-| Afirmação | Status Real | Evidência |
-|-----------|-------------|----------|
-| "✅ Constraints de array (`minItems`, `maxItems`, `uniqueItems`, `prefixItems`, `items`)" | ✅ **VERDADEIRO** | ArrayValidator valida minItems, maxItems, uniqueItems, prefixItems, additionalItems. Schema.java tem esses campos. Testes: MinItemsValidatorTest, MaxItemsValidatorTest, UniqueItemsValidatorTest, PrefixItemsValidatorTest, AdditionalItemsValidatorTest |
-| "✅ Constraints de objeto (`minProperties`, `maxProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`, `additionalProperties` como schema)" | ✅ **PARCIALMENTE VERDADEIRO** | ObjectValidator valida minProperties, maxProperties, dependentRequired, dependentSchemas, additionalProperties (schema). Schema.java tem esses campos. Testes: MinPropertiesValidatorTest, MaxPropertiesValidatorTest, DependentRequiredValidatorTest, DependentSchemasValidatorTest |
-| "✅ Modelagem de metadata (`$schema`, `$id`, `title`, `description`)" | ✅ **VERDADEIRO** | Implementado |
-| "✅ Suporte a arrays de tipos com dispatch runtime" | ✅ **VERDADEIRO** | Implementado |
+| Claim | Actual Status | Evidence |
+|-------|---------------|----------|
+| "✅ Array constraints (`minItems`, `maxItems`, `uniqueItems`, `prefixItems`, `items`)" | ✅ **TRUE** | ArrayValidator validates minItems, maxItems, uniqueItems, prefixItems, additionalItems. Schema.java has these fields. Tests: MinItemsValidatorTest, MaxItemsValidatorTest, UniqueItemsValidatorTest, PrefixItemsValidatorTest, AdditionalItemsValidatorTest |
+| "✅ Object constraints (`minProperties`, `maxProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`, `additionalProperties` as schema)" | ✅ **PARTIALLY TRUE** | ObjectValidator validates minProperties, maxProperties, dependentRequired, dependentSchemas, additionalProperties (schema). Schema.java has these fields. Tests: MinPropertiesValidatorTest, MaxPropertiesValidatorTest, DependentRequiredValidatorTest, DependentSchemasValidatorTest |
+| "✅ Metadata modeling (`$schema`, `$id`, `title`, `description`)" | ✅ **TRUE** | Implemented |
+| "✅ Type array support with runtime dispatch" | ✅ **TRUE** | Implemented |
 
-### 3.2 Documentação (`docs/pages/schema-keywords.md`)
+### 3.2 Documentation (`docs/pages/schema-keywords.md`)
 
-| Seção | Afirmação | Status |
-|-------|-----------|--------|
-| "Fully Implemented Keywords - Array Keywords" | `minItems` implementado | ✅ **VERDADEIRO** - MinItemsValidatorTest (7 testes) |
-| "Fully Implemented Keywords - Array Keywords" | `maxItems` implementado | ✅ **VERDADEIRO** - MaxItemsValidatorTest (7 testes) |
-| "Fully Implemented Keywords - Array Keywords" | `uniqueItems` implementado | ✅ **VERDADEIRO** - UniqueItemsValidatorTest (9 testes) |
-| "Fully Implemented Keywords - Array Keywords" | `prefixItems` implementado | ✅ **VERDADEIRO** - PrefixItemsValidatorTest (8 testes) |
-| "Fully Implemented Keywords - Array Keywords" | `additionalItems` implementado | ✅ **VERDADEIRO** - AdditionalItemsValidatorTest (9 testes) |
-| "Fully Implemented Keywords - Object Keywords" | `minProperties` implementado | ✅ **VERDADEIRO** - MinPropertiesValidatorTest (6 testes) |
-| "Fully Implemented Keywords - Object Keywords" | `maxProperties` implementado | ✅ **VERDADEIRO** - MaxPropertiesValidatorTest (6 testes) |
-| "Fully Implemented Keywords - Object Keywords" | `dependencies` limitado | ⚠️ **Parcial** - dependencies não implementado, dependentRequired e dependentSchemas sim |
-| "Fully Implemented Keywords - Object Keywords" | `dependentRequired` implementado | ✅ **VERDADEIRO** - DependentRequiredValidatorTest (6 testes) |
-| "Fully Implemented Keywords - Object Keywords" | `dependentSchemas` implementado | ✅ **VERDADEIRO** - DependentSchemasValidatorTest (6 testes) |
+| Section | Claim | Status |
+|---------|-------|--------|
+| "Fully Implemented Keywords - Array Keywords" | `minItems` implemented | ✅ **TRUE** - MinItemsValidatorTest (7 tests) |
+| "Fully Implemented Keywords - Array Keywords" | `maxItems` implemented | ✅ **TRUE** - MaxItemsValidatorTest (7 tests) |
+| "Fully Implemented Keywords - Array Keywords" | `uniqueItems` implemented | ✅ **TRUE** - UniqueItemsValidatorTest (9 tests) |
+| "Fully Implemented Keywords - Array Keywords" | `prefixItems` implemented | ✅ **TRUE** - PrefixItemsValidatorTest (8 tests) |
+| "Fully Implemented Keywords - Array Keywords" | `additionalItems` implemented | ✅ **TRUE** - AdditionalItemsValidatorTest (9 tests) |
+| "Fully Implemented Keywords - Object Keywords" | `minProperties` implemented | ✅ **TRUE** - MinPropertiesValidatorTest (6 tests) |
+| "Fully Implemented Keywords - Object Keywords" | `maxProperties` implemented | ✅ **TRUE** - MaxPropertiesValidatorTest (6 tests) |
+| "Fully Implemented Keywords - Object Keywords" | `dependencies` limited | ⚠️ **Partial** - dependencies not implemented, dependentRequired and dependentSchemas are |
+| "Fully Implemented Keywords - Object Keywords" | `dependentRequired` implemented | ✅ **TRUE** - DependentRequiredValidatorTest (6 tests) |
+| "Fully Implemented Keywords - Object Keywords" | `dependentSchemas` implemented | ✅ **TRUE** - DependentSchemasValidatorTest (6 tests) |
 
-## 4. Comparação com Bibliotecas Sugeridas
+## 4. Comparison with Suggested Libraries
 
 ### 4.1 everit-org/json-schema (Java)
 
 | Feature | Schema-Validator | everit-org |
 |---------|-----------------|------------|
-| Drafts suportados | ⚠️ Parcial | ✅ Todos (07, 2019-09, 2020-12) |
-| minItems/maxItems | ✅ Sim (324 testes) | ✅ Sim |
-| uniqueItems | ✅ Sim (9 testes) | ✅ Sim |
-| prefixItems | ✅ Sim (8 testes) | ✅ Sim |
-| minProperties/maxProperties | ✅ Sim (12 testes) | ✅ Sim |
-| dependentRequired/dependentSchemas | ✅ Sim (12 testes) | ✅ Sim |
-| $ref externo | ⚠️ Limitado | ✅ Completo |
-| Formatos customizáveis | ✅ Sim (FormatValidator suporta formatos estendidos + Minecraft) | ✅ Sim |
-| Performance | ✅ Testado (324 testes passando) | ✅ Otimizado |
+| Supported Drafts | ⚠️ Partial | ✅ All (07, 2019-09, 2020-12) |
+| minItems/maxItems | ✅ Yes (324 tests) | ✅ Yes |
+| uniqueItems | ✅ Yes (9 tests) | ✅ Yes |
+| prefixItems | ✅ Yes (8 tests) | ✅ Yes |
+| minProperties/maxProperties | ✅ Yes (12 tests) | ✅ Yes |
+| dependentRequired/dependentSchemas | ✅ Yes (12 tests) | ✅ Yes |
+| External $ref | ⚠️ Limited | ✅ Complete |
+| Customizable formats | ✅ Yes (FormatValidator supports extended + Minecraft) | ✅ Yes |
+| Performance | ✅ Tested (324 tests passing) | ✅ Optimized |
 
 ### 4.2 networknt/json-schema-validator (Java)
 
 | Feature | Schema-Validator | networknt |
 |---------|-----------------|-----------|
-| Drafts suportados | ⚠️ Parcial | ✅ Todos |
-| minItems/maxItems | ✅ Sim | ✅ Sim |
-| uniqueItems | ✅ Sim | ✅ Sim |
-| prefixItems | ✅ Sim | ✅ Sim |
-| Cache de schemas | ✅ Sim (SchemaRegistry.java) | ✅ Completo |
-| Performance | ✅ Testado (324 testes passando) | ✅ Alta |
+| Supported Drafts | ⚠️ Partial | ✅ All |
+| minItems/maxItems | ✅ Yes | ✅ Yes |
+| uniqueItems | ✅ Yes | ✅ Yes |
+| prefixItems | ✅ Yes | ✅ Yes |
+| Schema cache | ✅ Yes (SchemaRegistry.java) | ✅ Complete |
+| Performance | ✅ Tested (324 tests passing) | ✅ High |
 
 ### 4.3 AJV (JavaScript)
 
 | Feature | Schema-Validator | AJV |
 |---------|-----------------|-----|
-| Compilação ahead-of-time | ⚠️ Limitado (validação em runtime) | ✅ Sim |
-| Plugins customizados | ⚠️ Parcial (FormatValidator extensível) | ✅ Sim |
-| $ref circular | ⚠️ Limitado (detecção implementada) | ✅ Suportado |
-| Validação assíncrona | ❌ Não (síncrono) | ✅ Sim |
+| Ahead-of-time compilation | ⚠️ Limited (runtime validation) | ✅ Yes |
+| Custom plugins | ⚠️ Partial (extensible FormatValidator) | ✅ Yes |
+| Circular $ref | ⚠️ Limited (detection implemented) | ✅ Supported |
+| Async validation | ❌ No (synchronous) | ✅ Yes |
 
 ---
 
-## 5. Plano de Implementação
+## 5. Implementation Plan
 
-> **ATUALIZAÇÃO (Março 2026):** Todas as funcionalidades listadas abaixo como "faltantes" já foram implementadas e testadas com sucesso. Os 324 testes unitários que passaram confirmam a implementação completa.
+> **UPDATE (March 2026):** All functionalities listed below as "missing" have been successfully implemented and tested. The 324 passing unit tests confirm the complete implementation.
 
-### 5.1 Array Constraints - ✅ IMPLEMENTADO
+### 5.1 Array Constraints - ✅ IMPLEMENTED
 
-**Status:** ✅ IMPLEMENTADO E TESTADO
+**Status:** ✅ IMPLEMENTED AND TESTED
 
-Os seguintes validators foram implementados e testados:
-- `MinItemsValidator` - Testado por MinItemsValidatorTest.java
-- `MaxItemsValidator` - Testado por MaxItemsValidatorTest.java
-- `UniqueItemsValidator` - Testado por UniqueItemsValidatorTest.java
-- `PrefixItemsValidator` - Testado por PrefixItemsValidatorTest.java
-- `AdditionalItemsValidator` - Testado por AdditionalItemsValidatorTest.java
+The following validators have been implemented and tested:
+- `MinItemsValidator` - Tested by MinItemsValidatorTest.java
+- `MaxItemsValidator` - Tested by MaxItemsValidatorTest.java
+- `UniqueItemsValidator` - Tested by UniqueItemsValidatorTest.java
+- `PrefixItemsValidator` - Tested by PrefixItemsValidatorTest.java
+- `AdditionalItemsValidator` - Tested by AdditionalItemsValidatorTest.java
 
-**Campos implementados em Schema.java (linhas 48-53):**
+**Fields implemented in Schema.java (lines 48-53):**
 ```java
 private final Integer minItems;
 private final Integer maxItems;
@@ -412,7 +412,7 @@ private final List<Schema> prefixItems;
 private final Schema additionalItemsSchema;
 ```
 
-**Implementação no ArrayValidator.java (linhas 30-42):**
+**Implementation in ArrayValidator.java (lines 30-42):**
 ```java
 if (schema.getMinItems() != null) {
     MinItemsValidator.validate(list, schema, errors, locale);
@@ -431,17 +431,17 @@ if (schema.getAdditionalItemsSchema() != null) {
 }
 ```
 
-### 5.2 Object Constraints - ✅ IMPLEMENTADO
+### 5.2 Object Constraints - ✅ IMPLEMENTED
 
-**Status:** ✅ IMPLEMENTADO E TESTADO
+**Status:** ✅ IMPLEMENTED AND TESTED
 
-Os seguintes validators foram implementados e testados:
-- `MinPropertiesValidator` - Testado por MinPropertiesValidatorTest.java
-- `MaxPropertiesValidator` - Testado por MaxPropertiesValidatorTest.java
-- `DependentRequiredValidator` - Testado por DependentRequiredValidatorTest.java
-- `DependentSchemasValidator` - Testado por DependentSchemasValidatorTest.java
+The following validators have been implemented and tested:
+- `MinPropertiesValidator` - Tested by MinPropertiesValidatorTest.java
+- `MaxPropertiesValidator` - Tested by MaxPropertiesValidatorTest.java
+- `DependentRequiredValidator` - Tested by DependentRequiredValidatorTest.java
+- `DependentSchemasValidator` - Tested by DependentSchemasValidatorTest.java
 
-**Campos implementados em Schema.java (linhas 55-59):**
+**Fields implemented in Schema.java (lines 55-59):**
 ```java
 private final Integer minProperties;
 private final Integer maxProperties;
@@ -449,7 +449,7 @@ private final Map<String, List<String>> dependentRequired;
 private final Map<String, Schema> dependentSchemas;
 ```
 
-**Implementação no ObjectValidator.java (linhas 212-232):**
+**Implementation in ObjectValidator.java (lines 212-232):**
 ```java
 if (schema.getMinProperties() != null) {
     MinPropertiesValidator.validate(map, schema, errors, locale);
@@ -465,16 +465,16 @@ if (schema.getDependentSchemas() != null) {
 }
 ```
 
-### 5.2 Metadata Keywords - ✅ IMPLEMENTADO
+### 5.2 Metadata Keywords - ✅ IMPLEMENTED
 
-**Status:** ✅ IMPLEMENTADO E TESTADO
+**Status:** ✅ IMPLEMENTED AND TESTED
 
-Os seguintes validators foram implementados e testados:
-- `ConstValidator` - Testado por ConstValidatorTest.java
-- `ReadOnlyValidator` - Testado por ReadOnlyValidatorTest.java
-- `WriteOnlyValidator` - Testado por WriteOnlyValidatorTest.java
+The following validators have been implemented and tested:
+- `ConstValidator` - Tested by ConstValidatorTest.java
+- `ReadOnlyValidator` - Tested by ReadOnlyValidatorTest.java
+- `WriteOnlyValidator` - Tested by WriteOnlyValidatorTest.java
 
-**Campos implementados em Schema.java (linhas 61-69):**
+**Fields implemented in Schema.java (lines 61-69):**
 ```java
 private final Object constValue;
 private final Boolean readOnly;
@@ -484,7 +484,7 @@ private final List<Object> examples;
 private final Boolean deprecated;
 ```
 
-**Implementação no PrimitiveValidator.java (linhas 54-72):**
+**Implementation in PrimitiveValidator.java (lines 54-72):**
 ```java
 if (schema.getConstValue() != null) {
     ConstValidator.validate(value, schema, errors, locale);
@@ -497,104 +497,104 @@ if (schema.getWriteOnly() != null) {
 }
 ```
 
-### 5.3 Funcionalidades Avançadas - ✅ IMPLEMENTADO
+### 5.3 Advanced Features - ✅ IMPLEMENTED
 
-**Status:** ✅ IMPLEMENTADO E TESTADO
+**Status:** ✅ IMPLEMENTED AND TESTED
 
-As seguintes funcionalidades avançadas já estão implementadas:
+The following advanced features are already implemented:
 
-- **Formatos customizáveis** - FormatValidator.java suporta formatos estendidos (date-time, email, uri, uuid, etc.) + formatos Minecraft customizados
-- **Suporte a $ref com navegação completa** - SchemaRefResolver.java resolve referências $ref recursivamente
-- **Performance com cache** - SchemaRegistry.java mantém cache de schemas compilados
+- **Customizable formats** - FormatValidator.java supports extended formats (date-time, email, uri, uuid, etc.) + custom Minecraft formats
+- **Full $ref navigation support** - SchemaRefResolver.java resolves $ref references recursively
+- **Performance with caching** - SchemaRegistry.java maintains compiled schema cache
 
-**Referências de teste:**
+**Test references:**
 - FormatValidatorTest.java
 - SchemaRefResolverTest.java
 - SchemaRegistryTest.java
 
 ---
 
-## 6. Sugestões de Implementação Sem Quebrar Código Existente
+## 6. Implementation Suggestions Without Breaking Existing Code
 
-> **ATUALIZAÇÃO (Março 2026):** Todas as funcionalidades listadas nesta seção já foram implementadas. As sugestões abaixo são mantidas como referência histórica de como a implementação foi realizada.
+> **UPDATE (March 2026):** All functionalities listed in this section have been implemented. The suggestions below are kept as historical reference for how the implementation was done.
 
-### 6.1 Princípios (Implementados)
+### 6.1 Principles (Implemented)
 
-1. ✅ **Adição incremental:** Novos campos foram adicionados ao final da classe Schema.java e do construtor
-2. ✅ **Backward compatibility:** Novos campos têm valores padrão seguros (null, empty list)
-3. ✅ **Graceful degradation:** Se uma keyword não é reconhecida, Warn mas continue (comportamento implementado)
-4. ✅ **Testes unitários:** 324 testes unitários foram implementados e passaram com sucesso
+1. ✅ **Incremental addition:** New fields were added to the end of Schema.java class and constructor
+2. ✅ **Backward compatibility:** New fields have safe default values (null, empty list)
+3. ✅ **Graceful degradation:** If a keyword is not recognized, Warn but continue (implemented behavior)
+4. ✅ **Unit tests:** 324 unit tests were implemented and passed successfully
 
-### 6.2 Ordem de Implementação Realizada
+### 6.2 Implementation Order Completed
 
 ```
-✅ 1. Schema.java: Adicionar campos (minItems, maxItems, uniqueItems, prefixItems, additionalItems)
-✅ 2. FileSchemaLoader.java: Adicionar parsing (todas as keywords processadas)
-✅ 3. ArrayValidator.java: Adicionar validação (MinItems, MaxItems, UniqueItems, PrefixItems, AdditionalItems)
-✅ 4. Schema.java: Adicionar campos (minProperties, maxProperties, dependentRequired, dependentSchemas)
-✅ 5. ObjectValidator.java: Adicionar validação (MinProperties, MaxProperties, DependentRequired, DependentSchemas)
-✅ 6. Schema.java: Adicionar campos (constValue, readOnly, writeOnly)
-✅ 7. PrimitiveValidator.java: Adicionar validação (Const, ReadOnly, WriteOnly)
-✅ 8. SupportedKeywordsRegistry.java: Atualizar status
-✅ 9. Documentação: Atualizar para refletir implementação real (ESTA ATUALIZAÇÃO)
+✅ 1. Schema.java: Add fields (minItems, maxItems, uniqueItems, prefixItems, additionalItems)
+✅ 2. FileSchemaLoader.java: Add parsing (all keywords processed)
+✅ 3. ArrayValidator.java: Add validation (MinItems, MaxItems, UniqueItems, PrefixItems, AdditionalItems)
+✅ 4. Schema.java: Add fields (minProperties, maxProperties, dependentRequired, dependentSchemas)
+✅ 5. ObjectValidator.java: Add validation (MinProperties, MaxProperties, DependentRequired, DependentSchemas)
+✅ 6. Schema.java: Add fields (constValue, readOnly, writeOnly)
+✅ 7. PrimitiveValidator.java: Add validation (Const, ReadOnly, WriteOnly)
+✅ 8. SupportedKeywordsRegistry.java: Update status
+✅ 9. Documentation: Update to reflect actual implementation (THIS UPDATE)
 ```
 
-### 6.3 Evitar Refatoração (Implementado com Sucesso)
+### 6.3 Avoid Refactoring (Successfully Implemented)
 
-- ✅ ** NÃO modificar validators existentes** — apenas adicionar novos blocks condicionais
-- ✅ ** NÃO modificar o contrato do Schema.java** — apenas adicionar campos opcionais
-- ✅ ** NÃO modificar FileSchemaLoader.java** — apenas adicionar novos branches de parsing
-- ✅ **Manter compatibilidade** com schemas existentes que não usam as novas keywords
+- ✅ **DO NOT modify existing validators** — only add new conditional blocks
+- ✅ **DO NOT modify Schema.java contract** — only add optional fields
+- ✅ **DO NOT modify FileSchemaLoader.java** — only add new parsing branches
+- ✅ **Maintain compatibility** with existing schemas that don't use the new keywords
 
 ---
 
-## 7. Resumo Executivo
+## 7. Executive Summary
 
-| Aspecto | Status | Evidência |
-|---------|--------|-----------|
-| Parser (FileSchemaLoader) | ✅ ~95% das keywords padrão implementadas | FileSchemaLoader.java processa todas as keywords principais |
-| Modelo (Schema) | ✅ ~95% dos campos necessários | Schema.java (linhas 48-69) tem todos os campos |
-| Validador de Objetos | ✅ ~95% das features | ObjectValidator.java valida todas as constraints |
-| Validador de Arrays | ✅ ~100% das features | ArrayValidator.java valida minItems, maxItems, uniqueItems, prefixItems, additionalItems |
-| Validador de Primitivos | ✅ ~100% das features | PrimitiveValidator.java valida const, readOnly, writeOnly |
-| Registro de Keywords | ✅ **Consistente** — todas keywords implementadas | SupportedKeywordsRegistry.java |
-| Documentação | ✅ **Atualizada** — ajusta claims baseados nos 324 testes | Esta auditoria |
+| Aspect | Status | Evidence |
+|--------|--------|----------|
+| Parser (FileSchemaLoader) | ✅ ~95% of standard keywords implemented | FileSchemaLoader.java processes all main keywords |
+| Model (Schema) | ✅ ~95% of required fields | Schema.java (lines 48-69) has all fields |
+| Object Validator | ✅ ~95% of features | ObjectValidator.java validates all constraints |
+| Array Validator | ✅ ~100% of features | ArrayValidator.java validates minItems, maxItems, uniqueItems, prefixItems, additionalItems |
+| Primitive Validator | ✅ ~100% of features | PrimitiveValidator.java validates const, readOnly, writeOnly |
+| Keywords Registry | ✅ **Consistent** — all keywords implemented | SupportedKeywordsRegistry.java |
+| Documentation | ✅ **Updated** — claims adjusted based on 324 tests | This audit |
 
-### Principais Descobertas (Atualizado)
+### Key Findings (Updated)
 
-1. **✅ ArrayValidator está COMPLETO** — valida items, minItems, maxItems, uniqueItems, prefixItems, additionalItems
-2. **✅ Schema.java tem todos os campos** para as constraints de array e object mais comuns
-3. **✅ SupportedKeywordsRegistry** lista keywords que estão realmente implementadas
-4. **✅ Documentação afirma funcionalidades que foram implementadas** — ajustes realizados nesta auditoria
-5. **✅ Audit anterior** (`limitations-audit-195410.md`) contém informações que foram atualizadas
+1. **✅ ArrayValidator is COMPLETE** — validates items, minItems, maxItems, uniqueItems, prefixItems, additionalItems
+2. **✅ Schema.java has all fields** for the most common array and object constraints
+3. **✅ SupportedKeywordsRegistry** lists keywords that are really implemented
+4. **✅ Documentation claims functionalities that were implemented** — adjustments made in this audit
+5. **✅ Previous audit** (`limitations-audit-195410.md`) contains information that was updated
 
-### Recomendações (Atualizado)
+### Recommendations (Updated)
 
-1. **✅ SupportedKeywordsRegistry atualizado** para refletir o estado real
-2. **✅ Documentação atualizada** para refletir funcionalidades implementadas
-3. **✅ Array constraints implementados** (minItems, maxItems, uniqueItems, prefixItems, additionalItems)
-4. **✅ Object constraints implementados** (minProperties, maxProperties, dependentRequired, dependentSchemas)
-5. **✅ Testes de validação existentes** — 324 testes unitários passaram com sucesso
+1. **✅ SupportedKeywordsRegistry updated** to reflect actual state
+2. **✅ Documentation updated** to reflect implemented functionality
+3. **✅ Array constraints implemented** (minItems, maxItems, uniqueItems, prefixItems, additionalItems)
+4. **✅ Object constraints implemented** (minProperties, maxProperties, dependentRequired, dependentSchemas)
+5. **✅ Existing validation tests** — 324 unit tests passed successfully
 
 ---
 
-## 8. Fonte de Verificação
+## 8. Verification Source
 
-> **ATUALIZAÇÃO (Março 2026):** Esta auditoria foi baseada nos 324 testes unitários que passaram com sucesso. As referências aos arquivos de teste são a "fonte de verdade" para determinar o estado real de implementação.
+> **UPDATE (March 2026):** This audit was based on the 324 unit tests that passed successfully. References to test files are the "source of truth" to determine the actual implementation state.
 
-| Artefato | Caminho |
-|----------|---------|
+| Artifact | Path |
+|----------|------|
 | Parser | [`src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java`](src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java) |
-| Modelo | [`src/main/java/com/maiconjh/schemacr/schemes/Schema.java`](src/main/java/com/maiconjh/schemacr/schemes/Schema.java) |
-| Registro | [`src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java`](src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java) |
+| Model | [`src/main/java/com/maiconjh/schemacr/schemes/Schema.java`](src/main/java/com/maiconjh/schemacr/schemes/Schema.java) |
+| Registry | [`src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java`](src/main/java/com/maiconjh/schemacr/schemes/SupportedKeywordsRegistry.java) |
 | Object Validator | [`src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java) |
 | Array Validator | [`src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java) |
 | Primitive Validator | [`src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java`](src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java) |
 
-### Arquivos de Teste (Fonte de Verdade - 324 testes passaram)
+### Test Files (Source of Truth - 324 tests passed)
 
-| Validador | Arquivo de Teste |
-|-----------|------------------|
+| Validator | Test File |
+|-----------|-----------|
 | MinItemsValidator | [`src/test/java/com/maiconjh/schemacr/validation/array/MinItemsValidatorTest.java`](src/test/java/com/maiconjh/schemacr/validation/array/MinItemsValidatorTest.java) |
 | MaxItemsValidator | [`src/test/java/com/maiconjh/schemacr/validation/array/MaxItemsValidatorTest.java`](src/test/java/com/maiconjh/schemacr/validation/array/MaxItemsValidatorTest.java) |
 | UniqueItemsValidator | [`src/test/java/com/maiconjh/schemacr/validation/array/UniqueItemsValidatorTest.java`](src/test/java/com/maiconjh/schemacr/validation/array/UniqueItemsValidatorTest.java) |
@@ -610,8 +610,8 @@ As seguintes funcionalidades avançadas já estão implementadas:
 | ArrayValidator | [`src/test/java/com/maiconjh/schemacr/validation/ArrayValidatorTest.java`](src/test/java/com/maiconjh/schemacr/validation/ArrayValidatorTest.java) |
 | ObjectValidator | [`src/test/java/com/maiconjh/schemacr/validation/ObjectValidatorTest.java`](src/test/java/com/maiconjh/schemacr/validation/ObjectValidatorTest.java) |
 | PrimitiveValidator | [`src/test/java/com/maiconjh/schemacr/validation/PrimitiveValidatorTest.java`](src/test/java/com/maiconjh/schemacr/validation/PrimitiveValidatorTest.java) |
-| Documentação | [`docs/pages/schema-keywords.md`](docs/pages/schema-keywords.md) |
-| Audit Anterior | [`docs/explanation/limitations-audit-195410.md`](docs/explanation/limitations-audit-195410.md) |
+| Documentation | [`docs/pages/schema-keywords.md`](docs/pages/schema-keywords.md) |
+| Previous Audit | [`docs/explanation/limitations-audit-195410.md`](docs/explanation/limitations-audit-195410.md) |
 
 ---
 

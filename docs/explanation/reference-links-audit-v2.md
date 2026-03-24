@@ -1,18 +1,18 @@
-Schema-Validator — Links de Referência por Feature Não Implementada (v3)
-Gerado em: 2026-03-24
-Projeto: MaiconJh/Schema-Validator
-Baseado em: Auditoria técnica code-audit-2026-03.md
-Versão: 3 — links convertidos para raw e corrigidos
+Schema-Validator — Reference Links by Not Implemented Feature (v3)
+Generated: 2026-03-24
+Project: MaiconJh/Schema-Validator
+Based on: Technical audit code-audit-2026-03.md
+Version: 3 — links converted to raw and corrected
 
 
-PRIORIDADE ALTA — Array Constraints (ArrayValidator.java)
+HIGH PRIORITY — Array Constraints (ArrayValidator.java)
 
-Atualmente o projeto valida apenas items. Os arquivos abaixo cobrem minItems, maxItems, uniqueItems, prefixItems e additionalItems.
+Currently the project only validates items. The files below cover minItems, maxItems, uniqueItems, prefixItems, and additionalItems.
 
 everit-org/json-schema
 - ArraySchema.java (minItems, maxItems, uniqueItems, additionalItems):
   https://raw.githubusercontent.com/everit-org/json-schema/master/core/src/main/java/org/everit/json/schema/ArraySchema.java
-- ArraySchemaTest.java (testes completos de array):
+- ArraySchemaTest.java (complete array tests):
   https://raw.githubusercontent.com/everit-org/json-schema/master/core/src/test/java/org/everit/json/schema/ArraySchemaTest.java
 
 networknt/json-schema-validator
@@ -26,14 +26,14 @@ networknt/json-schema-validator
   https://raw.githubusercontent.com/networknt/json-schema-validator/master/src/main/java/com/networknt/schema/PrefixItemsValidator.java
 
 
-PRIORIDADE ALTA — Object Constraints (ObjectValidator.java)
+HIGH PRIORITY — Object Constraints (ObjectValidator.java)
 
-minProperties, maxProperties, dependentRequired, dependentSchemas e additionalProperties como schema estão ausentes.
+minProperties, maxProperties, dependentRequired, dependentSchemas, and additionalProperties as schema are missing.
 
 everit-org/json-schema
-- ObjectSchema.java (minProperties, maxProperties, additionalProperties como schema, dependencies):
+- ObjectSchema.java (minProperties, maxProperties, additionalProperties as schema, dependencies):
   https://raw.githubusercontent.com/everit-org/json-schema/master/core/src/main/java/org/everit/json/schema/ObjectSchema.java
-- Visitor.java (como o visitor percorre minProperties / maxProperties):
+- Visitor.java (how the visitor traverses minProperties / maxProperties):
   https://raw.githubusercontent.com/everit-org/json-schema/master/core/src/main/java/org/everit/json/schema/Visitor.java
 
 networknt/json-schema-validator
@@ -47,12 +47,12 @@ networknt/json-schema-validator
   https://raw.githubusercontent.com/networknt/json-schema-validator/master/src/main/java/com/networknt/schema/DependentSchemasValidator.java
 
 
-PRIORIDADE MÉDIA — Keyword const e Metadata
+MEDIUM PRIORITY — const Keyword and Metadata
 
 everit-org/json-schema
-- ConstSchema.java (const modelo):
+- ConstSchema.java (const model):
   https://raw.githubusercontent.com/everit-org/json-schema/master/core/src/main/java/org/everit/json/schema/ConstSchema.java
-- ValidatingVisitor.java (const validação via visitor):
+- ValidatingVisitor.java (const validation via visitor):
   https://raw.githubusercontent.com/everit-org/json-schema/master/core/src/main/java/org/everit/json/schema/ValidatingVisitor.java
 
 networknt/json-schema-validator
@@ -62,26 +62,26 @@ networknt/json-schema-validator
   https://raw.githubusercontent.com/networknt/json-schema-validator/master/src/main/java/com/networknt/schema/ReadOnlyValidator.java
 
 
-PRIORIDADE MÉDIA — Navegação no SchemaRefResolver.java
+MEDIUM PRIORITY — Navigation in SchemaRefResolver.java
 
-O navigateTo() atual não suporta prefixItems, allOf, anyOf. Os arquivos abaixo mostram como resolver isso.
+The current navigateTo() does not support prefixItems, allOf, anyOf. The files below show how to solve this.
 
 networknt/json-schema-validator
-- RefValidator.java (resolução de $ref com navegação completa):
+- RefValidator.java ($ref resolution with complete navigation):
   https://raw.githubusercontent.com/networknt/json-schema-validator/master/src/main/java/com/networknt/schema/RefValidator.java
-- JsonSchema.java (core do schema com resolução de referências):
+- JsonSchema.java (schema core with reference resolution):
   https://raw.githubusercontent.com/networknt/json-schema-validator/master/src/main/java/com/networknt/schema/JsonSchema.java
 
 everit-org/json-schema
-- SchemaLoaderTest.java (testes cobrem todos os casos de $ref):
+- SchemaLoaderTest.java (tests cover all $ref cases):
   https://raw.githubusercontent.com/everit-org/json-schema/master/core/src/test/java/org/everit/json/schema/loader/SchemaLoaderTest.java
 
 
-NOTAS
-- Todos os links apontam diretamente para o conteúdo raw dos repositórios oficiais.
-- Os arquivos da networknt são os mais diretos para implementação: cada keyword tem seu próprio validator isolado, fácil de adaptar ao ArrayValidator.java e ObjectValidator.java do seu projeto.
-- Os arquivos da everit-org são úteis para entender a estrutura completa do modelo (como os campos minItems, maxItems ficam no ArraySchema.java junto com a lógica de validação).
-- Em caso de erro 404, verifique se o branch continua sendo master; caso contrário, substitua por main na URL.
+NOTES
+- All links point directly to raw content from official repositories.
+- The networknt files are the most straightforward for implementation: each keyword has its own isolated validator, easy to adapt to your project's ArrayValidator.java and ObjectValidator.java.
+- The everit-org files are useful for understanding the complete model structure (how minItems, maxItems fields are in ArraySchema.java along with validation logic).
+- In case of 404 error, check if the branch is still master; otherwise, replace with main in the URL.
 
-Gerado com base na auditoria code-audit-2026-03.md — Schema-Validator v0.5.0
-Links convertidos para raw em: 2026-03-24
+Generated based on code-audit-2026-03.md — Schema-Validator v0.5.0
+Links converted to raw on: 2026-03-24

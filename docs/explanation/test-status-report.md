@@ -1,190 +1,190 @@
-# Relatório de Status de Testes
+# Test Status Report
 
-> **STATUS: TODOS OS TESTES CONCLUÍDOS - 324 testes executados com 100% de sucesso**
+> **STATUS: ALL TESTS COMPLETED - 324 tests executed with 100% success**
 
-**Data de Geração:** 2026-03-24  
-**Versão do Projeto:** 1.0.0  
-**Status Geral:** ✅ TODOS OS TESTES CONCLUÍDOS - 324 testes passando com 100% de sucesso
-
----
-
-## 1. Resumo Executivo
-
-Este relatório apresenta o status atual da suíte de testes do Schema Validator. O projeto conta com uma estrutura sólida de testes unitários que cobrem os componentes principais do sistema de validação.
-
-**Destaques:**
-- **324 testes** executados com **100% de sucesso**
-- **22 classes de teste** cobrindo validators e componentes principais
-- Cobertura completa de TODOS os validators
+**Generation Date:** 2026-03-24  
+**Project Version:** 1.0.0  
+**Overall Status:** ✅ ALL TESTS COMPLETED - 324 tests passing with 100% success
 
 ---
 
-## 2. Resultados dos Testes
+## 1. Executive Summary
 
-### Estatísticas Gerais
+This report presents the current status of the Schema Validator test suite. The project has a solid unit test structure covering the main components of the validation system.
 
-| Métrica | Valor |
-|---------|-------|
-| **Total de Testes Executados** | 324 |
-| **Testes Passando** | 324 |
-| **Testes Falhando** | 0 |
-| **Taxa de Sucesso** | 100% |
-| **Classes de Teste** | 22 |
-
-### Distribuição por Tipo de Cenário
-
-| Tipo de Cenário | Quantidade |
-|-----------------|-------------|
-| **Positive** (Casos válidos que devem passar) | 24 |
-| **Negative** (Casos inválidos que devem falhar) | 17 |
-| **Edge Case** (Condições limites) | 34 |
-
-### Classes de Teste Existentes
-
-1. `FileSchemaLoaderTest` - 13 testes
-2. `SchemaRefResolverTest` - 12 testes
-3. `SchemaTest` - 6 testes
-4. `AdditionalItemsValidatorTest` - 9 testes
-5. `MaxItemsValidatorTest` - 7 testes
-6. `MinItemsValidatorTest` - 7 testes
-7. `PrefixItemsValidatorTest` - 9 testes
-8. `UniqueItemsValidatorTest` - 8 testes
-9. `ConstValidatorTest` - 9 testes
-10. `ReadOnlyValidatorTest` - 6 testes
-11. `WriteOnlyValidatorTest` - 6 testes
-12. `PrimitiveValidatorTest` - 15 testes
-13. `ObjectValidatorTest` - 13 testes
-14. `FormatValidatorTest` - 22 testes
-15. `ArrayValidatorTest` - 31 testes
-16. `ConditionalValidatorTest` - 21 testes
-17. `OneOfValidatorTest` - 24 testes
-18. `NotValidatorTest` - 28 testes
-19. `MinPropertiesValidatorTest` - 21 testes
-20. `MaxPropertiesValidatorTest` - 20 testes
-21. `DependentRequiredValidatorTest` - 20 testes
-22. `DependentSchemasValidatorTest` - 20 testes
+**Highlights:**
+- **324 tests** executed with **100% success**
+- **22 test classes** covering validators and main components
+- Complete coverage of ALL validators
 
 ---
 
-## 3. Status por Validator
+## 2. Test Results
 
-### ✅ Validators com Testes Passando (22)
+### General Statistics
 
-| Validator | Localização | Status |
-|-----------|-------------|--------|
-| `AdditionalItemsValidator` | `src/main/java/com/maiconjh/schemacr/validation/array/AdditionalItemsValidator.java` | ✅ 9 testes |
-| `MaxItemsValidator` | `src/main/java/com/maiconjh/schemacr/validation/array/MaxItemsValidator.java` | ✅ 7 testes |
-| `MinItemsValidator` | `src/main/java/com/maiconjh/schemacr/validation/array/MinItemsValidator.java` | ✅ 7 testes |
-| `PrefixItemsValidator` | `src/main/java/com/maiconjh/schemacr/validation/array/PrefixItemsValidator.java` | ✅ 9 testes |
-| `UniqueItemsValidator` | `src/main/java/com/maiconjh/schemacr/validation/array/UniqueItemsValidator.java` | ✅ 8 testes |
-| `ConstValidator` | `src/main/java/com/maiconjh/schemacr/validation/misc/ConstValidator.java` | ✅ 9 testes |
-| `ReadOnlyValidator` | `src/main/java/com/maiconjh/schemacr/validation/misc/ReadOnlyValidator.java` | ✅ 6 testes |
-| `WriteOnlyValidator` | `src/main/java/com/maiconjh/schemacr/validation/misc/WriteOnlyValidator.java` | ✅ 6 testes |
-| `FileSchemaLoader` | `src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java` | ✅ 13 testes |
-| `SchemaRefResolver` | `src/main/java/com/maiconjh/schemacr/schemes/SchemaRefResolver.java` | ✅ 12 testes |
-| `Schema` | `src/main/java/com/maiconjh/schemacr/schemes/Schema.java` | ✅ 6 testes |
-| `PrimitiveValidator` | `src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java` | ✅ 15 testes |
-| `ObjectValidator` | `src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java` | ✅ 13 testes |
-| `FormatValidator` | `src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java` | ✅ 22 testes |
-| `ArrayValidator` | `src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java` | ✅ 31 testes |
-| `ConditionalValidator` | `src/main/java/com/maiconjh/schemacr/validation/ConditionalValidator.java` | ✅ 21 testes |
-| `OneOfValidator` | `src/main/java/com/maiconjh/schemacr/validation/OneOfValidator.java` | ✅ 24 testes |
-| `NotValidator` | `src/main/java/com/maiconjh/schemacr/validation/NotValidator.java` | ✅ 28 testes |
-| `MinPropertiesValidator` | `src/main/java/com/maiconjh/schemacr/validation/object/MinPropertiesValidator.java` | ✅ 21 testes |
-| `MaxPropertiesValidator` | `src/main/java/com/maiconjh/schemacr/validation/object/MaxPropertiesValidator.java` | ✅ 20 testes |
-| `DependentRequiredValidator` | `src/main/java/com/maiconjh/schemacr/validation/object/DependentRequiredValidator.java` | ✅ 20 testes |
-| `DependentSchemasValidator` | `src/main/java/com/maiconjh/schemacr/validation/object/DependentSchemasValidator.java` | ✅ 20 testes |
+| Metric | Value |
+|--------|-------|
+| **Total Tests Executed** | 324 |
+| **Passing Tests** | 324 |
+| **Failing Tests** | 0 |
+| **Success Rate** | 100% |
+| **Test Classes** | 22 |
 
-### ✅ Validators sem Testes
+### Distribution by Scenario Type
 
-**Nenhum - Todos os validators possuem testes**
+| Scenario Type | Quantity |
+|---------------|----------|
+| **Positive** (Valid cases that should pass) | 24 |
+| **Negative** (Invalid cases that should fail) | 17 |
+| **Edge Case** (Boundary conditions) | 34 |
+
+### Existing Test Classes
+
+1. `FileSchemaLoaderTest` - 13 tests
+2. `SchemaRefResolverTest` - 12 tests
+3. `SchemaTest` - 6 tests
+4. `AdditionalItemsValidatorTest` - 9 tests
+5. `MaxItemsValidatorTest` - 7 tests
+6. `MinItemsValidatorTest` - 7 tests
+7. `PrefixItemsValidatorTest` - 9 tests
+8. `UniqueItemsValidatorTest` - 8 tests
+9. `ConstValidatorTest` - 9 tests
+10. `ReadOnlyValidatorTest` - 6 tests
+11. `WriteOnlyValidatorTest` - 6 tests
+12. `PrimitiveValidatorTest` - 15 tests
+13. `ObjectValidatorTest` - 13 tests
+14. `FormatValidatorTest` - 22 tests
+15. `ArrayValidatorTest` - 31 tests
+16. `ConditionalValidatorTest` - 21 tests
+17. `OneOfValidatorTest` - 24 tests
+18. `NotValidatorTest` - 28 tests
+19. `MinPropertiesValidatorTest` - 21 tests
+20. `MaxPropertiesValidatorTest` - 20 tests
+21. `DependentRequiredValidatorTest` - 20 tests
+22. `DependentSchemasValidatorTest` - 20 tests
 
 ---
 
-## 4. Ações Necessárias para Cobertura Completa
+## 3. Status by Validator
 
-### ✅ Prioridade Alta (Validators Core) - CONCLUÍDO
+### ✅ Validators with Passing Tests (22)
 
-Os testes para validators principais foram implementados com sucesso:
+| Validator | Location | Status |
+|-----------|----------|--------|
+| `AdditionalItemsValidator` | `src/main/java/com/maiconjh/schemacr/validation/array/AdditionalItemsValidator.java` | ✅ 9 tests |
+| `MaxItemsValidator` | `src/main/java/com/maiconjh/schemacr/validation/array/MaxItemsValidator.java` | ✅ 7 tests |
+| `MinItemsValidator` | `src/main/java/com/maiconjh/schemacr/validation/array/MinItemsValidator.java` | ✅ 7 tests |
+| `PrefixItemsValidator` | `src/main/java/com/maiconjh/schemacr/validation/array/PrefixItemsValidator.java` | ✅ 9 tests |
+| `UniqueItemsValidator` | `src/main/java/com/maiconjh/schemacr/validation/array/UniqueItemsValidator.java` | ✅ 8 tests |
+| `ConstValidator` | `src/main/java/com/maiconjh/schemacr/validation/misc/ConstValidator.java` | ✅ 9 tests |
+| `ReadOnlyValidator` | `src/main/java/com/maiconjh/schemacr/validation/misc/ReadOnlyValidator.java` | ✅ 6 tests |
+| `WriteOnlyValidator` | `src/main/java/com/maiconjh/schemacr/validation/misc/WriteOnlyValidator.java` | ✅ 6 tests |
+| `FileSchemaLoader` | `src/main/java/com/maiconjh/schemacr/schemes/FileSchemaLoader.java` | ✅ 13 tests |
+| `SchemaRefResolver` | `src/main/java/com/maiconjh/schemacr/schemes/SchemaRefResolver.java` | ✅ 12 tests |
+| `Schema` | `src/main/java/com/maiconjh/schemacr/schemes/Schema.java` | ✅ 6 tests |
+| `PrimitiveValidator` | `src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java` | ✅ 15 tests |
+| `ObjectValidator` | `src/main/java/com/maiconjh/schemacr/validation/ObjectValidator.java` | ✅ 13 tests |
+| `FormatValidator` | `src/main/java/com/maiconjh/schemacr/validation/FormatValidator.java` | ✅ 22 tests |
+| `ArrayValidator` | `src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java` | ✅ 31 tests |
+| `ConditionalValidator` | `src/main/java/com/maiconjh/schemacr/validation/ConditionalValidator.java` | ✅ 21 tests |
+| `OneOfValidator` | `src/main/java/com/maiconjh/schemacr/validation/OneOfValidator.java` | ✅ 24 tests |
+| `NotValidator` | `src/main/java/com/maiconjh/schemacr/validation/NotValidator.java` | ✅ 28 tests |
+| `MinPropertiesValidator` | `src/main/java/com/maiconjh/schemacr/validation/object/MinPropertiesValidator.java` | ✅ 21 tests |
+| `MaxPropertiesValidator` | `src/main/java/com/maiconjh/schemacr/validation/object/MaxPropertiesValidator.java` | ✅ 20 tests |
+| `DependentRequiredValidator` | `src/main/java/com/maiconjh/schemacr/validation/object/DependentRequiredValidator.java` | ✅ 20 tests |
+| `DependentSchemasValidator` | `src/main/java/com/maiconjh/schemacr/validation/object/DependentSchemasValidator.java` | ✅ 20 tests |
+
+### ✅ Validators without Tests
+
+**None - All validators have tests**
+
+---
+
+## 4. Actions Required for Complete Coverage
+
+### ✅ High Priority (Core Validators) - COMPLETED
+
+Tests for main validators have been successfully implemented:
 
 #### 4.1 ObjectValidator ✅
-- Testar validação de propriedades obrigatórias (required)
-- Testar validação de propriedades opcional (optional)
-- Testar validação de propriedades patternProperties
-- Testar validação de propriedades adicionales (additionalProperties)
-- Testar composição com nested schemas
+- Test required property validation
+- Test optional property validation
+- Test patternProperties validation
+- Test additionalProperties validation
+- Test composition with nested schemas
 
 #### 4.2 PrimitiveValidator ✅
-- Testar validação de tipos primitivos (string, number, integer, boolean, null)
-- Testar validação de enum
-- Testar validação de múltiplos tipos (type array)
+- Test primitive type validation (string, number, integer, boolean, null)
+- Test enum validation
+- Test multiple type validation (type array)
 
 #### 4.3 FormatValidator ✅
-- Testar validação de formatos built-in (date-time, email, uri, etc.)
-- Testar formatos customizados do Minecraft
-- Testar cenários de formato inválido
+- Test built-in format validation (date-time, email, uri, etc.)
+- Test custom Minecraft formats
+- Test invalid format scenarios
 
 #### 4.4 ArrayValidator ✅
-- Testar validação de tipos array
-- Testar composição com prefixItems e additionalItems
-- Testar cenários de erro
+- Test array type validation
+- Test composition with prefixItems and additionalItems
+- Test error scenarios
 
-### Prioridade Média (Validators de Composição)
+### Medium Priority (Composition Validators)
 
 #### 4.5 ConditionalValidator ✅
-- Testar if/then/else
-- Testar dependências condicionais
+- Test if/then/else
+- Test conditional dependencies
 
 #### 4.6 OneOfValidator ✅
-- Testar seleção exclusiva de schemas
-- Testar validação de múltiplas opções
+- Test exclusive schema selection
+- Test multiple option validation
 
 #### 4.7 NotValidator ✅
-- Testar negação de schemas
+- Test schema negation
 
 #### 4.8 MinPropertiesValidator / MaxPropertiesValidator ✅
-- Testar contagem de propriedades
-- Testar limites mínimo e máximo
+- Test property counting
+- Test minimum and maximum limits
 
-### Prioridade Baixa (Validators Especializados)
+### Low Priority (Specialized Validators)
 
 #### 4.9 DependentRequiredValidator ✅
-- Testar validação de dependências entre propriedades
+- Test property dependency validation
 
 #### 4.10 DependentSchemasValidator ✅
-- Testar schemas dependentes
+- Test dependent schemas
 
 ---
 
-## 5. Próximos Passos
+## 5. Next Steps
 
-### ✅ Todo o Progresso Concluído!
-1. ~~Implementar testes para `ObjectValidator`~~ ✅
-2. ~~Implementar testes para `PrimitiveValidator`~~ ✅
-3. ~~Implementar testes para `FormatValidator`~~ ✅
-4. ~~Implementar testes para `ArrayValidator`~~ ✅
-5. ~~Implementar testes para `ConditionalValidator`~~ ✅
-6. ~~Implementar testes para `OneOfValidator`~~ ✅
-7. ~~Implementar testes para `NotValidator`~~ ✅
-8. ~~Implementar testes para `MinPropertiesValidator` e `MaxPropertiesValidator`~~ ✅
-9. ~~Implementar testes para `DependentRequiredValidator` e `DependentSchemasValidator`~~ ✅
+### ✅ All Progress Completed!
+1. ~~Implement tests for `ObjectValidator`~~ ✅
+2. ~~Implement tests for `PrimitiveValidator`~~ ✅
+3. ~~Implement tests for `FormatValidator`~~ ✅
+4. ~~Implement tests for `ArrayValidator`~~ ✅
+5. ~~Implement tests for `ConditionalValidator`~~ ✅
+6. ~~Implement tests for `OneOfValidator`~~ ✅
+7. ~~Implement tests for `NotValidator`~~ ✅
+8. ~~Implement tests for `MinPropertiesValidator` and `MaxPropertiesValidator`~~ ✅
+9. ~~Implement tests for `DependentRequiredValidator` and `DependentSchemasValidator`~~ ✅
 
-### Próximos Passos Futuros
-10. Adicionar testes de integração para validação end-to-end
-
----
-
-## Métricas de Progresso
-
-| Milestone | Alvo | Atual | Progresso |
-|-----------|------|-------|-----------|
-| Testes Core (Array, Object, Primitive, Format) | 40+ testes | 81 | 100% ✅ |
-| Testes de Composição | 25+ testes | 73 | 100% ✅ |
-| Testes de Properties | 15+ testes | 81 | 100% ✅ |
-| **Total** | **324+ testes** | **324** | **100%** |
-
-> **Nota:** TODOS os testes foram concluídos com sucesso! 324 testes executados com 100% de sucesso. Todos os validators agora possuem cobertura completa de testes.
+### Future Next Steps
+10. Add integration tests for end-to-end validation
 
 ---
 
-*Documento gerado automaticamente em: 2026-03-24*
+## Progress Metrics
+
+| Milestone | Target | Current | Progress |
+|-----------|--------|---------|----------|
+| Core Tests (Array, Object, Primitive, Format) | 40+ tests | 81 | 100% ✅ |
+| Composition Tests | 25+ tests | 73 | 100% ✅ |
+| Properties Tests | 15+ tests | 81 | 100% ✅ |
+| **Total** | **324+ tests** | **324** | **100%** |
+
+> **Note:** ALL tests completed successfully! 324 tests executed with 100% success. All validators now have complete test coverage.
+
+---
+
+*Document automatically generated on: 2026-03-24*

@@ -1,54 +1,54 @@
-# Auditoria de Suporte JSON Schema — Schema-Validator
+# JSON Schema Support Audit — Schema-Validator
 
-**Data da auditoria:** 2026-03-22 (UTC)  
-**Última atualização:** 2026-03-22 (implementações concluídas)  
-**Projeto auditado:** `Schema-Validator`  
-**Base de comparação da especificação:** JSON Schema oficial em https://json-schema.org/ (principalmente drafts Draft-07, 2019-09 e 2020-12 para os itens solicitados).
+**Audit date:** 2026-03-22 (UTC)  
+**Last updated:** 2026-03-22 (implementations completed)  
+**Project audited:** `Schema-Validator`  
+**Specification comparison base:** Official JSON Schema at https://json-schema.org/ (mainly Draft-07, 2019-09 and 2020-12 for the requested items).
 
-## Metodologia
+## Methodology
 
-Esta auditoria foi feita por inspeção direta do código-fonte do plugin (parser, modelo e validadores), conferindo:
+This audit was done by direct source code inspection of the plugin (parser, model, and validators), checking:
 
-- quais keywords são apenas reconhecidas no parse;
-- quais keywords são realmente **enforçadas** em runtime;
-- quais comportamentos divergem da especificação oficial.
+- which keywords are only recognized in parsing;
+- which keywords are really **enforced** at runtime;
+- which behaviors diverge from the official specification.
 
-## Status: Implementações Concluídas
+## Status: Implementations Completed
 
-Todas as funcionalidades listadas abaixo foram implementadas:
+All functionalities listed below have been implemented:
 
-- ✅ Resolução `$ref` com suporte completo a JSON Pointer
-- ✅ Constraints de array (`minItems`, `maxItems`, `uniqueItems`, `prefixItems`, `items`)
-- ✅ Constraints de objeto (`minProperties`, `maxProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`, `additionalProperties` como schema)
-- ✅ Suporte a `exclusiveMinimum`/`exclusiveMaximum` na forma numérica moderna
-- ✅ Modelagem de metadados (`$schema`, `$id`, `title`, `description`)
-- ✅ Suporte a arrays de tipos com dispatch runtime
-- ✅ Suporte a keywords 2019-09/2020-12 (`$defs`, `prefixItems`, `dependentRequired`, `dependentSchemas`)
-
----
-
-## Matriz detalhada por requisito
-
-## 1) Formatos de schema suportados (`string`, `number`, `integer`, `boolean`, `array`, `object`, `null`)
-
-**Status:** ✅ **Completo** (para validação de tipo)
-
-### Evidências
-- Parsing de `type` contempla explicitamente: `object`, `array`, `string`, `integer`, `number`, `boolean`, `null` (e fallback para `any`).
-- O dispatcher encaminha `object` para `ObjectValidator`, `array` para `ArrayValidator` e demais tipos para `PrimitiveValidator`.
-- `PrimitiveValidator` implementa checks concretos para `STRING`, `NUMBER`, `INTEGER`, `BOOLEAN`, `NULL`.
-
-### Observações
-- **`type` como array de tipos** agora é suportado com dispatch runtime por tipo de dado atual (ex.: `"type": ["string", "null"]`)
+- ✅ `$ref` resolution with full JSON Pointer support
+- ✅ Array constraints (`minItems`, `maxItems`, `uniqueItems`, `prefixItems`, `items`)
+- ✅ Object constraints (`minProperties`, `maxProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`, `additionalProperties` as schema)
+- ✅ Support for `exclusiveMinimum`/`exclusiveMaximum` in modern numeric form
+- ✅ Metadata modeling (`$schema`, `$id`, `title`, `description`)
+- ✅ Type array support with runtime dispatch
+- ✅ 2019-09/2020-12 keyword support (`$defs`, `prefixItems`, `dependentRequired`, `dependentSchemas`)
 
 ---
 
-## 2) Validadores de `format` (`date`, `time`, `email`, `uri`, `hostname`, `ipv4`, `ipv6`, `uuid`, etc.)
+## Detailed Matrix by Requirement
 
-**Status:** ⚠️ **Parcial**
+## 1) Supported schema types (`string`, `number`, `integer`, `boolean`, `array`, `object`, `null`)
 
-### Formatos efetivamente implementados
-O `FormatValidator` trata os seguintes formatos padrão:
+**Status:** ✅ **Complete** (for type validation)
+
+### Evidence
+- Parsing of `type` explicitly covers: `object`, `array`, `string`, `integer`, `number`, `boolean`, `null` (and fallback to `any`).
+- The dispatcher routes `object` to `ObjectValidator`, `array` to `ArrayValidator`, and other types to `PrimitiveValidator`.
+- `PrimitiveValidator` implements concrete checks for `STRING`, `NUMBER`, `INTEGER`, `BOOLEAN`, `NULL`.
+
+### Notes
+- **`type` as array of types** is now supported with runtime dispatch by current data type (e.g.: `"type": ["string", "null"]`)
+
+---
+
+## 2) `format` validators (`date`, `time`, `email`, `uri`, `hostname`, `ipv4`, `ipv6`, `uuid`, etc.)
+
+**Status:** ⚠️ **Partial**
+
+### Effectively implemented formats
+The `FormatValidator` handles the following standard formats:
 - `date-time`, `date`, `time`, `duration`
 - `email`, `idn-email`
 - `hostname`, `idn-hostname`
@@ -57,188 +57,188 @@ O `FormatValidator` trata os seguintes formatos padrão:
 - `json-pointer`, `relative-json-pointer`
 - `uuid`, `regex`
 
-Também há formatos customizados Minecraft (`minecraft-item`, `minecraft-block`, etc.).
+There are also custom Minecraft formats (`minecraft-item`, `minecraft-block`, etc.).
 
-### Limitações relevantes
-- Para formato **desconhecido**, a validação retorna sucesso (`default -> true`), então não há erro para `format` não suportado.
-- Implementações por regex podem divergir de corner cases RFC/ECMA esperados pela especificação.
-- `idn-email` e `idn-hostname` reutilizam o mesmo regex de `email`/`hostname` (sem tratamento internacionalizado dedicado).
+### Relevant limitations
+- For **unknown** format, validation returns success (`default -> true`), so there is no error for unsupported `format`.
+- Regex implementations may diverge from RFC/ECMA corner cases expected by the specification.
+- `idn-email` and `idn-hostname` reuse the same regex as `email`/`hostname` (without dedicated internationalized handling).
 
 ---
 
-## 3) Definições e referências (`definitions`, `$defs`, `$ref` com `#/definitions/...` e `#/$defs/...`)
+## 3) Definitions and references (`definitions`, `$defs`, `$ref` with `#/definitions/...` and `#/$defs/...`)
 
-**Status:** ✅ **Completo**
+**Status:** ✅ **Complete**
 
-### Implementado
-- Loader extrai `definitions` e `$defs` em uma primeira passada.
-- Parser captura `$ref` no schema.
-- `SchemaRefResolver` para referências locais, externas por arquivo/URL e com pointer.
-- Navegação completa de JSON Pointer (`navigateTo`) por:
+### Implemented
+- Loader extracts `definitions` and `$defs` in a first pass.
+- Parser captures `$ref` in the schema.
+- `SchemaRefResolver` for local, external file/URL references and with pointer.
+- Complete JSON Pointer navigation (`navigateTo`) by:
   - Keywords (`properties`, `items`, `additionalProperties`)
-  - Chaves de objeto (`properties/name`)
-  - Índices de array (`prefixItems/0`, `allOf/1`)
-- Suporte a `definitions` e `$defs` com resolução adequada
-- Suporte a escaping `~0` (representa `~`) e `~1` (representa `/`)
-- Indexação baseada em `$id` para resolução de referências externas
+  - Object keys (`properties/name`)
+  - Array indices (`prefixItems/0`, `allOf/1`)
+- Support for `definitions` and `$defs` with proper resolution
+- Support for escaping `~0` (represents `~`) and `~1` (represents `/`)
+- `$id`-based indexing for external reference resolution
 
 ---
 
-## 4) Operadores de composição (`allOf`, `anyOf`, `oneOf`, `not`)
+## 4) Composition operators (`allOf`, `anyOf`, `oneOf`, `not`)
 
-**Status:** ✅ **Completo**
+**Status:** ✅ **Complete**
 
-### Evidências
-- Parsing explícito de `allOf`, `anyOf`, `oneOf`, `not`.
-- `ObjectValidator` aplica:
-  - `allOf`: exige todos válidos;
-  - `anyOf`: exige ao menos um válido;
-  - `oneOf`: exige exatamente um válido;
-  - `not`: exige que schema interno **não** valide.
+### Evidence
+- Explicit parsing of `allOf`, `anyOf`, `oneOf`, `not`.
+- `ObjectValidator` applies:
+  - `allOf`: requires all valid;
+  - `anyOf`: requires at least one valid;
+  - `oneOf`: requires exactly one valid;
+  - `not`: requires internal schema to **not** validate.
 
-### Observações
-- Existem classes específicas (`OneOfValidator`, `NotValidator`), mas o caminho principal já cobre esses operadores no `ObjectValidator`.
+### Notes
+- There are specific classes (`OneOfValidator`, `NotValidator`), but the main path already covers these operators in `ObjectValidator`.
 
 ---
 
-## 5) Validadores de string (`pattern`, `minLength`, `maxLength`, `format`)
+## 5) String validators (`pattern`, `minLength`, `maxLength`, `format`)
 
-**Status:** ✅ **Completo**
+**Status:** ✅ **Complete**
 
-### Evidências
+### Evidence
 - Parsing: `minLength`, `maxLength`, `pattern`, `format`.
-- Enforcement em `PrimitiveValidator`:
-  - tamanho mínimo/máximo;
-  - `pattern` com regex compilada;
+- Enforcement in `PrimitiveValidator`:
+  - minimum/maximum length;
+  - `pattern` with compiled regex;
   - `format` via `FormatValidator`.
 
-### Limitações
-- `pattern` usa `matcher.matches()` (match total); dependendo da interpretação do usuário, isso pode surpreender (muitos esperam busca parcial).
-- Falha de compilação de regex no carregamento gera warning e ignora `pattern` inválido.
+### Limitations
+- `pattern` uses `matcher.matches()` (total match); depending on user interpretation, this may be surprising (many expect partial search).
+- Regex compilation failure at load time generates warning and ignores invalid `pattern`.
 
 ---
 
-## 6) Validadores numéricos (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`)
+## 6) Numeric validators (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`)
 
-**Status:** ✅ **Completo**
+**Status:** ✅ **Complete**
 
-### Implementado
-- `minimum`, `maximum`, `multipleOf` são parseados e validados.
-- `exclusiveMinimum`/`exclusiveMaximum` na forma **numérica** (2019-09/2020-12)
-- Compatibilidade com forma **booleana** legada (Draft-04/06/07)
-- Suporte a ambos os formatos para compatibilidade com schemas antigos e novos
-
----
-
-## 7) Validadores de array (`minItems`, `maxItems`, `uniqueItems`, `items`, `prefixItems`)
-
-**Status:** ✅ **Completo**
-
-### Implementado
-- `items` (objeto único) é parseado e aplicado em cada elemento do array.
-- `minItems` — Validação de comprimento mínimo do array
-- `maxItems` — Validação de comprimento máximo do array
-- `uniqueItems` — Verificação de unicidade dos elementos
-- `prefixItems` — Validação de tupla (2019-09/2020-12)
-- `additionalItems` — Suporte limitado
+### Implemented
+- `minimum`, `maximum`, `multipleOf` are parsed and validated.
+- `exclusiveMinimum`/`exclusiveMaximum` in **numeric** form (2019-09/2020-12)
+- Compatibility with legacy **boolean** form (Draft-04/06/07)
+- Support for both formats for compatibility with old and new schemas
 
 ---
 
-## 8) Validadores de objeto (`properties`, `required`, `minProperties`, `maxProperties`, `additionalProperties`, `patternProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`)
+## 7) Array validators (`minItems`, `maxItems`, `uniqueItems`, `items`, `prefixItems`)
 
-**Status:** ✅ **Completo**
+**Status:** ✅ **Complete**
 
-### Implementado
-- `properties`: valida propriedades declaradas quando presentes.
-- `required`: exige campos obrigatórios.
-- `additionalProperties`: suporta forma booleana (permitir/bloquear extras).
-- `patternProperties`: aplica schema por regex no nome da chave.
-- `minProperties` — Validação de quantidade mínima de propriedades
-- `maxProperties` — Validação de quantidade máxima de propriedades
-- `dependencies` — Suporte a modos property e schema
-- `dependentRequired` — Propriedades requeridas quando dependente está presente (2019-09+)
-- `dependentSchemas` — Constraints de schema quando dependente está presente (2019-09+)
-- `additionalProperties` como **schema** (não apenas boolean)
+### Implemented
+- `items` (single object) is parsed and applied to each array element.
+- `minItems` — Array minimum length validation
+- `maxItems` — Array maximum length validation
+- `uniqueItems` — Element uniqueness check
+- `prefixItems` — Tuple validation (2019-09/2020-12)
+- `additionalItems` — Limited support
 
 ---
 
-## 9) Condicionais (`if`, `then`, `else`)
+## 8) Object validators (`properties`, `required`, `minProperties`, `maxProperties`, `additionalProperties`, `patternProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`)
 
-**Status:** ✅ **Completo**
+**Status:** ✅ **Complete**
 
-### Evidências
-- Parsing de `if`, `then`, `else`.
-- `ObjectValidator` executa a lógica condicional:
-  - se `if` passa, valida `then` (se existir);
-  - se `if` falha, valida `else` (se existir).
+### Implemented
+- `properties`: validates declared properties when present.
+- `required`: requires mandatory fields.
+- `additionalProperties`: supports boolean form (allow/block extras).
+- `patternProperties`: applies schema by regex on key name.
+- `minProperties` — Minimum property count validation
+- `maxProperties` — Maximum property count validation
+- `dependencies` — Support for property and schema modes
+- `dependentRequired` — Required properties when dependent is present (2019-09+)
+- `dependentSchemas` — Schema constraints when dependent is present (2019-09+)
+- `additionalProperties` as **schema** (not just boolean)
 
-### Observações
-- Há também `ConditionalValidator`, mas o fluxo principal já realiza a validação condicional no validador de objeto.
+---
+
+## 9) Conditionals (`if`, `then`, `else`)
+
+**Status:** ✅ **Complete**
+
+### Evidence
+- Parsing of `if`, `then`, `else`.
+- `ObjectValidator` executes conditional logic:
+  - if `if` passes, validates `then` (if exists);
+  - if `if` fails, validates `else` (if exists).
+
+### Notes
+- There is also `ConditionalValidator`, but the main flow already performs conditional validation in the object validator.
 
 ---
 
 ## 10) Metadata (`$schema`, `$id`, `description`, `title`)
 
-**Status:** ✅ **Suportado**
+**Status:** ✅ **Supported**
 
-### Implementado
-- `$schema` — Identificação do dialeto do schema
-- `$id` — URI base para resolução de referências
-- `title` — Título do schema
-- `description` — Descrição do schema
-- `default` — Valor padrão
-- `examples` — Exemplos de valores
-- `readOnly` / `writeOnly` — Restrições de propriedade
-- `deprecated` — Status de depreciação
-- `comment` — Anotações
+### Implemented
+- `$schema` — Schema dialect identification
+- `$id` — Base URI for reference resolution
+- `title` — Schema title
+- `description` — Schema description
+- `default` — Default value
+- `examples` — Value examples
+- `readOnly` / `writeOnly` — Property restrictions
+- `deprecated` — Deprecation status
+- `comment` — Annotations
 
-### Uso na validação
-- `$id` é utilizado para indexação e resolução de referências externas
-- `$schema` permite identificar o dialeto JSON Schema em uso
+### Usage in validation
+- `$id` is used for indexing and external reference resolution
+- `$schema` allows identifying the JSON Schema dialect in use
 
 ---
 
-## Comparação consolidada (status)
+## Consolidated Comparison (status)
 
-| Requisito | Status | Observação curta |
+| Requirement | Status | Short Note |
 |---|---|---|
-| 1) Tipos base (`string`, `number`, `integer`, `boolean`, `array`, `object`, `null`) | ✅ Completo | Cobertos no parse + validação de tipo |
-| 2) `format` (`date`, `time`, `email`, `uri`, `hostname`, `ipv4`, `ipv6`, `uuid`, etc.) | ⚠️ Parcial | Catálogo amplo, mas com simplificações e "unknown format = pass" |
-| 3) `definitions`, `$defs`, `$ref` com `#/definitions` e `#/$defs` | ✅ Completo | Resolução pointer completa com suporte a $id |
-| 4) `allOf`, `anyOf`, `oneOf`, `not` | ✅ Completo | Implementados no validador de objeto |
-| 5) String (`pattern`, `minLength`, `maxLength`, `format`) | ✅ Completo | Implementados em `PrimitiveValidator` |
-| 6) Numérico (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`) | ✅ Completo | Forma numérica moderna + compatibilidade legacy |
-| 7) Array (`minItems`, `maxItems`, `uniqueItems`, `items`, `prefixItems`) | ✅ Completo | Todos os constraints implementados |
-| 8) Objeto (`properties`, `required`, `minProperties`, `maxProperties`, `additionalProperties`, `patternProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`) | ✅ Completo | Todos os constraints + additionalProperties como schema |
-| 9) Condicionais (`if`, `then`, `else`) | ✅ Completo | Implementação funcional no `ObjectValidator` |
-| 10) Metadata (`$schema`, `$id`, `description`, `title`) | ✅ Completo | Modelagem completa com uso na validação |
+| 1) Base types (`string`, `number`, `integer`, `boolean`, `array`, `object`, `null`) | ✅ Complete | Covered in parsing + type validation |
+| 2) `format` (`date`, `time`, `email`, `uri`, `hostname`, `ipv4`, `ipv6`, `uuid`, etc.) | ⚠️ Partial | Wide catalog, but with simplifications and "unknown format = pass" |
+| 3) `definitions`, `$defs`, `$ref` with `#/definitions` and `#/$defs` | ✅ Complete | Complete pointer resolution with $id support |
+| 4) `allOf`, `anyOf`, `oneOf`, `not` | ✅ Complete | Implemented in object validator |
+| 5) String (`pattern`, `minLength`, `maxLength`, `format`) | ✅ Complete | Implemented in `PrimitiveValidator` |
+| 6) Numeric (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`) | ✅ Complete | Modern numeric form + legacy compatibility |
+| 7) Array (`minItems`, `maxItems`, `uniqueItems`, `items`, `prefixItems`) | ✅ Complete | All constraints implemented |
+| 8) Object (`properties`, `required`, `minProperties`, `maxProperties`, `additionalProperties`, `patternProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`) | ✅ Complete | All constraints + additionalProperties as schema |
+| 9) Conditionals (`if`, `then`, `else`) | ✅ Complete | Functional implementation in `ObjectValidator` |
+| 10) Metadata (`$schema`, `$id`, `description`, `title`) | ✅ Complete | Complete modeling with usage in validation |
 
 ---
 
-## Backlog técnico recomendado (prioridade)
+## Recommended Technical Backlog (priority)
 
-Todas as principais funcionalidades listadas abaixo foram implementadas:
+All main functionalities listed below have been implemented:
 
-1. ✅ **Resolução `$ref` por JSON Pointer completo** (`definitions`, `$defs`, escaping e navegação geral por keyword/objeto)
-2. ✅ **Constraints de array** (`minItems`, `maxItems`, `uniqueItems`, `prefixItems`, `items`)
-3. ✅ **Constraints de objeto** (`minProperties`, `maxProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`, `additionalProperties` como schema)
-4. ✅ **`exclusiveMinimum`/`exclusiveMaximum` alinhados ao draft moderno** (valor numérico)
-5. ✅ **Modelagem de metadata** (`$schema`, `$id`, `title`, `description`) para dialeto/resolução/documentação
-6. ✅ **Suporte a `type` em array** e keywords modernas (2019-09/2020-12)
+1. ✅ **Complete JSON Pointer `$ref` resolution** (`definitions`, `$defs`, escaping and general keyword/object navigation)
+2. ✅ **Array constraints** (`minItems`, `maxItems`, `uniqueItems`, `prefixItems`, `items`)
+3. ✅ **Object constraints** (`minProperties`, `maxProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`, `additionalProperties` as schema)
+4. ✅ **`exclusiveMinimum`/`exclusiveMaximum` aligned to modern draft** (numeric value)
+5. ✅ **Metadata modeling** (`$schema`, `$id`, `title`, `description`) for dialect/resolution/documentation
+6. ✅ **`type` array support** and modern keywords (2019-09/2020-12)
 
 ---
 
-## Nota final
+## Final Note
 
-O projeto agora possui conformidade completa com as principais funcionalidades do JSON Schema, incluindo:
+The project now has complete compliance with main JSON Schema functionalities, including:
 
-- Resolução completa de `$ref` com JSON Pointer
-- Todos os constraints de array e objeto implementados
-- Suporte a metadados para resolução de referências
-- Compatibilidade com drafts modernos (2019-09/2020-12)
+- Complete `$ref` resolution with JSON Pointer
+- All array and object constraints implemented
+- Metadata support for reference resolution
+- Compatibility with modern drafts (2019-09/2020-12)
 
-As próximas áreas de melhoria podem incluir:
+Areas for future improvement may include:
 
-- Mais formatos de validação
-- Melhorias em validação de regex
-- Performance em schemas muito grandes
+- More validation formats
+- Improvements in regex validation
+- Performance for very large schemas
