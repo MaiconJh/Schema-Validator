@@ -25,7 +25,7 @@
       .replace(/\s+/g, '-');
   }
 
-  // Utility: Get SVG icon
+  // Utility: Get SVG icon (with fallback)
   function getIcon(name, className = '') {
     const icons = {
       'home': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
@@ -69,11 +69,17 @@
       'puzzle': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.315 8.69c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.61-1.611A2.404 2.404 0 0 1 12.172 2c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/></svg>`,
       'workflow': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><rect x="2" y="2" width="8" height="8" rx="2"/><rect x="14" y="2" width="8" height="8" rx="2"/><rect x="14" y="14" width="8" height="8" rx="2"/><rect x="2" y="14" width="8" height="8" rx="2"/><path d="M10 6h4"/><path d="M6 10v4"/><path d="M14 10v4"/><path d="M10 14h4"/></svg>`
     };
-    return icons[name] || '';
+    
+    const iconSvg = icons[name];
+    if (!iconSvg) {
+      console.warn(`Icon "${name}" not found`);
+      return `<span class="icon-fallback ${className}">${name}</span>`;
+    }
+    return iconSvg;
   }
 
   // --------------------------------------------------------------------------
-  // Theme Toggle
+  // Theme Toggle (with system preference detection)
   // --------------------------------------------------------------------------
   function initTheme() {
     const savedTheme = localStorage.getItem('docs-theme');
@@ -85,11 +91,10 @@
       html.setAttribute('data-theme', 'dark');
     }
     
-    // Add theme toggle icon
+    // Initialize BB-8 theme toggle state
     if (themeToggle) {
-      const icon = savedTheme === 'dark' || (!savedTheme && prefersDark) ? 'sun' : 'moon';
-      themeToggle.innerHTML = getIcon(icon);
-      themeToggle.setAttribute('aria-label', savedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+      themeToggle.checked = isDark;
     }
   }
 
@@ -100,11 +105,9 @@
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('docs-theme', newTheme);
     
-    // Update icon
+    // Update BB-8 checkbox state
     if (themeToggle) {
-      const icon = newTheme === 'dark' ? 'sun' : 'moon';
-      themeToggle.innerHTML = getIcon(icon);
-      themeToggle.setAttribute('aria-label', newTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      themeToggle.checked = newTheme === 'dark';
     }
   }
 
@@ -115,6 +118,7 @@
     if (sidebarToggle && sidebar) {
       // Add hamburger icon
       sidebarToggle.innerHTML = getIcon('menu');
+      sidebarToggle.setAttribute('aria-label', 'Toggle navigation menu');
       
       sidebarToggle.addEventListener('click', () => {
         const isOpen = sidebar.classList.toggle('open');
@@ -136,7 +140,7 @@
   }
 
   // --------------------------------------------------------------------------
-  // Table of Contents
+  // Table of Contents (with scroll-based active highlighting)
   // --------------------------------------------------------------------------
   function initTOC() {
     if (!articleBody || !toc) return;
@@ -150,6 +154,7 @@
     const items = [];
     let lockedHeadingId = null;
     let lockReleaseAt = 0;
+    let lockTimeout = null;
     
     headings.forEach((h) => {
       // Add ID if not present
@@ -161,8 +166,9 @@
       const anchor = document.createElement('a');
       anchor.href = `#${h.id}`;
       anchor.className = 'heading-anchor';
-      anchor.innerHTML = getIcon('link', 'heading-anchor-icon');
-      anchor.setAttribute('aria-label', `Link to ${h.textContent}`);
+      anchor.setAttribute('aria-label', `Link to section: ${h.textContent}`);
+      const linkIcon = getIcon('link', 'heading-anchor-icon');
+      anchor.innerHTML = linkIcon || '#';
       h.appendChild(anchor);
       
       // Create TOC item
@@ -177,6 +183,7 @@
       link.href = `#${h.id}`;
       link.className = h.tagName === 'H3' ? 'toc-link toc-link-h3' : 'toc-link';
       link.textContent = h.textContent;
+      link.setAttribute('aria-label', `Navigate to: ${h.textContent}`);
       
       li.appendChild(link);
       ul.appendChild(li);
@@ -188,14 +195,38 @@
 
     function setActiveHeading(id) {
       items.forEach((item) => {
-        item.link.classList.toggle('active', item.heading.id === id);
+        const isActive = item.heading.id === id;
+        item.link.classList.toggle('active', isActive);
+        if (isActive) {
+          item.link.setAttribute('aria-current', 'location');
+        } else {
+          item.link.removeAttribute('aria-current');
+        }
       });
     }
 
-    function lockActiveHeading(id, durationMs = 900) {
+    function releaseLock() {
+      lockedHeadingId = null;
+      lockReleaseAt = 0;
+      if (lockTimeout) {
+        clearTimeout(lockTimeout);
+        lockTimeout = null;
+      }
+    }
+
+    function lockActiveHeading(id, durationMs = 1500) {
+      releaseLock();
       lockedHeadingId = id;
       lockReleaseAt = Date.now() + durationMs;
       setActiveHeading(id);
+      
+      // Fallback timeout to release lock if scrollend doesn't fire
+      lockTimeout = setTimeout(() => {
+        if (lockedHeadingId === id) {
+          releaseLock();
+          updateActiveHeading();
+        }
+      }, durationMs + 100);
     }
 
     function getHeaderOffset() {
@@ -224,7 +255,7 @@
       }
 
       if (lockedHeadingId && Date.now() >= lockReleaseAt) {
-        lockedHeadingId = null;
+        releaseLock();
       }
 
       const scrollTop = window.scrollY || window.pageYOffset || 0;
@@ -279,6 +310,17 @@
 
     window.addEventListener('scroll', syncTOC, { passive: true });
     window.addEventListener('resize', syncTOC, { passive: true });
+    
+    // Use scrollend event for better lock release
+    if ('onscrollend' in window) {
+      window.addEventListener('scrollend', () => {
+        if (lockedHeadingId) {
+          releaseLock();
+          updateActiveHeading();
+        }
+      });
+    }
+    
     updateActiveHeading();
   }
 
@@ -645,28 +687,37 @@
       if (!table || table.closest('.table-wrap')) return;
       const wrapper = document.createElement('div');
       wrapper.className = 'table-wrap';
+      // Add ARIA label for scrollable region
+      wrapper.setAttribute('aria-label', 'Scrollable table');
       table.parentNode.insertBefore(wrapper, table);
       wrapper.appendChild(table);
     });
   }
 
   // --------------------------------------------------------------------------
-  // Callouts / Admonitions
+  // Callouts / Admonitions (CORRECTED: preserves HTML formatting)
+  // Based on best practices from Splunk and SUSE style guides [citation:1][citation:6]
   // --------------------------------------------------------------------------
   function parseCalloutMarker(text) {
     if (!text) return null;
+    // Match pattern: [!(NOTE|TIP|...)] followed by optional content
     const match = text.trim().match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(.*)$/i);
     if (!match) return null;
     return { type: match[1].toLowerCase(), rest: match[2] || '' };
   }
 
   function resolveCalloutConfig(type) {
+    // Follows GitHub Flavored Markdown (GFM) alert semantics:
+    // NOTE/TIP/IMPORTANT/WARNING/CAUTION each has a distinct visual identity.
+    // [!IMPORTANT] uses the accent (primary) colour — NOT the warning amber —
+    // because it signals prominence, not danger. This also avoids the dark-mode
+    // colour mismatch visible when it incorrectly shared `callout-warning`.
     const map = {
-      note: { className: 'callout-info', title: 'Note', icon: 'info' },
-      tip: { className: 'callout-success', title: 'Tip', icon: 'zap' },
-      important: { className: 'callout-warning', title: 'Important', icon: 'star' },
-      warning: { className: 'callout-warning', title: 'Warning', icon: 'alert-triangle' },
-      caution: { className: 'callout-danger', title: 'Caution', icon: 'alert-triangle' }
+      note:      { className: 'callout-info',      title: 'Note',      icon: 'info'           },
+      tip:       { className: 'callout-success',    title: 'Tip',       icon: 'zap'            },
+      important: { className: 'callout-important',  title: 'Important', icon: 'star'           },
+      warning:   { className: 'callout-warning',    title: 'Warning',   icon: 'alert-triangle' },
+      caution:   { className: 'callout-danger',     title: 'Caution',   icon: 'alert-triangle' }
     };
     return map[type] || map.note;
   }
@@ -677,41 +728,69 @@
     const blockquotes = [...articleBody.querySelectorAll('blockquote')];
     blockquotes.forEach((quote) => {
       if (!quote || quote.closest('.callout')) return;
+      
       const firstParagraph = quote.querySelector('p');
       if (!firstParagraph) return;
 
-      const parsed = parseCalloutMarker(firstParagraph.textContent);
-      if (!parsed) return;
+      // Extract marker using regex on the paragraph's HTML content
+      // This preserves formatting like <strong>, <em>, <a> inside the content [citation:1]
+      const markerRegex = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*/i;
+      const originalHtml = firstParagraph.innerHTML;
+      const match = originalHtml.match(markerRegex);
+      
+      if (!match) return;
 
-      const config = resolveCalloutConfig(parsed.type);
+      const type = match[1].toLowerCase();
+      const config = resolveCalloutConfig(type);
+
+      // Remove the marker from the beginning of the paragraph HTML
+      const restHtml = originalHtml.replace(markerRegex, '');
+      
+      // Create callout structure
       const callout = document.createElement('div');
       callout.className = `callout ${config.className}`;
+      
+      // Add ARIA role for better accessibility [citation:10]
+      callout.setAttribute('role', 'note');
+      callout.setAttribute('aria-label', `${config.title} note`);
 
+      // Icon element
       const icon = document.createElement('span');
       icon.className = 'callout-icon';
+      icon.setAttribute('aria-hidden', 'true');
       icon.innerHTML = getIcon(config.icon);
 
+      // Content wrapper
       const content = document.createElement('div');
       content.className = 'callout-content';
 
+      // Title element (strong for emphasis) [citation:6]
       const title = document.createElement('strong');
       title.className = 'callout-title';
       title.textContent = config.title;
       content.appendChild(title);
 
-      const restText = parsed.rest.trim();
-      if (restText) {
-        firstParagraph.textContent = restText;
-      } else if (!firstParagraph.textContent.replace(/\s/g, '')) {
-        firstParagraph.remove();
+      // Handle the paragraph content
+      if (restHtml.trim()) {
+        // Keep the paragraph with its formatted content
+        firstParagraph.innerHTML = restHtml;
+        // Preserve the paragraph in the content
+        content.appendChild(firstParagraph);
       } else {
-        firstParagraph.textContent = '';
+        // If the paragraph had only the marker, remove the empty paragraph
         firstParagraph.remove();
       }
 
-      while (quote.firstChild) {
-        content.appendChild(quote.firstChild);
-      }
+      // Collect all remaining children of the blockquote (excluding the already-moved
+      // firstParagraph, which was appended to `content` above) and move them to content.
+      // Using Array.from + forEach instead of a while-firstChild loop avoids the
+      // potential infinite loop that occurred when the already-moved paragraph was
+      // re-encountered as quote.firstChild before the DOM mutation completed.
+      Array.from(quote.childNodes).forEach((node) => {
+        if (node !== firstParagraph) {
+          content.appendChild(node);
+        }
+      });
 
       callout.appendChild(icon);
       callout.appendChild(content);
@@ -720,7 +799,7 @@
   }
 
   // --------------------------------------------------------------------------
-  // Code Block Enhancements
+  // Code Block Enhancements (with proper timeout cleanup)
   // --------------------------------------------------------------------------
   function normalizeLanguage(lang) {
     const raw = (lang || 'code').toLowerCase();
@@ -837,18 +916,33 @@
         copyBtn.type = 'button';
         copyBtn.setAttribute('aria-label', 'Copy code to clipboard');
         
+        let copyTimeout = null;
+        
         copyBtn.addEventListener('click', async () => {
           const text = pre.textContent;
           try {
             await navigator.clipboard.writeText(text);
+            
+            // Clear any pending timeout to avoid race conditions [citation:2]
+            if (copyTimeout) {
+              clearTimeout(copyTimeout);
+            }
+            
             copyBtn.innerHTML = getIcon('check') + 'Copied!';
             copyBtn.classList.add('copied');
-            setTimeout(() => {
+            
+            copyTimeout = setTimeout(() => {
               copyBtn.innerHTML = getIcon('copy') + 'Copy';
               copyBtn.classList.remove('copied');
+              copyTimeout = null;
             }, 2000);
           } catch (err) {
             console.error('Failed to copy:', err);
+            // Fallback for older browsers or permission issues
+            copyBtn.innerHTML = getIcon('alert-triangle') + 'Failed';
+            setTimeout(() => {
+              copyBtn.innerHTML = getIcon('copy') + 'Copy';
+            }, 2000);
           }
         });
         
@@ -874,16 +968,29 @@
     
     // Add theme toggle listener
     if (themeToggle) {
-      themeToggle.addEventListener('click', toggleTheme);
+      themeToggle.addEventListener('change', toggleTheme);
     }
     
-    // Add smooth scroll for anchor links
+    // Add smooth scroll for anchor links (with proper offset calculation)
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       anchor.addEventListener('click', (e) => {
-        const target = document.querySelector(anchor.getAttribute('href'));
+        const targetId = anchor.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const target = document.querySelector(targetId);
         if (target) {
           e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const headerOffset = 64;
+          const elementPosition = target.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+          
+          // Update URL without causing jump [citation:3]
+          window.history.pushState(null, '', targetId);
         }
       });
     });
