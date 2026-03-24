@@ -11,12 +11,7 @@ If documentation and code diverge, code is authoritative.
 - Online docs home: [Schema Validator Docs](https://maiconjh.github.io/Schema-Validator/)
 - Guided start page in repository: [docs/pages/index.md](docs/pages/index.md)
 
-Recommended guided sequence:
-
-1. [Getting started](docs/pages/getting-started.md)
-2. [Installation](docs/pages/installation.md)
-3. [Quickstart](docs/pages/quickstart.md)
-4. [Configuration](docs/pages/configuration.md)
+[![SkriptHubViewTheDocs](http://skripthub.net/static/addon/ViewTheDocsButton.png)](http://skripthub.net/docs/?addon=Schema-Validator)
 
 ### Developer and reference docs
 
