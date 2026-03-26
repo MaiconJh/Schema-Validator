@@ -1081,7 +1081,7 @@
     // Get worker URL from Jekyll config (define in _config.yml)
     const workerUrl = (typeof site !== 'undefined' && site.feedback_worker_url)
       ? site.feedback_worker_url
-      : 'https://feedback-handler.seusubdominio.workers.dev'; // ajuste
+      : 'https://feedback-handler.seusubdominio.workers.dev';
 
     const currentPage = window.location.pathname;
 
@@ -1143,7 +1143,6 @@
             rating: parseInt(rating),
             page: currentPage,
             token: userToken,
-            // No userAgent, no IP (worker will not store them)
           })
         });
 
@@ -1156,11 +1155,11 @@
           // Update stats with returned values
           updateStatsDisplay(data.average, data.total_ratings);
           showThankYouMessage('Thank you for your rating! ⭐');
-        } else if (response.status === 409) {
-          // Already voted (detected by token)
-          hasVoted = true;
-          localStorage.setItem(votedKey, 'true');
-          showThankYouMessage('You already rated this page. Thank you!');
+        } else if (response.status === 429) {
+          // Rate limited
+          showThankYouMessage('You have already rated this page recently. Please try again later.', true);
+          // Re-enable buttons (but they'll remain disabled if rate limited? Actually we should re-enable)
+          starButtons.forEach(btn => btn.disabled = false);
         } else {
           throw new Error(data.error || 'Failed to submit');
         }
