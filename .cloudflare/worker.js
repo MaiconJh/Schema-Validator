@@ -12,12 +12,9 @@
 
 export default {
   async fetch(request, env, ctx) {
-    // Only accept POST requests
-    if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
-    }
-
-    // CORS headers for local development
+    console.log('Worker received:', request.method, request.url);
+    
+    // CORS headers
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -26,7 +23,14 @@ export default {
 
     // Handle preflight
     if (request.method === 'OPTIONS') {
+      console.log('Handling OPTIONS preflight');
       return new Response(null, { headers: corsHeaders });
+    }
+
+    // Only accept POST requests
+    if (request.method !== 'POST') {
+      console.log('Method not allowed:', request.method);
+      return new Response('Method not allowed', { status: 405, headers: corsHeaders });
     }
 
     try {
