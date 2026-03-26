@@ -8,6 +8,9 @@ plugin_version_range: "1.0.x"
 markdown: kramdown
 highlighter: rouge
 permalink: pretty
+# Feedback worker URL (Cloudflare Workers)
+# Configure this after deploying the worker
+feedback_worker_url: "https://your-worker.your-account.workers.dev"
 defaults:
   - scope:
       path: ""

@@ -1,0 +1,9 @@
+name = "feedback-handler"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Variables that will be set in Cloudflare Dashboard
+# vars = { }
+
+[env.production]
+name = "feedback-handler-prod"

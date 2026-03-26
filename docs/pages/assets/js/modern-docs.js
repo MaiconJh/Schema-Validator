@@ -1067,6 +1067,67 @@
   }
 
   // --------------------------------------------------------------------------
+  // Help & Support Feedback
+  // --------------------------------------------------------------------------
+  function initHelpSupport() {
+    const feedbackButtons = document.querySelectorAll('.help-support-btn');
+    
+    if (!feedbackButtons.length) return;
+    
+    // Get worker URL from Jekyll config
+    const workerUrl = (typeof site !== 'undefined' && site.feedback_worker_url) 
+      ? site.feedback_worker_url 
+      : null;
+    
+    feedbackButtons.forEach(button => {
+      button.addEventListener('click', async function() {
+        const feedback = this.getAttribute('data-feedback');
+        const container = this.closest('.help-support-feedback');
+        
+        // Show loading state
+        container.innerHTML = '<p class="help-support-thanks">Sending feedback...</p>';
+        
+        try {
+          // Prepare feedback data
+          const feedbackData = {
+            feedback: feedback,
+            timestamp: new Date().toISOString(),
+            page: window.location.pathname,
+            userAgent: navigator.userAgent
+          };
+          
+          // If worker URL is configured, send to Cloudflare Worker
+          if (workerUrl) {
+            const response = await fetch(workerUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(feedbackData)
+            });
+            
+            if (!response.ok) {
+              throw new Error('Worker returned error');
+            }
+            
+            // Show success message
+            container.innerHTML = '<p class="help-support-thanks">Thank you for your feedback!</p>';
+          } else {
+            // Fallback: no worker configured, just show thank you
+            console.log('Feedback (no worker configured):', feedbackData);
+            container.innerHTML = '<p class="help-support-thanks">Thanks for your feedback!</p>';
+          }
+          
+        } catch (error) {
+          console.error('Error sending feedback:', error);
+          // Fallback: just show thank you message if API fails
+          container.innerHTML = '<p class="help-support-thanks">Thanks for your feedback!</p>';
+        }
+      });
+    });
+  }
+
+  // --------------------------------------------------------------------------
   function init() {
     initTheme();
     initSidebar();
@@ -1078,6 +1139,7 @@
     initCodeBlocks();
     initHeaderHeightObserver();
     initMobileSearchToggle();
+    initHelpSupport();
 
     // Add theme toggle listener
     if (themeToggle) {
