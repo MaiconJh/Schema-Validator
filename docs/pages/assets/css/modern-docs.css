@@ -2548,3 +2548,36 @@ h3:focus-within .heading-anchor {
   text-align: center;
   padding: var(--space-4);
 }
+
+/* Star Rating */
+.help-support-stars {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-1);
+  transition: transform var(--transition-fast);
+}
+
+.star-btn svg {
+  width: 28px;
+  height: 28px;
+  stroke: var(--color-text-secondary);
+  fill: none;
+  transition: all var(--transition-fast);
+}
+
+.star-btn:hover svg {
+  stroke: var(--color-accent-primary);
+  transform: scale(1.1);
+}
+
+.star-btn.active svg {
+  stroke: #f59e0b;
+  fill: #f59e0b;
+}

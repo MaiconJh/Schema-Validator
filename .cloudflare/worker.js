@@ -36,11 +36,11 @@ export default {
     try {
       // Parse the request body
       const body = await request.json();
-      const { feedback, page, userAgent } = body;
+      const { rating, page, userAgent } = body;
 
-      // Validate required fields
-      if (!feedback || !['yes', 'no'].includes(feedback)) {
-        return new Response(JSON.stringify({ error: 'Invalid feedback value' }), {
+      // Validate required fields (rating 1-5)
+      if (!rating || isNaN(rating) || rating < 1 || rating > 5) {
+        return new Response(JSON.stringify({ error: 'Invalid rating value. Must be 1-5.' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -64,7 +64,7 @@ export default {
 
       // Prepare feedback data
       const feedbackData = {
-        feedback,
+        rating,
         timestamp: new Date().toISOString(),
         page: page || 'unknown',
         userAgent: userAgent || 'unknown',
@@ -103,7 +103,7 @@ export default {
       const contentEncoded = btoa(fileContent);
 
       const commitBody = {
-        message: `Add user feedback: ${feedback}`,
+        message: `Add user rating: ${rating} stars`,
         content: contentEncoded,
         sha: sha
       };

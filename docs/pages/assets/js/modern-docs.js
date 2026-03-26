@@ -1070,27 +1070,39 @@
   // Help & Support Feedback
   // --------------------------------------------------------------------------
   function initHelpSupport() {
-    const feedbackButtons = document.querySelectorAll('.help-support-btn');
+    const starButtons = document.querySelectorAll('.star-btn');
     
-    if (!feedbackButtons.length) return;
+    if (!starButtons.length) return;
     
     // Get worker URL from Jekyll config
     const workerUrl = (typeof site !== 'undefined' && site.feedback_worker_url) 
       ? site.feedback_worker_url 
       : null;
     
-    feedbackButtons.forEach(button => {
+    starButtons.forEach(button => {
       button.addEventListener('click', async function() {
-        const feedback = this.getAttribute('data-feedback');
+        const rating = this.getAttribute('data-rating');
         const container = this.closest('.help-support-feedback');
+        const starsContainer = this.closest('.help-support-stars');
+        
+        // Show selected stars
+        starButtons.forEach(btn => {
+          const btnRating = parseInt(btn.getAttribute('data-rating'));
+          if (btnRating <= rating) {
+            btn.classList.add('active');
+          }
+        });
+        
+        // Disable all buttons after selection
+        starButtons.forEach(btn => btn.disabled = true);
         
         // Show loading state
-        container.innerHTML = '<p class="help-support-thanks">Sending feedback...</p>';
+        starsContainer.innerHTML = '<p class="help-support-thanks">Sending feedback...</p>';
         
         try {
           // Prepare feedback data
           const feedbackData = {
-            feedback: feedback,
+            rating: parseInt(rating),
             timestamp: new Date().toISOString(),
             page: window.location.pathname,
             userAgent: navigator.userAgent
@@ -1111,17 +1123,17 @@
             }
             
             // Show success message
-            container.innerHTML = '<p class="help-support-thanks">Thank you for your feedback!</p>';
+            starsContainer.innerHTML = '<p class="help-support-thanks">Thank you for your feedback!</p>';
           } else {
             // Fallback: no worker configured, just show thank you
             console.log('Feedback (no worker configured):', feedbackData);
-            container.innerHTML = '<p class="help-support-thanks">Thanks for your feedback!</p>';
+            starsContainer.innerHTML = '<p class="help-support-thanks">Thanks for your feedback!</p>';
           }
           
         } catch (error) {
           console.error('Error sending feedback:', error);
           // Fallback: just show thank you message if API fails
-          container.innerHTML = '<p class="help-support-thanks">Thanks for your feedback!</p>';
+          starsContainer.innerHTML = '<p class="help-support-thanks">Thanks for your feedback!</p>';
         }
       });
     });
