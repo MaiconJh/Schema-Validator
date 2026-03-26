@@ -31,7 +31,98 @@ Unknown format names currently pass validation (no error).
 | `json-pointer` | `/inventory/0/id` |
 | `relative-json-pointer` | `0/name` |
 | `uuid` | `123e4567-e89b-12d3-a456-426614174000` |
-| `regex` | `^[a-z0-9_-]+$` |
+| `regex` | `^[a-z0-9_-]+---
+title: Format reference
+description: Supported string formats in FormatValidator with practical examples.
+doc_type: reference
+order: 4
+sequence: 13
+permalink: /format-reference.html
+---
+
+## About format validation
+
+`format` is enforced by `PrimitiveValidator` for string schemas and delegated to `FormatValidator.isValid(format, value)`.
+
+Unknown format names currently pass validation (no error).
+
+## Standard formats
+
+| Format | Example |
+|---|---|
+| `date-time` | `2026-03-22T18:40:10Z` |
+| `date` | `2026-03-22` |
+| `time` | `18:40:10Z` |
+| `duration` | `P3DT4H30M` |
+| `email`, `idn-email` | `player@example.com` |
+| `hostname`, `idn-hostname` | `api.example.local` |
+| `ipv4` | `192.168.0.24` |
+| `ipv6` | `2001:db8::1` |
+| `uri` | `https://example.com/player/42` |
+| `uri-reference` | `/player/42` |
+| `uri-template` | `https://api.example.com/{playerId}` |
+| `json-pointer` | `/inventory/0/id` |
+| `relative-json-pointer` | `0/name` |
+ |
+
+## UUID Formats
+
+Schema-Validator supports UUID validation according to RFC 4122, with support for different versions and representations:
+
+### uuid
+Generic UUID validation (standard format with hyphens).
+
+```json
+{ "type": "string", "format": "uuid" }
+```
+
+Valid examples:
+- `550e8400-e29b-41d4-a716-446655440000`
+- `6ba7b810-9dad-11d1-80b4-00c04fd430c8`
+
+### uuid-v1
+UUID version 1 (time-based) - based on timestamp and MAC address.
+
+```json
+{ "type": "string", "format": "uuid-v1" }
+```
+
+Valid example: `6ba7b810-9dad-11d1-80b4-00c04fd430c8`
+
+### uuid-v4
+UUID version 4 (random) - randomly generated.
+
+```json
+{ "type": "string", "format": "uuid-v4" }
+```
+
+Valid example: `550e8400-e29b-41d4-a716-446655440000`
+
+### uuid-v5
+UUID version 5 (name-based) - generated from namespace and name using SHA-1.
+
+```json
+{ "type": "string", "format": "uuid-v5" }
+```
+
+Valid example: `2d3b2f50-0bdb-5c48-8097-4c5d8c8c8c8c`
+
+### uuid-nohyphen
+UUID without hyphens (32-character compact format).
+
+```json
+{ "type": "string", "format": "uuid-nohyphen" }
+```
+
+Valid example: `550e8400e29b41d4a716446655440000`
+
+### Conversion Utilities
+
+The `UUIDUtils` class provides methods for conversion between formats:
+- `UUIDUtils.normalize(uuid)` - normalizes to lowercase without hyphens
+- `UUIDUtils.toStandard(uuid)` - converts to 8-4-4-4-12 format
+- `UUIDUtils.toUpperCase(uuid)` - converts to uppercase
+- `UUIDUtils.toNoHyphen(uuid)` - removes hyphens
 
 ## Minecraft-specific formats
 

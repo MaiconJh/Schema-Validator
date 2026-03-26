@@ -2456,3 +2456,95 @@ h3:focus-within .heading-anchor {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
 }
+
+/* Help & Support Block */
+.help-support {
+  margin: var(--space-12) 0 var(--space-8);
+  padding: var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  justify-content: space-between;
+  background: linear-gradient(160deg, var(--surface-glass-strong), var(--surface-glass));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft-depth);
+}
+
+.help-support-feedback,
+.help-support-more {
+  flex: 1;
+  min-width: 200px;
+}
+
+.help-support-question,
+.help-support-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+  color: var(--color-text-primary);
+}
+
+.help-support-buttons {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.help-support-btn {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.help-support-btn:hover {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent-primary);
+  color: var(--color-accent-primary);
+}
+
+.help-support-privacy {
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.help-support-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.help-support-links li {
+  margin-bottom: var(--space-2);
+}
+
+.help-support-link {
+  color: var(--color-accent-primary);
+  text-decoration: none;
+  font-size: var(--text-sm);
+}
+
+.help-support-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .help-support {
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+}
+
+.help-support-thanks {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-success);
+  text-align: center;
+  padding: var(--space-4);
+}
