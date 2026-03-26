@@ -21,7 +21,7 @@ When you rate a page using the star rating system, we collect the following info
 - **Page URL** (the specific documentation page you rated)
 - **Timestamp** (date and time of your rating)
 
-We do not collect your IP address, user agent, or referrer in the stored data. Your IP is used temporarily for rate limiting (to prevent multiple votes in a short time) but is not saved to the repository.
+We do not collect your IP address, user agent, or referrer in the stored data. Your IP is used temporarily for rate limiting (to prevent multiple votes in a short time) but is never saved permanently.
 
 ## How We Use This Information
 
@@ -33,22 +33,26 @@ The feedback helps us understand which pages are most helpful and identify areas
 
 ## Where Your Data Is Stored
 
-All rating data is stored in a public GitHub repository:
+Rating data is stored in two places:
 
-<https://github.com/MaiconJh/Schema-Validator/blob/main/docs/pages/feedbacks.json>
+- **Cloudflare KV** – the primary storage, where ratings are saved immediately after submission. This is a private key-value store managed by Cloudflare and not publicly accessible.
+- **GitHub repository** – an asynchronous backup is committed periodically to a public repository:
 
-Because the repository is public, anyone can view the stored feedback. Please do not include any personal, sensitive, or confidential information in your ratings – only your rating value and page context are recorded.
+  <https://github.com/MaiconJh/Schema-Validator/blob/main/docs/pages/feedbacks.json>
+
+  Because the repository is public, anyone can view the backed-up feedback. Please do not include any personal, sensitive, or confidential information in your ratings – only your rating value and page context are recorded.
 
 ## Data Retention
 
-Ratings are retained for a maximum of 90 days. After this period, older ratings are automatically removed to prevent infinite growth of stored data. Additionally, the system limits storage to the most recent 1000 ratings per page.
+Ratings are retained for a maximum of 90 days. After this period, older ratings are automatically removed. Additionally, the system limits storage to the most recent 1,000 ratings per page.
 
-If you wish to have your rating removed, you may open an issue or pull request on the GitHub repository. We will consider reasonable requests to delete data, but note that the data is already public.
+If you wish to have your rating removed, you may open an issue or pull request on the GitHub repository. We will consider reasonable requests to delete data. Note that data stored in Cloudflare KV is private and will be deleted directly upon request.
 
 ## Third-Party Services
 
-- **Cloudflare Workers** – processes the rating submission and communicates with GitHub. Your IP is seen by Cloudflare for rate limiting but is not stored permanently.
-- **GitHub API** – used to commit the rating data to the repository. Authentication is handled via a token that never leaves Cloudflare Workers.
+- **Cloudflare Workers** – processes rating submissions and enforces rate limiting. Your IP is used temporarily for rate limiting but is never stored permanently.
+- **Cloudflare KV** – stores rating data as the primary database. Data is private and accessible only through the Worker.
+- **GitHub API** – receives asynchronous backups of the rating data committed to the repository. Authentication is handled via a token that never leaves Cloudflare Workers.
 
 ## Your Rights
 

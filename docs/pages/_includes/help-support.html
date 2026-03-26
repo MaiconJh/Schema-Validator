@@ -1,47 +1,55 @@
-<div class="help-support card" role="region" aria-label="Help and support">
+<div class="help-support" role="region" aria-label="Help and support">
+
   <div class="help-support-feedback">
+    <p class="help-support-section-label">Page rating</p>
     <p class="help-support-question">Was this page helpful?</p>
+
     <div class="help-support-stars">
       <button class="star-btn" data-rating="1" aria-label="Rate 1 star">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       </button>
       <button class="star-btn" data-rating="2" aria-label="Rate 2 stars">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       </button>
       <button class="star-btn" data-rating="3" aria-label="Rate 3 stars">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       </button>
       <button class="star-btn" data-rating="4" aria-label="Rate 4 stars">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       </button>
       <button class="star-btn" data-rating="5" aria-label="Rate 5 stars">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       </button>
-    </div>
-
-    <!-- Área de estatísticas -->
-    <div class="help-support-stats">
-      <div class="stats-average">
-        <span class="stats-stars"></span>
-        <span class="stats-number"></span>
-      </div>
-      <div class="stats-count"></div>
     </div>
 
     <div class="help-support-privacy">
-      <a href="{{ site.baseurl }}/privacy-policy/" class="help-support-link">Privacy Policy</a>
-      <span class="privacy-note">Your feedback helps us improve our documentation</span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      No personal data collected &mdash; <a href="{{ site.baseurl }}/privacy-policy/" class="help-support-link">Privacy Policy</a>
     </div>
   </div>
 
+  <div class="help-support-divider"></div>
+
   <div class="help-support-more">
-    <p class="help-support-title">Still need help?</p>
+    <p class="help-support-section-label">Community score</p>
+    <div class="help-support-stats">
+      <span class="stats-number"></span>
+      <div class="stats-meta">
+        <span class="stats-stars"></span>
+        <span class="stats-count"></span>
+      </div>
+    </div>
+
+    <p class="help-support-section-label">Resources</p>
     <ul class="help-support-links">
       <li>
-        <a href="https://github.com/MaiconJh/Schema-Validator/issues" target="_blank" rel="noopener noreferrer">
+        <a href="https://github.com/MaiconJh/Schema-Validator/issues" target="_blank" rel="noopener noreferrer" class="help-support-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
           Open an issue
+          <svg class="help-support-link-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
       </li>
     </ul>
   </div>
+
 </div>

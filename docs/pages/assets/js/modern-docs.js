@@ -1075,6 +1075,7 @@
     const statsNumberSpan = document.querySelector('.stats-number');
     const statsCountSpan = document.querySelector('.stats-count');
     const starsContainer = document.querySelector('.help-support-stars');
+    const statsBlock = document.querySelector('.help-support-stats');
 
     if (!starButtons.length) return;
 
@@ -1084,13 +1085,6 @@
       : 'https://feedback-handler.seusubdominio.workers.dev';
 
     const currentPage = window.location.pathname;
-
-    // Generate or retrieve a unique token for this browser (for duplicate prevention)
-    let userToken = localStorage.getItem('rating_token');
-    if (!userToken) {
-      userToken = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
-      localStorage.setItem('rating_token', userToken);
-    }
 
     // Check if user already voted on this page (local flag, optional)
     const votedKey = `voted_${currentPage.replace(/\//g, '_')}`;
@@ -1110,55 +1104,64 @@
     }
 
     function updateStatsDisplay(average, total) {
-      if (average !== undefined && total !== undefined) {
-        const fullStars = Math.round(average);
-        let starsHtml = '';
-        for (let i = 1; i <= 5; i++) {
-          starsHtml += i <= fullStars ? '★' : '☆';
-        }
-        if (statsStarsSpan) statsStarsSpan.textContent = starsHtml;
-        if (statsNumberSpan) statsNumberSpan.textContent = average.toFixed(1);
-        if (statsCountSpan) statsCountSpan.textContent = `${total} ${total === 1 ? 'rating' : 'ratings'}`;
-      }
+      if (average === undefined || total === undefined) return;
+      const fullStars = Math.round(average);
+      if (statsStarsSpan) statsStarsSpan.textContent = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+      if (statsNumberSpan) statsNumberSpan.textContent = average.toFixed(1);
+      if (statsCountSpan) statsCountSpan.textContent = `${total} ${total === 1 ? 'rating' : 'ratings'}`;
+      if (statsBlock && total > 0) statsBlock.style.display = 'flex';
+    }
+
+    // Apply hover state to stars up to index v
+    function setHoverState(v) {
+      document.querySelectorAll('.star-btn').forEach(btn => {
+        const bv = parseInt(btn.getAttribute('data-rating'));
+        btn.classList.toggle('hover', bv <= v);
+        btn.classList.remove('active');
+      });
+    }
+
+    // Apply active (selected) state to stars up to index v
+    function setActiveState(v) {
+      document.querySelectorAll('.star-btn').forEach(btn => {
+        const bv = parseInt(btn.getAttribute('data-rating'));
+        btn.classList.remove('hover');
+        btn.classList.toggle('active', bv <= v);
+      });
+    }
+
+    // Clear all star states
+    function clearStarStates() {
+      document.querySelectorAll('.star-btn').forEach(btn => {
+        btn.classList.remove('hover', 'active');
+      });
     }
 
     async function submitRating(rating) {
-      if (hasVoted) {
-        showThankYouMessage('You already rated this page. Thank you!');
-        return;
-      }
+      if (hasVoted) return;
 
-      // Temporarily disable buttons to prevent double-click
       starButtons.forEach(btn => btn.disabled = true);
-
-      // Show loading
-      const originalHTML = starsContainer.innerHTML;
-      starsContainer.innerHTML = '<p class="help-support-thanks">Sending...</p>';
 
       try {
         const response = await fetch(workerUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            rating: parseInt(rating),
+            rating: parseInt(rating, 10),
             page: currentPage,
-            token: userToken,
           })
         });
 
         const data = await response.json();
 
         if (response.ok) {
-          // Mark as voted
           hasVoted = true;
           localStorage.setItem(votedKey, 'true');
-          // Update stats with returned values
+          setActiveState(rating);
           updateStatsDisplay(data.average, data.total_ratings);
-          showThankYouMessage('Thank you for your rating! ⭐');
+          showThankYouMessage('Thank you for your rating!');
         } else if (response.status === 429) {
-          // Rate limited
-          showThankYouMessage('You have already rated this page recently. Please try again later.', true);
-          // Re-enable buttons (but they'll remain disabled if rate limited? Actually we should re-enable)
+          showThankYouMessage('You have already rated this page recently.', true);
           starButtons.forEach(btn => btn.disabled = false);
         } else {
           throw new Error(data.error || 'Failed to submit');
@@ -1166,16 +1169,9 @@
       } catch (err) {
         console.error('Error sending rating:', err);
         showThankYouMessage('Error submitting rating. Please try again later.', true);
-        // Re-enable buttons on error
         starButtons.forEach(btn => btn.disabled = false);
-      } finally {
-        // Restore stars container content, but keep stats display
-        starsContainer.innerHTML = originalHTML;
-        // Re-attach event listeners to new buttons (since we replaced innerHTML)
-        attachStarEvents();
       }
 
-      // Auto-hide thank you message after 5 seconds
       setTimeout(() => {
         const msg = document.querySelector('.help-support-thanks');
         if (msg) msg.remove();
@@ -1183,45 +1179,55 @@
     }
 
     function showThankYouMessage(message, isError = false) {
+      document.querySelectorAll('.help-support-thanks').forEach(el => el.remove());
       const msgDiv = document.createElement('div');
       msgDiv.className = 'help-support-thanks';
-      msgDiv.textContent = message;
-      if (isError) msgDiv.style.backgroundColor = 'var(--color-danger-bg)';
+      if (!isError) {
+        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        icon.setAttribute('viewBox', '0 0 24 24');
+        icon.setAttribute('stroke-width', '2');
+        icon.setAttribute('stroke-linecap', 'round');
+        icon.setAttribute('stroke-linejoin', 'round');
+        icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+        msgDiv.appendChild(icon);
+      }
+      if (isError) {
+        msgDiv.style.background = 'var(--color-danger-bg)';
+        msgDiv.style.borderColor = 'var(--color-danger-border)';
+        msgDiv.style.color = 'var(--color-danger-text)';
+      }
+      msgDiv.appendChild(document.createTextNode(message));
       starsContainer.parentNode.insertBefore(msgDiv, starsContainer.nextSibling);
     }
 
-    // Function to attach click events to star buttons (used after potential DOM replacement)
     function attachStarEvents() {
-      const freshButtons = document.querySelectorAll('.star-btn');
-      freshButtons.forEach(btn => {
-        btn.removeEventListener('click', starClickHandler);
-        btn.addEventListener('click', starClickHandler);
+      document.querySelectorAll('.star-btn').forEach(btn => {
+        btn.removeEventListener('mouseenter', onStarEnter);
+        btn.removeEventListener('mouseleave', onStarLeave);
+        btn.removeEventListener('click', onStarClick);
+        btn.addEventListener('mouseenter', onStarEnter);
+        btn.addEventListener('mouseleave', onStarLeave);
+        btn.addEventListener('click', onStarClick);
       });
     }
 
-    function starClickHandler(e) {
+    function onStarEnter() {
+      if (hasVoted) return;
+      setHoverState(parseInt(this.getAttribute('data-rating')));
+    }
+
+    function onStarLeave() {
+      if (hasVoted) return;
+      clearStarStates();
+    }
+
+    function onStarClick() {
+      if (hasVoted) return;
       const rating = this.getAttribute('data-rating');
-      if (hasVoted) {
-        showThankYouMessage('You already rated this page. Thank you!');
-        return;
-      }
-      // Highlight selected stars
-      const allBtns = document.querySelectorAll('.star-btn');
-      allBtns.forEach(btn => {
-        const btnRating = parseInt(btn.getAttribute('data-rating'));
-        if (btnRating <= rating) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      });
       submitRating(rating);
     }
 
-    // Initial attach
     attachStarEvents();
-
-    // Load stats when page loads
     loadStats();
   }
   // --------------------------------------------------------------------------

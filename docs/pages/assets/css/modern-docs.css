@@ -2464,138 +2464,114 @@ h3:focus-within .heading-anchor {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-6);
-  justify-content: space-between;
-  background: linear-gradient(160deg, var(--surface-glass-strong), var(--surface-glass));
-  border: 1px solid var(--glass-border);
+  background: var(--color-bg-elevated);
+  border: 0.5px solid var(--color-border-default);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft-depth);
 }
 
 .help-support-feedback,
 .help-support-more {
   flex: 1;
-  min-width: 200px;
+  min-width: 180px;
+}
+
+.help-support-divider {
+  width: 0.5px;
+  background: var(--color-border-default);
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.help-support-section-label {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
 }
 
 .help-support-question,
 .help-support-title {
-  font-size: var(--text-base);
-  font-weight: 600;
-  margin-bottom: var(--space-3);
-  color: var(--color-text-primary);
-}
-
-.help-support-buttons {
-  display: flex;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.help-support-btn {
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
   font-size: var(--text-sm);
   font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.help-support-btn:hover {
-  background: var(--color-accent-subtle);
-  border-color: var(--color-accent-primary);
-  color: var(--color-accent-primary);
+  margin-bottom: var(--space-3);
+  color: var(--color-text-primary);
+  line-height: var(--leading-normal);
 }
 
 .help-support-privacy {
-  margin-top: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
   font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.help-support-privacy svg {
+  width: 12px;
+  height: 12px;
+  stroke: var(--color-text-tertiary);
+  fill: none;
+  flex-shrink: 0;
 }
 
 .help-support-links {
   list-style: none;
   margin: 0;
   padding: 0;
-}
-
-.help-support-links li {
-  margin-bottom: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .help-support-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--color-accent-primary);
   text-decoration: none;
   font-size: var(--text-sm);
+  transition: gap var(--transition-fast);
 }
 
 .help-support-link:hover {
-  text-decoration: underline;
+  gap: var(--space-3);
+}
+
+.help-support-link svg {
+  width: 13px;
+  height: 13px;
+  stroke: var(--color-accent-primary);
+  fill: none;
+  flex-shrink: 0;
+}
+
+.help-support-link-arrow {
+  margin-left: auto;
+  width: 13px;
+  height: 13px;
+  stroke: var(--color-accent-primary);
+  fill: none;
+  flex-shrink: 0;
 }
 
 @media (max-width: 640px) {
   .help-support {
     flex-direction: column;
-    gap: var(--space-6);
+  }
+  .help-support-divider {
+    width: 100%;
+    height: 0.5px;
+    align-self: auto;
   }
 }
 
-.help-support-thanks {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--color-success);
-  text-align: center;
-  padding: var(--space-4);
-}
-
-/* Star Rating Stats */
-.help-support-stats {
-  margin-top: var(--space-4);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-border-muted);
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
-.stats-average {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-}
-
-.stats-stars {
-  font-size: 1rem;
-  letter-spacing: 2px;
-  color: #fbbf24;
-}
-
-.stats-number {
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.stats-count {
-  font-size: var(--text-xs);
-}
-
-.help-support-thanks {
-  margin: var(--space-3) 0;
-  padding: var(--space-2);
-  text-align: center;
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-}
-
-/* Star Rating Styles */
+/* Star Rating */
 .help-support-stars {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-1);
   margin-bottom: var(--space-3);
 }
 
@@ -2603,24 +2579,97 @@ h3:focus-within .heading-anchor {
   background: none;
   border: none;
   cursor: pointer;
-  padding: var(--space-1);
-  transition: transform var(--transition-fast);
+  padding: 2px;
+  line-height: 1;
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.star-btn:hover {
+  transform: scale(1.18);
+}
+
+.star-btn:disabled {
+  cursor: default;
+  transform: none;
 }
 
 .star-btn svg {
-  width: 28px;
-  height: 28px;
-  stroke: var(--color-text-secondary);
+  width: 26px;
+  height: 26px;
+  display: block;
+  stroke: var(--color-border-strong);
   fill: none;
-  transition: all var(--transition-fast);
+  stroke-width: 1.5;
+  transition: stroke 150ms ease, fill 150ms ease;
 }
 
-.star-btn:hover svg {
-  stroke: var(--color-accent-primary);
-  transform: scale(1.1);
+.star-btn.hover svg {
+  stroke: #fbbf24;
+  fill: #fde68a;
 }
 
 .star-btn.active svg {
   stroke: #f59e0b;
   fill: #f59e0b;
+}
+
+/* Stats block */
+.help-support-stats {
+  display: none;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  background: var(--color-bg-secondary);
+  border: 0.5px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+
+.stats-number {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.stats-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.stats-stars {
+  font-size: var(--text-sm);
+  color: #f59e0b;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.stats-count {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Thank you message */
+.help-support-thanks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 0.5px solid var(--color-success-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.help-support-thanks svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--color-success-text);
+  fill: none;
+  flex-shrink: 0;
 }
