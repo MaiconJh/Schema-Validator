@@ -11,8 +11,14 @@
  */
 
 export default {
+  // In-memory rate limiting store (resets on worker restart)
+  rateLimitStore: new Map(),
+  
   async fetch(request, env, ctx) {
     console.log('Worker received:', request.method, request.url);
+    
+    // Get client IP from Cloudflare headers
+    const clientIP = request.headers.get('cf-connecting-ip') || 'unknown';
     
     // CORS headers
     const corsHeaders = {
@@ -44,6 +50,31 @@ export default {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
+      }
+
+      // Rate limiting: 1 rating per IP + page combination per hour
+      const rateLimitKey = `${clientIP}:${page || 'unknown'}`;
+      const lastRatingTime = this.rateLimitStore.get(rateLimitKey);
+      const now = Date.now();
+      const oneHour = 60 * 60 * 1000;
+      
+      if (lastRatingTime && (now - lastRatingTime) < oneHour) {
+        console.log('Rate limited:', rateLimitKey);
+        return new Response(JSON.stringify({ error: 'You have already rated this page recently. Please try again later.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // Store the rating time
+      this.rateLimitStore.set(rateLimitKey, now);
+
+      // Clean up old entries (simple cleanup every 100 requests)
+      if (this.rateLimitStore.size > 100) {
+        const cutoff = now - oneHour;
+        for (const [key, time] of this.rateLimitStore) {
+          if (time < cutoff) this.rateLimitStore.delete(key);
+        }
       }
 
       // Get configuration from environment variables
