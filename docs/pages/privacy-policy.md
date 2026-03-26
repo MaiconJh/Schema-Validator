@@ -20,10 +20,8 @@ When you rate a page using the star rating system, we collect the following info
 - **Rating value** (1 to 5 stars)
 - **Page URL** (the specific documentation page you rated)
 - **Timestamp** (date and time of your rating)
-- **User agent** (browser and operating system information, used only for diagnostics)
-- **Referrer** (the page you came from, if any)
 
-We do not collect your IP address in the stored data. Your IP is used temporarily for rate limiting (to prevent multiple votes in a short time) but is not saved to the repository.
+We do not collect your IP address, user agent, or referrer in the stored data. Your IP is used temporarily for rate limiting (to prevent multiple votes in a short time) but is not saved to the repository.
 
 ## How We Use This Information
 
@@ -43,7 +41,9 @@ Because the repository is public, anyone can view the stored feedback. Please do
 
 ## Data Retention
 
-Ratings are stored indefinitely as part of the repository's history. If you wish to have your rating removed, you may open an issue or pull request on the GitHub repository. We will consider reasonable requests to delete data, but note that the data is already public.
+Ratings are retained for a maximum of 90 days. After this period, older ratings are automatically removed to prevent infinite growth of stored data. Additionally, the system limits storage to the most recent 1000 ratings per page.
+
+If you wish to have your rating removed, you may open an issue or pull request on the GitHub repository. We will consider reasonable requests to delete data, but note that the data is already public.
 
 ## Third-Party Services
 
