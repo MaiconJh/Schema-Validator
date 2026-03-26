@@ -79,7 +79,8 @@ export default {
         const getResponse = await fetch(apiUrl, {
           headers: {
             'Authorization': `token ${token}`,
-            'Accept': 'application/vnd.github.v3+json'
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'Schema-Validator-Feedback-Worker'
           }
         });
 
@@ -113,7 +114,8 @@ export default {
         headers: {
           'Authorization': `token ${token}`,
           'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'User-Agent': 'Schema-Validator-Feedback-Worker'
         },
         body: JSON.stringify(commitBody)
       });
