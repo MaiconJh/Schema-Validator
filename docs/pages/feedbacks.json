@@ -40,5 +40,12 @@
     "page": "/Schema-Validator/quickstart.html",
     "userAgent": "unknown",
     "referrer": "https://maiconjh.github.io/"
+  },
+  {
+    "rating": 4,
+    "timestamp": "2026-03-26T02:50:43.142Z",
+    "page": "/Schema-Validator/",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0",
+    "referrer": "http://127.0.0.1:4000/"
   }
 ]
