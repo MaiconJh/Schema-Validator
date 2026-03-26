@@ -333,9 +333,9 @@ function getRepoConfig(env) {
   return { owner, repo, token: env.GITHUB_TOKEN };
 }
 
-// Validate page parameter - only allow letters, numbers, hyphen, underscore, and slash
+// Validate page parameter - only allow letters, numbers, hyphen, underscore, slash, and dot (for .html)
 function isValidPage(page) {
-  const pageRegex = /^[a-zA-Z0-9\-_/]+$/;
+  const pageRegex = /^[a-zA-Z0-9\-_.//]+$/;
   return pageRegex.test(page);
 }
 
