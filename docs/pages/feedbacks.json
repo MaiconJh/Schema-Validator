@@ -54,5 +54,12 @@
     "page": "/Schema-Validator/getting-started.html",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0",
     "referrer": "http://127.0.0.1:4000/"
+  },
+  {
+    "rating": 5,
+    "timestamp": "2026-03-26T02:53:38.698Z",
+    "page": "/Schema-Validator/getting-started.html",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Mobile Safari/537.36",
+    "referrer": "https://maiconjh.github.io/"
   }
 ]
