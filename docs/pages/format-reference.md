@@ -30,7 +30,7 @@ Unknown format names currently pass validation (no error).
 | `uri-template` | `https://api.example.com/{playerId}` |
 | `json-pointer` | `/inventory/0/id` |
 | `relative-json-pointer` | `0/name` |
- |
+| `regex` | `^[a-z0-9_-]+` |
 
 ## UUID Formats
 
