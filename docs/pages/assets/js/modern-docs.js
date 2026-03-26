@@ -1067,78 +1067,164 @@
   }
 
   // --------------------------------------------------------------------------
-  // Help & Support Feedback
+  // Help & Support Feedback (star rating with stats)
   // --------------------------------------------------------------------------
   function initHelpSupport() {
     const starButtons = document.querySelectorAll('.star-btn');
-    
+    const statsStarsSpan = document.querySelector('.stats-stars');
+    const statsNumberSpan = document.querySelector('.stats-number');
+    const statsCountSpan = document.querySelector('.stats-count');
+    const starsContainer = document.querySelector('.help-support-stars');
+
     if (!starButtons.length) return;
-    
-    // Get worker URL from Jekyll config
-    const workerUrl = (typeof site !== 'undefined' && site.feedback_worker_url) 
-      ? site.feedback_worker_url 
-      : null;
-    
-    starButtons.forEach(button => {
-      button.addEventListener('click', async function() {
-        const rating = this.getAttribute('data-rating');
-        const container = this.closest('.help-support-feedback');
-        const starsContainer = this.closest('.help-support-stars');
-        
-        // Show selected stars
-        starButtons.forEach(btn => {
-          const btnRating = parseInt(btn.getAttribute('data-rating'));
-          if (btnRating <= rating) {
-            btn.classList.add('active');
-          }
-        });
-        
-        // Disable all buttons after selection
-        starButtons.forEach(btn => btn.disabled = true);
-        
-        // Show loading state
-        starsContainer.innerHTML = '<p class="help-support-thanks">Sending feedback...</p>';
-        
-        try {
-          // Prepare feedback data
-          const feedbackData = {
+
+    // Get worker URL from Jekyll config (define in _config.yml)
+    const workerUrl = (typeof site !== 'undefined' && site.feedback_worker_url)
+      ? site.feedback_worker_url
+      : 'https://feedback-handler.seusubdominio.workers.dev'; // ajuste
+
+    const currentPage = window.location.pathname;
+
+    // Generate or retrieve a unique token for this browser (for duplicate prevention)
+    let userToken = localStorage.getItem('rating_token');
+    if (!userToken) {
+      userToken = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
+      localStorage.setItem('rating_token', userToken);
+    }
+
+    // Check if user already voted on this page (local flag, optional)
+    const votedKey = `voted_${currentPage.replace(/\//g, '_')}`;
+    let hasVoted = localStorage.getItem(votedKey) === 'true';
+
+    // Load current stats for this page
+    async function loadStats() {
+      try {
+        const response = await fetch(`${workerUrl}/stats?page=${encodeURIComponent(currentPage)}`);
+        if (response.ok) {
+          const stats = await response.json();
+          updateStatsDisplay(stats.average, stats.total_ratings);
+        }
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      }
+    }
+
+    function updateStatsDisplay(average, total) {
+      if (average !== undefined && total !== undefined) {
+        const fullStars = Math.round(average);
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+          starsHtml += i <= fullStars ? '★' : '☆';
+        }
+        if (statsStarsSpan) statsStarsSpan.textContent = starsHtml;
+        if (statsNumberSpan) statsNumberSpan.textContent = average.toFixed(1);
+        if (statsCountSpan) statsCountSpan.textContent = `${total} ${total === 1 ? 'rating' : 'ratings'}`;
+      }
+    }
+
+    async function submitRating(rating) {
+      if (hasVoted) {
+        showThankYouMessage('You already rated this page. Thank you!');
+        return;
+      }
+
+      // Temporarily disable buttons to prevent double-click
+      starButtons.forEach(btn => btn.disabled = true);
+
+      // Show loading
+      const originalHTML = starsContainer.innerHTML;
+      starsContainer.innerHTML = '<p class="help-support-thanks">Sending...</p>';
+
+      try {
+        const response = await fetch(workerUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
             rating: parseInt(rating),
-            timestamp: new Date().toISOString(),
-            page: window.location.pathname,
-            userAgent: navigator.userAgent
-          };
-          
-          // If worker URL is configured, send to Cloudflare Worker
-          if (workerUrl) {
-            const response = await fetch(workerUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(feedbackData)
-            });
-            
-            if (!response.ok) {
-              throw new Error('Worker returned error');
-            }
-            
-            // Show success message
-            starsContainer.innerHTML = '<p class="help-support-thanks">Thank you for your feedback!</p>';
-          } else {
-            // Fallback: no worker configured, just show thank you
-            console.log('Feedback (no worker configured):', feedbackData);
-            starsContainer.innerHTML = '<p class="help-support-thanks">Thanks for your feedback!</p>';
-          }
-          
-        } catch (error) {
-          console.error('Error sending feedback:', error);
-          // Fallback: just show thank you message if API fails
-          starsContainer.innerHTML = '<p class="help-support-thanks">Thanks for your feedback!</p>';
+            page: currentPage,
+            token: userToken,
+            // No userAgent, no IP (worker will not store them)
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Mark as voted
+          hasVoted = true;
+          localStorage.setItem(votedKey, 'true');
+          // Update stats with returned values
+          updateStatsDisplay(data.average, data.total_ratings);
+          showThankYouMessage('Thank you for your rating! ⭐');
+        } else if (response.status === 409) {
+          // Already voted (detected by token)
+          hasVoted = true;
+          localStorage.setItem(votedKey, 'true');
+          showThankYouMessage('You already rated this page. Thank you!');
+        } else {
+          throw new Error(data.error || 'Failed to submit');
+        }
+      } catch (err) {
+        console.error('Error sending rating:', err);
+        showThankYouMessage('Error submitting rating. Please try again later.', true);
+        // Re-enable buttons on error
+        starButtons.forEach(btn => btn.disabled = false);
+      } finally {
+        // Restore stars container content, but keep stats display
+        starsContainer.innerHTML = originalHTML;
+        // Re-attach event listeners to new buttons (since we replaced innerHTML)
+        attachStarEvents();
+      }
+
+      // Auto-hide thank you message after 5 seconds
+      setTimeout(() => {
+        const msg = document.querySelector('.help-support-thanks');
+        if (msg) msg.remove();
+      }, 5000);
+    }
+
+    function showThankYouMessage(message, isError = false) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'help-support-thanks';
+      msgDiv.textContent = message;
+      if (isError) msgDiv.style.backgroundColor = 'var(--color-danger-bg)';
+      starsContainer.parentNode.insertBefore(msgDiv, starsContainer.nextSibling);
+    }
+
+    // Function to attach click events to star buttons (used after potential DOM replacement)
+    function attachStarEvents() {
+      const freshButtons = document.querySelectorAll('.star-btn');
+      freshButtons.forEach(btn => {
+        btn.removeEventListener('click', starClickHandler);
+        btn.addEventListener('click', starClickHandler);
+      });
+    }
+
+    function starClickHandler(e) {
+      const rating = this.getAttribute('data-rating');
+      if (hasVoted) {
+        showThankYouMessage('You already rated this page. Thank you!');
+        return;
+      }
+      // Highlight selected stars
+      const allBtns = document.querySelectorAll('.star-btn');
+      allBtns.forEach(btn => {
+        const btnRating = parseInt(btn.getAttribute('data-rating'));
+        if (btnRating <= rating) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
         }
       });
-    });
-  }
+      submitRating(rating);
+    }
 
+    // Initial attach
+    attachStarEvents();
+
+    // Load stats when page loads
+    loadStats();
+  }
   // --------------------------------------------------------------------------
   function init() {
     initTheme();
