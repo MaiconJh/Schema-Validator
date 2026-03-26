@@ -15,8 +15,8 @@ jobs:
 
       - name: Substitute KV namespace IDs
         run: |
-          sed -i "s/PLACEHOLDER_KV_DEV_ID/${{ secrets.RATINGS_KV_ID }}/g" wrangler.toml
-          sed -i "s/PLACEHOLDER_KV_PROD_ID/${{ secrets.RATINGS_KV_PROD_ID }}/g" wrangler.toml
+          sed -i "s/PLACEHOLDER_KV_DEV_ID/${{ secrets.RATINGS_KV }}/g" wrangler.toml
+          sed -i "s/PLACEHOLDER_KV_PROD_ID/${{ secrets.RATINGS_KV_PROD }}/g" wrangler.toml
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
