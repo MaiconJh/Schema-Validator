@@ -4,11 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -408,6 +413,112 @@ class FileSchemaLoaderTest {
             Schema passwordProp = schema.getProperties().get("password");
             assertNotNull(passwordProp, "Expected 'password' property to exist");
             assertTrue(passwordProp.isWriteOnly(), "Expected 'password' to be writeOnly");
+        }
+    }
+
+    @Nested
+    @DisplayName("Unsupported keyword behavior")
+    class UnsupportedKeywordBehaviorTests {
+
+        @Test
+        @DisplayName("shouldWarnAndIgnoreUnsupportedKeywordInNonFailFastMode")
+        void shouldWarnAndIgnoreUnsupportedKeywordInNonFailFastMode() {
+            CapturingHandler handler = new CapturingHandler();
+            logger.addHandler(handler);
+            try {
+                Map<String, Object> schemaMap = Map.of(
+                        "type", "object",
+                        "propertyNames", Map.of("pattern", "^[a-z]+$"),
+                        "properties", Map.of("name", Map.of("type", "string")));
+
+                Schema schema = loader.parseSchema("warnSchema", schemaMap);
+                assertNotNull(schema, "Schema should still be parsed when fail-fast is disabled");
+                assertTrue(handler.hasMessageContaining("Unsupported keyword detected: 'propertyNames'"),
+                        "Expected warning log for unsupported keyword");
+            } finally {
+                logger.removeHandler(handler);
+            }
+        }
+
+        @Test
+        @DisplayName("shouldThrowInFailFastModeForUnsupportedKeyword")
+        void shouldThrowInFailFastModeForUnsupportedKeyword() {
+            loader.setFailFastMode(true);
+            Map<String, Object> schemaMap = Map.of(
+                    "type", "object",
+                    "propertyNames", Map.of("pattern", "^[a-z]+$"));
+
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                    () -> loader.parseSchema("failFastSchema", schemaMap));
+            assertTrue(ex.getMessage().contains("Unsupported keyword detected: 'propertyNames'"),
+                    "Expected fail-fast message mentioning propertyNames");
+        }
+
+        @Test
+        @DisplayName("shouldTreatRegistryKeywordAsSupportedEvenWithoutImplementation")
+        void shouldTreatRegistryKeywordAsSupportedEvenWithoutImplementation() {
+            CapturingHandler handler = new CapturingHandler();
+            logger.addHandler(handler);
+            try {
+                Map<String, Object> schemaMap = Map.of(
+                        "type", "object",
+                        "$dynamicAnchor", "node",
+                        "properties", Map.of("name", Map.of("type", "string")));
+
+                Schema schema = loader.parseSchema("dynamicAnchorSchema", schemaMap);
+                assertNotNull(schema, "Schema should parse successfully");
+                assertFalse(handler.hasMessageContaining("Unsupported keyword detected: '$dynamicAnchor'"),
+                        "No unsupported warning expected because keyword is in registry");
+            } finally {
+                logger.removeHandler(handler);
+            }
+        }
+
+        @Test
+        @DisplayName("shouldWarnForPrefixItemsBecauseRegistryIsOutOfSync")
+        void shouldWarnForPrefixItemsBecauseRegistryIsOutOfSync() {
+            CapturingHandler handler = new CapturingHandler();
+            logger.addHandler(handler);
+            try {
+                Map<String, Object> schemaMap = Map.of(
+                        "type", "array",
+                        "prefixItems", List.of(
+                                Map.of("type", "string"),
+                                Map.of("type", "integer")));
+
+                Schema schema = loader.parseSchema("prefixItemsSchema", schemaMap);
+                assertNotNull(schema, "Schema should parse successfully even if warning is emitted");
+                assertEquals(2, schema.getPrefixItems().size(), "prefixItems should still be parsed");
+                assertTrue(handler.hasMessageContaining("Unsupported keyword detected: 'prefixItems'"),
+                        "Expected warning because prefixItems is implemented but not in registry");
+            } finally {
+                logger.removeHandler(handler);
+            }
+        }
+    }
+
+    private static final class CapturingHandler extends Handler {
+        private final StringBuilder messages = new StringBuilder();
+
+        @Override
+        public void publish(LogRecord record) {
+            if (record != null && record.getMessage() != null) {
+                messages.append(record.getMessage()).append('\n');
+            }
+        }
+
+        @Override
+        public void flush() {
+            // no-op
+        }
+
+        @Override
+        public void close() throws SecurityException {
+            // no-op
+        }
+
+        private boolean hasMessageContaining(String needle) {
+            return messages.toString().contains(needle);
         }
     }
 }
