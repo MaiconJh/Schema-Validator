@@ -10,7 +10,7 @@ highlighter: rouge
 permalink: pretty
 # Feedback worker URL (Cloudflare Workers)
 # Configure this after deploying the worker
-feedback_worker_url: "https://feedback-handler.maiconjairhansen.workers.dev"
+feedback_worker_url: "https://feedback-handler-prod.maiconjairhansen.workers.dev"
 defaults:
   - scope:
       path: ""
