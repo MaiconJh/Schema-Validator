@@ -4,22 +4,35 @@ on:
   push:
     branches:
       - main
+      - staging
 
 jobs:
-  deploy:
+  deploy-staging:
     runs-on: ubuntu-latest
-    name: Deploy
+    name: Deploy to Staging
+    if: github.ref == 'refs/heads/staging'
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Substitute KV namespace IDs
-        run: |
-          sed -i "s/PLACEHOLDER_KV_DEV_ID/${{ secrets.RATINGS_KV }}/g" wrangler.toml
-          sed -i "s/PLACEHOLDER_KV_PROD_ID/${{ secrets.RATINGS_KV_PROD }}/g" wrangler.toml
+      - name: Deploy to Cloudflare Workers (Staging)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          environment: staging
+          workingDirectory: .cloudflare
 
-      - name: Deploy to Cloudflare Workers
+  deploy-production:
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Cloudflare Workers (Production)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           environment: production
+          workingDirectory: .cloudflare

@@ -4,11 +4,18 @@ compatibility_date = "2024-01-01"
 
 [[kv_namespaces]]
 binding = "RATINGS_KV"
-id = "PLACEHOLDER_KV_DEV_ID"
+id = "c072bab3d4024a8c81598e2c8c15ce43"
+
+[env.staging]
+name = "feedback-handler-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "RATINGS_KV"
+id = "8e982124e84a4f95afe0d9a786e63b1d"
 
 [env.production]
 name = "feedback-handler-prod"
 
 [[env.production.kv_namespaces]]
 binding = "RATINGS_KV"
-id = "PLACEHOLDER_KV_PROD_ID"
+id = "6de50e613591450eb5aaae772a81e716"
