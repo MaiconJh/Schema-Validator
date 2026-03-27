@@ -14,6 +14,9 @@ This audit compares the current implementation against Draft 2020-12 vocabularie
 
 Reference keyword lists were taken from the official Draft 2020-12 vocabulary meta-schemas.
 
+Implementation execution companion:
+- `docs/explanation/draft-2020-12-implementation-plan-prompt-and-guidance.md`
+
 ---
 
 ## Executive summary
@@ -186,4 +189,3 @@ Current loader behavior:
 
 - Update `SupportedKeywordsRegistry.initializeSupportedKeywords()` to match Draft 2020-12 canonical names.
 - Keep legacy aliases behind explicit compatibility flag (if needed), instead of mixing canonical + legacy in a single list.
-
