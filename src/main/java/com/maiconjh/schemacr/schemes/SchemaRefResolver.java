@@ -150,6 +150,123 @@ public class SchemaRefResolver {
     }
 
     /**
+     * Resolves a $dynamicRef reference.
+     *
+     * <p>Supports:
+     * <ul>
+     *   <li>JSON pointer style refs (delegates to {@link #resolveRef(String, String)})</li>
+     *   <li>Anchor refs like <code>#node</code> by searching dynamic anchors</li>
+     * </ul>
+     */
+    public Schema resolveDynamicRef(String dynamicRef, String currentSchemaName) {
+        if (dynamicRef == null || dynamicRef.isEmpty()) {
+            return null;
+        }
+        if (dynamicRef.startsWith("#/") || !dynamicRef.startsWith("#")) {
+            return resolveRef(dynamicRef, currentSchemaName);
+        }
+
+        String anchorName = dynamicRef.substring(1);
+        if (anchorName.isEmpty()) {
+            return null;
+        }
+
+        // Prefer the current schema, then fallback to all registered schemas.
+        Schema currentSchema = registry.getSchema(currentSchemaName).orElse(null);
+        Schema resolved = findSchemaByDynamicAnchor(currentSchema, anchorName);
+        if (resolved != null) {
+            return resolved;
+        }
+
+        for (String schemaName : registry.getAllSchemaNames()) {
+            Schema schema = registry.getSchema(schemaName).orElse(null);
+            resolved = findSchemaByDynamicAnchor(schema, anchorName);
+            if (resolved != null) {
+                return resolved;
+            }
+        }
+        return null;
+    }
+
+    private Schema findSchemaByDynamicAnchor(Schema schema, String anchorName) {
+        if (schema == null) {
+            return null;
+        }
+        if (anchorName.equals(schema.getDynamicAnchor())) {
+            return schema;
+        }
+        for (Schema subSchema : schema.getProperties().values()) {
+            Schema found = findSchemaByDynamicAnchor(subSchema, anchorName);
+            if (found != null) return found;
+        }
+        for (Schema subSchema : schema.getPatternProperties().values()) {
+            Schema found = findSchemaByDynamicAnchor(subSchema, anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getItemSchema() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getItemSchema(), anchorName);
+            if (found != null) return found;
+        }
+        for (Schema subSchema : schema.getPrefixItems()) {
+            Schema found = findSchemaByDynamicAnchor(subSchema, anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getContainsSchema() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getContainsSchema(), anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getAdditionalItemsSchema() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getAdditionalItemsSchema(), anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getAdditionalPropertiesSchema() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getAdditionalPropertiesSchema(), anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getUnevaluatedItemsSchema() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getUnevaluatedItemsSchema(), anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getUnevaluatedPropertiesSchema() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getUnevaluatedPropertiesSchema(), anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getContentSchema() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getContentSchema(), anchorName);
+            if (found != null) return found;
+        }
+        for (Schema subSchema : schema.getAllOf()) {
+            Schema found = findSchemaByDynamicAnchor(subSchema, anchorName);
+            if (found != null) return found;
+        }
+        for (Schema subSchema : schema.getAnyOf()) {
+            Schema found = findSchemaByDynamicAnchor(subSchema, anchorName);
+            if (found != null) return found;
+        }
+        for (Schema subSchema : schema.getOneOf()) {
+            Schema found = findSchemaByDynamicAnchor(subSchema, anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getNot() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getNot(), anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getIfSchema() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getIfSchema(), anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getThenSchema() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getThenSchema(), anchorName);
+            if (found != null) return found;
+        }
+        if (schema.getElseSchema() != null) {
+            Schema found = findSchemaByDynamicAnchor(schema.getElseSchema(), anchorName);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    /**
      * Resolves an external reference with JSON pointer.
      * Format: path/to/schema.json#json/pointer
      */
