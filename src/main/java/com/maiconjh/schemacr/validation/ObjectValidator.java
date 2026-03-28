@@ -49,7 +49,7 @@ public class ObjectValidator implements Validator {
             }
         }
         if (schema.getDynamicRef() != null && refResolver != null) {
-            Schema resolvedSchema = refResolver.resolveRef(schema.getDynamicRef(), schema.getName());
+            Schema resolvedSchema = refResolver.resolveDynamicRef(schema.getDynamicRef(), schema.getName());
             if (resolvedSchema != null) {
                 return validate(data, resolvedSchema, path, parentKey);
             } else {

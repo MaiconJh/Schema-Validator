@@ -96,11 +96,6 @@ public class ArrayValidator implements Validator {
         // Validate items constraint (standard JSON Schema)
         // Note: If prefixItems is present, 'items' applies to items beyond prefixItems count
         // but for simplicity, we'll use items schema for all items when prefixItems is not present
-        if (schema.getItemSchema() == null && (schema.getPrefixItems() == null || schema.getPrefixItems().isEmpty())) {
-            // Array schema with no 'items' or 'prefixItems' means no deep validation for now.
-            return errors;
-        }
-
         // Apply item validation based on the schema structure
         if ((schema.getPrefixItems() == null || schema.getPrefixItems().isEmpty()) && schema.getItemSchema() != null) {
             // Standard 'items' schema applies to all items
@@ -118,6 +113,11 @@ public class ArrayValidator implements Validator {
                 String childPath = path + "[" + i + "]";
                 errors.addAll(ValidatorDispatcher.forSchema(schema.getItemSchema())
                         .validate(element, schema.getItemSchema(), childPath, parentKey));
+                evaluatedItems[i] = true;
+            }
+        }
+        if (schema.getAdditionalItemsSchema() != null && schema.getPrefixItems() != null && !schema.getPrefixItems().isEmpty()) {
+            for (int i = schema.getPrefixItems().size(); i < list.size(); i++) {
                 evaluatedItems[i] = true;
             }
         }
@@ -142,14 +142,6 @@ public class ArrayValidator implements Validator {
                             "Array item at index " + i + " is not allowed by unevaluatedItems=false"
                     ));
                 }
-            }
-        } else if (schema.getItemSchema() != null) {
-            // When prefixItems is present, 'items' applies only to positions beyond prefixItems length.
-            for (int i = schema.getPrefixItems().size(); i < list.size(); i++) {
-                Object element = list.get(i);
-                String childPath = path + "[" + i + "]";
-                errors.addAll(ValidatorDispatcher.forSchema(schema.getItemSchema())
-                        .validate(element, schema.getItemSchema(), childPath, parentKey));
             }
         }
 

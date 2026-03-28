@@ -402,6 +402,20 @@ class ArrayValidatorTest {
         }
 
         @Test
+        @DisplayName("shouldFail_whenOnlyUnevaluatedItemsIsFalse")
+        void shouldFail_whenOnlyUnevaluatedItemsIsFalse() {
+            Schema schema = Schema.builder("items", SchemaType.ARRAY)
+                    .unevaluatedItemsAllowed(false)
+                    .build();
+            List<Object> data = Arrays.asList("a");
+
+            List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
+
+            assertTrue(errors.stream().anyMatch(e -> "unevaluatedItems".equals(e.getExpectedType())),
+                    "Expected unevaluatedItems error when no other item evaluators are defined");
+        }
+
+        @Test
         @DisplayName("shouldFail_whenMinItemsAndUniqueItemsViolated")
         void shouldFail_whenMinItemsAndUniqueItemsViolated() {
             // Arrange - minItems=3 and uniqueItems=true, but data has 2 items with duplicate

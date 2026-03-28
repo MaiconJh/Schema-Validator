@@ -60,17 +60,19 @@ class ObjectValidatorTest {
     @Test
     @DisplayName("shouldResolveDynamicRefWithResolver")
     void shouldResolveDynamicRefWithResolver() {
-        SchemaRegistry registry = new SchemaRegistry(java.util.logging.Logger.getLogger("test"));
+        SchemaRegistry registry = new SchemaRegistry();
         Schema target = Schema.builder("target", SchemaType.OBJECT)
+                .dynamicAnchor("node")
                 .properties(Map.of("id", Schema.builder("id", SchemaType.INTEGER).build()))
                 .requiredFields(List.of("id"))
                 .build();
-        registry.register("DynamicTarget", target);
+        registry.registerSchema("holder", Schema.builder("holder", SchemaType.OBJECT).build());
+        registry.registerSchema("DynamicTarget", target);
         SchemaRefResolver resolver = new SchemaRefResolver(registry, java.util.logging.Logger.getLogger("test"));
         ObjectValidator dynamicValidator = new ObjectValidator(resolver);
 
         schema = Schema.builder("holder", SchemaType.OBJECT)
-                .dynamicRef("DynamicTarget")
+                .dynamicRef("#node")
                 .build();
 
         List<ValidationError> errors = dynamicValidator.validate(Map.of("id", 1), schema, "/holder", "holder");
