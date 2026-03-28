@@ -387,6 +387,21 @@ class ArrayValidatorTest {
         }
 
         @Test
+        @DisplayName("shouldFail_whenUnevaluatedItemsIsFalse")
+        void shouldFail_whenUnevaluatedItemsIsFalse() {
+            Schema schema = Schema.builder("items", SchemaType.ARRAY)
+                    .prefixItems(List.of(Schema.builder("first", SchemaType.STRING).build()))
+                    .unevaluatedItemsAllowed(false)
+                    .build();
+            List<Object> data = Arrays.asList("ok", 2);
+
+            List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
+
+            assertTrue(errors.stream().anyMatch(e -> "unevaluatedItems".equals(e.getExpectedType())),
+                    "Expected unevaluatedItems error for trailing item");
+        }
+
+        @Test
         @DisplayName("shouldFail_whenMinItemsAndUniqueItemsViolated")
         void shouldFail_whenMinItemsAndUniqueItemsViolated() {
             // Arrange - minItems=3 and uniqueItems=true, but data has 2 items with duplicate

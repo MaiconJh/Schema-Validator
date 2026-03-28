@@ -89,6 +89,7 @@ public class SupportedKeywordsRegistry {
         keywords.add("propertyNames");
         keywords.add("dependentRequired");
         keywords.add("dependentSchemas");
+        keywords.add("unevaluatedProperties");
         keywords.add("dependencies"); // Legacy alias
 
         // === ARRAY KEYWORDS ===
@@ -100,6 +101,7 @@ public class SupportedKeywordsRegistry {
         keywords.add("contains");
         keywords.add("minContains");
         keywords.add("maxContains");
+        keywords.add("unevaluatedItems");
         keywords.add("additionalItems"); // Legacy keyword
 
         // === STRING KEYWORDS ===
@@ -128,6 +130,7 @@ public class SupportedKeywordsRegistry {
 
         // === REFERENCE KEYWORDS ===
         keywords.add("$ref");
+        keywords.add("$dynamicRef");
         keywords.add("$defs");
         keywords.add("definitions"); // Legacy alias
         keywords.add("$schema");
@@ -147,6 +150,9 @@ public class SupportedKeywordsRegistry {
         keywords.add("deprecated");
         keywords.add("$comment");
         keywords.add("comment"); // Legacy alias
+        keywords.add("contentEncoding");
+        keywords.add("contentMediaType");
+        keywords.add("contentSchema");
 
         // === VOCABULARY KEYWORDS ===
         keywords.add("$vocabulary");
@@ -240,6 +246,7 @@ public class SupportedKeywordsRegistry {
                 result.add("propertyNames");
                 result.add("dependentRequired");
                 result.add("dependentSchemas");
+                result.add("unevaluatedProperties");
                 result.add("dependencies");
             }
             case ARRAY_KEYWORDS -> {
@@ -251,6 +258,7 @@ public class SupportedKeywordsRegistry {
                 result.add("contains");
                 result.add("minContains");
                 result.add("maxContains");
+                result.add("unevaluatedItems");
                 result.add("additionalItems");
             }
             case STRING_KEYWORDS -> {
@@ -279,6 +287,7 @@ public class SupportedKeywordsRegistry {
             }
             case REFERENCE_KEYWORDS -> {
                 result.add("$ref");
+                result.add("$dynamicRef");
                 result.add("$defs");
                 result.add("definitions");
                 result.add("$schema");
@@ -290,6 +299,12 @@ public class SupportedKeywordsRegistry {
             case CONSTRAINT_KEYWORDS -> {
                 result.add("enum");
                 result.add("const");
+                result.add("contentEncoding");
+                result.add("contentMediaType");
+                result.add("contentSchema");
+                result.add("default");
+                result.add("examples");
+                result.add("deprecated");
             }
         }
         

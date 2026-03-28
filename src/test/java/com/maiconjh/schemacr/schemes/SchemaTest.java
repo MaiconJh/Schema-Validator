@@ -351,5 +351,33 @@ class SchemaTest {
             // Validate additional properties
             assertFalse(schema.isAdditionalPropertiesAllowed());
         }
+
+        @Test
+        @DisplayName("shouldStoreP1P2KeywordsInSchemaModel")
+        void shouldStoreP1P2KeywordsInSchemaModel() {
+            Schema schema = Schema.builder("p1p2", SchemaType.STRING)
+                    .defaultValue("v1")
+                    .examples(Arrays.asList("v1", "v2"))
+                    .deprecated(true)
+                    .contentEncoding("base64")
+                    .contentMediaType("application/json")
+                    .contentSchema(Schema.builder("content", SchemaType.OBJECT).build())
+                    .unevaluatedItemsAllowed(false)
+                    .unevaluatedPropertiesAllowed(false)
+                    .dynamicRef("#/$defs/node")
+                    .dynamicAnchor("node")
+                    .build();
+
+            assertEquals("v1", schema.getDefaultValue());
+            assertEquals(2, schema.getExamples().size());
+            assertTrue(Boolean.TRUE.equals(schema.isDeprecated()));
+            assertEquals("base64", schema.getContentEncoding());
+            assertEquals("application/json", schema.getContentMediaType());
+            assertNotNull(schema.getContentSchema());
+            assertTrue(Boolean.FALSE.equals(schema.isUnevaluatedItemsAllowed()));
+            assertTrue(Boolean.FALSE.equals(schema.isUnevaluatedPropertiesAllowed()));
+            assertEquals("#/$defs/node", schema.getDynamicRef());
+            assertEquals("node", schema.getDynamicAnchor());
+        }
     }
 }

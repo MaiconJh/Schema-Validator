@@ -23,6 +23,7 @@ public class ArrayValidator implements Validator {
             errors.add(new ValidationError(path, "array", ValidationUtils.typeName(data), "Expected a list/array node."));
             return errors;
         }
+        boolean[] evaluatedItems = new boolean[list.size()];
 
         // Validate minItems constraint
         if (schema.getMinItems() != null) {
@@ -46,6 +47,9 @@ public class ArrayValidator implements Validator {
         if (schema.getPrefixItems() != null && !schema.getPrefixItems().isEmpty()) {
             PrefixItemsValidator prefixItemsValidator = new PrefixItemsValidator(schema.getPrefixItems());
             errors.addAll(prefixItemsValidator.validate(data, schema, path, parentKey));
+            for (int i = 0; i < Math.min(schema.getPrefixItems().size(), list.size()); i++) {
+                evaluatedItems[i] = true;
+            }
         }
 
         // Validate additionalItems constraint
@@ -66,6 +70,7 @@ public class ArrayValidator implements Validator {
                         .validate(element, schema.getContainsSchema(), childPath, parentKey);
                 if (containsErrors.isEmpty()) {
                     containsMatches++;
+                    evaluatedItems[i] = true;
                 }
             }
 
@@ -104,6 +109,39 @@ public class ArrayValidator implements Validator {
                 String childPath = path + "[" + i + "]";
                 errors.addAll(ValidatorDispatcher.forSchema(schema.getItemSchema())
                         .validate(element, schema.getItemSchema(), childPath, parentKey));
+                evaluatedItems[i] = true;
+            }
+        } else if (schema.getItemSchema() != null) {
+            // When prefixItems is present, 'items' applies only to positions beyond prefixItems length.
+            for (int i = schema.getPrefixItems().size(); i < list.size(); i++) {
+                Object element = list.get(i);
+                String childPath = path + "[" + i + "]";
+                errors.addAll(ValidatorDispatcher.forSchema(schema.getItemSchema())
+                        .validate(element, schema.getItemSchema(), childPath, parentKey));
+                evaluatedItems[i] = true;
+            }
+        }
+
+        // Validate unevaluatedItems for items not processed by prefixItems/items/contains
+        if (schema.getUnevaluatedItemsSchema() != null || Boolean.FALSE.equals(schema.isUnevaluatedItemsAllowed())) {
+            for (int i = 0; i < list.size(); i++) {
+                if (evaluatedItems[i]) {
+                    continue;
+                }
+                Object element = list.get(i);
+                String childPath = path + "[" + i + "]";
+                if (schema.getUnevaluatedItemsSchema() != null) {
+                    Schema unevaluatedSchema = schema.getUnevaluatedItemsSchema();
+                    errors.addAll(ValidatorDispatcher.forSchema(unevaluatedSchema)
+                            .validate(element, unevaluatedSchema, childPath, parentKey));
+                } else if (Boolean.FALSE.equals(schema.isUnevaluatedItemsAllowed())) {
+                    errors.add(new ValidationError(
+                            childPath,
+                            "unevaluatedItems",
+                            "forbidden",
+                            "Array item at index " + i + " is not allowed by unevaluatedItems=false"
+                    ));
+                }
             }
         } else if (schema.getItemSchema() != null) {
             // When prefixItems is present, 'items' applies only to positions beyond prefixItems length.

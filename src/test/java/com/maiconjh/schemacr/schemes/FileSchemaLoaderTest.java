@@ -416,6 +416,37 @@ class FileSchemaLoaderTest {
         }
 
         @Test
+        @DisplayName("shouldParseP1P2KeywordsIntoSchemaModel")
+        void shouldParseP1P2KeywordsIntoSchemaModel() {
+            Map<String, Object> schemaMap = Map.of(
+                    "type", "string",
+                    "default", "abc",
+                    "examples", List.of("abc", "def"),
+                    "deprecated", true,
+                    "contentEncoding", "base64",
+                    "contentMediaType", "application/json",
+                    "contentSchema", Map.of("type", "object", "properties", Map.of("name", Map.of("type", "string"))),
+                    "unevaluatedItems", false,
+                    "unevaluatedProperties", false,
+                    "$dynamicRef", "#/$defs/node",
+                    "$dynamicAnchor", "node");
+
+            Schema schema = loader.parseSchema("p1p2Schema", schemaMap);
+
+            assertNotNull(schema, "Expected schema to parse successfully");
+            assertEquals("abc", schema.getDefaultValue(), "default should be parsed");
+            assertEquals(2, schema.getExamples().size(), "examples should be parsed");
+            assertTrue(Boolean.TRUE.equals(schema.isDeprecated()), "deprecated should be parsed as true");
+            assertEquals("base64", schema.getContentEncoding(), "contentEncoding should be parsed");
+            assertEquals("application/json", schema.getContentMediaType(), "contentMediaType should be parsed");
+            assertNotNull(schema.getContentSchema(), "contentSchema should be parsed");
+            assertTrue(Boolean.FALSE.equals(schema.isUnevaluatedItemsAllowed()), "unevaluatedItems should be parsed");
+            assertTrue(Boolean.FALSE.equals(schema.isUnevaluatedPropertiesAllowed()), "unevaluatedProperties should be parsed");
+            assertEquals("#/$defs/node", schema.getDynamicRef(), "$dynamicRef should be parsed");
+            assertEquals("node", schema.getDynamicAnchor(), "$dynamicAnchor should be parsed");
+        }
+
+        @Test
         @DisplayName("shouldParseReadOnlyWriteOnly - parse readOnly and writeOnly keywords")
         void shouldParseReadOnlyWriteOnly() throws IOException {
             // Arrange - Create a schema with readOnly and writeOnly

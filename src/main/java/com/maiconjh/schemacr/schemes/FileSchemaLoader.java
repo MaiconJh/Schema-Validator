@@ -212,6 +212,8 @@ public class FileSchemaLoader {
 
         // $ref
         if (raw.containsKey("$ref") && raw.get("$ref") instanceof String ref) builder.ref(ref);
+        if (raw.containsKey("$dynamicRef") && raw.get("$dynamicRef") instanceof String dynamicRef) builder.dynamicRef(dynamicRef);
+        if (raw.containsKey("$dynamicAnchor") && raw.get("$dynamicAnchor") instanceof String dynamicAnchor) builder.dynamicAnchor(dynamicAnchor);
 
         // composition
         if (raw.containsKey("allOf") && raw.get("allOf") instanceof List<?> allOfRaw) {
@@ -309,6 +311,14 @@ public class FileSchemaLoader {
         if (raw.containsKey("maxContains") && raw.get("maxContains") instanceof Number n) {
             builder.maxContains(n.intValue());
         }
+        if (raw.containsKey("unevaluatedItems")) {
+            Object unevaluatedItems = raw.get("unevaluatedItems");
+            if (unevaluatedItems instanceof Boolean b) {
+                builder.unevaluatedItemsAllowed(b);
+            } else if (unevaluatedItems instanceof Map<?, ?> map) {
+                builder.unevaluatedItemsSchema(toSchema(name + "_unevaluatedItems", castMap(map)));
+            }
+        }
 
         // object constraints
         if (raw.containsKey("minProperties") && raw.get("minProperties") instanceof Number n) builder.minProperties(n.intValue());
@@ -338,11 +348,29 @@ public class FileSchemaLoader {
             }
             builder.dependentSchemas(depSchemas);
         }
+        if (raw.containsKey("unevaluatedProperties")) {
+            Object unevaluatedProperties = raw.get("unevaluatedProperties");
+            if (unevaluatedProperties instanceof Boolean b) {
+                builder.unevaluatedPropertiesAllowed(b);
+            } else if (unevaluatedProperties instanceof Map<?, ?> map) {
+                builder.unevaluatedPropertiesSchema(toSchema(name + "_unevaluatedProperties", castMap(map)));
+            }
+        }
 
         // const e metadados
         if (raw.containsKey("const")) builder.constValue(raw.get("const"));
         if (raw.containsKey("readOnly") && raw.get("readOnly") instanceof Boolean b) builder.readOnly(b);
         if (raw.containsKey("writeOnly") && raw.get("writeOnly") instanceof Boolean b) builder.writeOnly(b);
+        if (raw.containsKey("default")) builder.defaultValue(raw.get("default"));
+        if (raw.containsKey("examples") && raw.get("examples") instanceof List<?> examples) {
+            builder.examples(new ArrayList<>(examples));
+        }
+        if (raw.containsKey("deprecated") && raw.get("deprecated") instanceof Boolean b) builder.deprecated(b);
+        if (raw.containsKey("contentEncoding") && raw.get("contentEncoding") instanceof String contentEncoding) builder.contentEncoding(contentEncoding);
+        if (raw.containsKey("contentMediaType") && raw.get("contentMediaType") instanceof String contentMediaType) builder.contentMediaType(contentMediaType);
+        if (raw.containsKey("contentSchema") && raw.get("contentSchema") instanceof Map<?, ?> map) {
+            builder.contentSchema(toSchema(name + "_contentSchema", castMap(map)));
+        }
 
         return builder.build();
     }

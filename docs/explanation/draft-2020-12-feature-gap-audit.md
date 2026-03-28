@@ -129,10 +129,10 @@ Current loader behavior:
 | P0 | `propertyNames` | ✅ Completed | Added to model/parser/validator and covered by tests. |
 | P0 | `contains` / `minContains` / `maxContains` | ✅ Completed | Added to model/parser/validator with `minContains` default behavior and tests. |
 | P0 | Registry synchronization (`prefixItems`, `dependentRequired`, `dependentSchemas`, `$defs`, `$comment`) | ✅ Completed | Canonical keywords added and legacy aliases retained explicitly. |
-| P1 | Unevaluated keywords | ⏳ Pending | No code changes in this PR. |
-| P1 | Dynamic refs | ⏳ Pending | No code changes in this PR. |
-| P1 | Content vocabulary | ⏳ Pending | No code changes in this PR. |
-| P2 | Metadata parity (`default`, `examples`, `deprecated`) | ⏳ Pending | No code changes in this PR. |
+| P1 | Unevaluated keywords | ✅ Completed | `unevaluatedProperties` and `unevaluatedItems` parsed and enforced in validators. |
+| P1 | Dynamic refs | ✅ Completed | `$dynamicRef`/`$dynamicAnchor` parsed and resolved via reference resolver fallback. |
+| P1 | Content vocabulary | ✅ Completed | `contentEncoding`, `contentMediaType`, `contentSchema` parsed and validated for string payloads. |
+| P2 | Metadata parity (`default`, `examples`, `deprecated`) | ✅ Completed | Metadata stored in model and exposed via getters. |
 
 ### P0 (High)
 

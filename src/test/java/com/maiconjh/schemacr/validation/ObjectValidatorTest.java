@@ -3,6 +3,7 @@ package com.maiconjh.schemacr.validation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.maiconjh.schemacr.schemes.Schema;
+import com.maiconjh.schemacr.schemes.SchemaRefResolver;
+import com.maiconjh.schemacr.schemes.SchemaRegistry;
 import com.maiconjh.schemacr.schemes.SchemaType;
 
 /**
@@ -30,6 +33,50 @@ class ObjectValidatorTest {
     @BeforeEach
     void setUp() {
         validator = new ObjectValidator();
+    }
+
+    @Test
+    @DisplayName("shouldFail_whenUnevaluatedPropertiesFalseAndUnknownFieldPresent")
+    void shouldFail_whenUnevaluatedPropertiesFalseAndUnknownFieldPresent() {
+        Map<String, Schema> properties = new HashMap<>();
+        properties.put("name", Schema.builder("name", SchemaType.STRING).build());
+
+        schema = Schema.builder("user", SchemaType.OBJECT)
+                .properties(properties)
+                .additionalProperties(true)
+                .unevaluatedPropertiesAllowed(false)
+                .build();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "John");
+        data.put("legacy", "x");
+
+        List<ValidationError> errors = validator.validate(data, schema, "/user", "user");
+
+        assertTrue(errors.stream().anyMatch(e -> "unevaluatedProperties".equals(e.getExpectedType())),
+                "Expected unevaluatedProperties error for unknown property");
+    }
+
+    @Test
+    @DisplayName("shouldResolveDynamicRefWithResolver")
+    void shouldResolveDynamicRefWithResolver() {
+        SchemaRegistry registry = new SchemaRegistry(java.util.logging.Logger.getLogger("test"));
+        Schema target = Schema.builder("target", SchemaType.OBJECT)
+                .properties(Map.of("id", Schema.builder("id", SchemaType.INTEGER).build()))
+                .requiredFields(List.of("id"))
+                .build();
+        registry.register("DynamicTarget", target);
+        SchemaRefResolver resolver = new SchemaRefResolver(registry, java.util.logging.Logger.getLogger("test"));
+        ObjectValidator dynamicValidator = new ObjectValidator(resolver);
+
+        schema = Schema.builder("holder", SchemaType.OBJECT)
+                .dynamicRef("DynamicTarget")
+                .build();
+
+        List<ValidationError> errors = dynamicValidator.validate(Map.of("id", 1), schema, "/holder", "holder");
+
+        assertNotNull(errors);
+        assertTrue(errors.isEmpty(), "Expected dynamicRef to resolve to registered schema");
     }
 
     // ========== POSITIVE TESTS (Valid inputs) ==========
