@@ -7,6 +7,7 @@ import com.maiconjh.schemacr.validation.misc.ReadOnlyValidator;
 import com.maiconjh.schemacr.validation.misc.WriteOnlyValidator;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -143,6 +144,37 @@ public class PrimitiveValidator implements Validator {
                         str,
                         FormatValidator.getErrorMessage(schema.getFormat())
                 ));
+            }
+
+            // Validate contentEncoding/contentMediaType/contentSchema (Draft 2020-12 content vocabulary)
+            if (schema.getContentEncoding() != null && "base64".equalsIgnoreCase(schema.getContentEncoding())) {
+                try {
+                    Base64.getDecoder().decode(str);
+                } catch (IllegalArgumentException ex) {
+                    errors.add(new ValidationError(
+                            path,
+                            "contentEncoding",
+                            schema.getContentEncoding(),
+                            "String is not valid base64 content"
+                    ));
+                }
+            }
+            if (schema.getContentSchema() != null && schema.getContentMediaType() != null
+                    && "application/json".equalsIgnoreCase(schema.getContentMediaType())) {
+                try {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    Object parsed = mapper.readValue(str, Object.class);
+                    List<ValidationError> contentSchemaErrors = ValidatorDispatcher.forSchema(schema.getContentSchema())
+                            .validate(parsed, schema.getContentSchema(), path + "#content", parentKey);
+                    errors.addAll(contentSchemaErrors);
+                } catch (Exception ex) {
+                    errors.add(new ValidationError(
+                            path,
+                            "contentMediaType",
+                            schema.getContentMediaType(),
+                            "String is not valid JSON content for contentSchema validation"
+                    ));
+                }
             }
         }
 
