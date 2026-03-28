@@ -432,6 +432,24 @@ class ArrayValidatorTest {
         }
 
         @Test
+        @DisplayName("shouldNotFailUnevaluatedItems_whenEvaluatedByAllOfSubschema")
+        void shouldNotFailUnevaluatedItems_whenEvaluatedByAllOfSubschema() {
+            Schema allOfSchema = Schema.builder("allOfPart", SchemaType.ARRAY)
+                    .prefixItems(List.of(Schema.builder("first", SchemaType.STRING).build()))
+                    .build();
+            Schema schema = Schema.builder("items", SchemaType.ARRAY)
+                    .allOf(List.of(allOfSchema))
+                    .unevaluatedItemsAllowed(false)
+                    .build();
+            List<Object> data = Arrays.asList("ok");
+
+            List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
+
+            assertFalse(errors.stream().anyMatch(e -> "unevaluatedItems".equals(e.getExpectedType())),
+                    "Item evaluated by allOf subschema should not fail unevaluatedItems=false");
+        }
+
+        @Test
         @DisplayName("shouldFail_whenMinItemsAndUniqueItemsViolated")
         void shouldFail_whenMinItemsAndUniqueItemsViolated() {
             // Arrange - minItems=3 and uniqueItems=true, but data has 2 items with duplicate

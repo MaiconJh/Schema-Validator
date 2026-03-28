@@ -24,5 +24,5 @@ This plan captures follow-up hardening after the first implementation pass of P1
 ## Next hardening candidates
 
 - [ ] Full spec-accurate dynamic scope stack across nested applicators.
-- [ ] Full annotation-collection semantics for unevaluated tracking across `allOf`/`anyOf`/`oneOf`.
+- [~] Full annotation-collection semantics for unevaluated tracking across `allOf`/`anyOf`/`oneOf` (initial pass for successful applicator branches done in validators; full spec parity pending).
 - [ ] Additional media types and encodings in content vocabulary.

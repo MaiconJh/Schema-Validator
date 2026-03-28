@@ -121,6 +121,7 @@ public class ArrayValidator implements Validator {
                 evaluatedItems[i] = true;
             }
         }
+        mergeEvaluatedByApplicators(list, schema, path, parentKey, evaluatedItems);
 
         // Validate unevaluatedItems for items not processed by prefixItems/items/contains
         if (schema.getUnevaluatedItemsSchema() != null || Boolean.FALSE.equals(schema.isUnevaluatedItemsAllowed())) {
@@ -146,5 +147,77 @@ public class ArrayValidator implements Validator {
         }
 
         return errors;
+    }
+
+    private void mergeEvaluatedByApplicators(List<?> list, Schema schema, String path, String parentKey, boolean[] evaluatedItems) {
+        for (Schema subSchema : schema.getAllOf()) {
+            boolean[] sub = collectEvaluatedArrayIndices(list, subSchema, path, parentKey);
+            mergeEvaluated(evaluatedItems, sub);
+        }
+        for (Schema subSchema : schema.getAnyOf()) {
+            List<ValidationError> subErrors = ValidatorDispatcher.forSchema(subSchema)
+                    .validate(list, subSchema, path, parentKey);
+            if (subErrors.isEmpty()) {
+                boolean[] sub = collectEvaluatedArrayIndices(list, subSchema, path, parentKey);
+                mergeEvaluated(evaluatedItems, sub);
+            }
+        }
+        for (Schema subSchema : schema.getOneOf()) {
+            List<ValidationError> subErrors = ValidatorDispatcher.forSchema(subSchema)
+                    .validate(list, subSchema, path, parentKey);
+            if (subErrors.isEmpty()) {
+                boolean[] sub = collectEvaluatedArrayIndices(list, subSchema, path, parentKey);
+                mergeEvaluated(evaluatedItems, sub);
+            }
+        }
+        if (schema.getIfSchema() != null) {
+            List<ValidationError> ifErrors = ValidatorDispatcher.forSchema(schema.getIfSchema())
+                    .validate(list, schema.getIfSchema(), path, parentKey);
+            Schema branch = ifErrors.isEmpty() ? schema.getThenSchema() : schema.getElseSchema();
+            if (branch != null) {
+                boolean[] sub = collectEvaluatedArrayIndices(list, branch, path, parentKey);
+                mergeEvaluated(evaluatedItems, sub);
+            }
+        }
+    }
+
+    private boolean[] collectEvaluatedArrayIndices(List<?> list, Schema schema, String path, String parentKey) {
+        boolean[] evaluated = new boolean[list.size()];
+        int prefixSize = schema.getPrefixItems() == null ? 0 : schema.getPrefixItems().size();
+
+        if (prefixSize > 0) {
+            for (int i = 0; i < Math.min(prefixSize, list.size()); i++) {
+                evaluated[i] = true;
+            }
+        }
+        if (schema.getItemSchema() != null) {
+            int start = prefixSize > 0 ? prefixSize : 0;
+            for (int i = start; i < list.size(); i++) {
+                evaluated[i] = true;
+            }
+        }
+        if (schema.getAdditionalItemsSchema() != null && prefixSize > 0) {
+            for (int i = prefixSize; i < list.size(); i++) {
+                evaluated[i] = true;
+            }
+        }
+        if (schema.getContainsSchema() != null) {
+            for (int i = 0; i < list.size(); i++) {
+                Object element = list.get(i);
+                String childPath = path + "[" + i + "]";
+                List<ValidationError> containsErrors = ValidatorDispatcher.forSchema(schema.getContainsSchema())
+                        .validate(element, schema.getContainsSchema(), childPath, parentKey);
+                if (containsErrors.isEmpty()) {
+                    evaluated[i] = true;
+                }
+            }
+        }
+        return evaluated;
+    }
+
+    private void mergeEvaluated(boolean[] target, boolean[] source) {
+        for (int i = 0; i < target.length && i < source.length; i++) {
+            target[i] = target[i] || source[i];
+        }
     }
 }

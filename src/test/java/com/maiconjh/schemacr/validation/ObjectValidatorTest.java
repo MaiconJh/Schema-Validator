@@ -81,6 +81,28 @@ class ObjectValidatorTest {
         assertTrue(errors.isEmpty(), "Expected dynamicRef to resolve to registered schema");
     }
 
+    @Test
+    @DisplayName("shouldNotFailUnevaluatedProperties_whenEvaluatedByAllOfSubschema")
+    void shouldNotFailUnevaluatedProperties_whenEvaluatedByAllOfSubschema() {
+        Schema allOfSchema = Schema.builder("allOfPart", SchemaType.OBJECT)
+                .properties(Map.of("legacy", Schema.builder("legacy", SchemaType.STRING).build()))
+                .build();
+
+        schema = Schema.builder("root", SchemaType.OBJECT)
+                .allOf(List.of(allOfSchema))
+                .additionalProperties(true)
+                .unevaluatedPropertiesAllowed(false)
+                .build();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("legacy", "ok");
+
+        List<ValidationError> errors = validator.validate(data, schema, "/root", "root");
+
+        assertFalse(errors.stream().anyMatch(e -> "unevaluatedProperties".equals(e.getExpectedType())),
+                "Property evaluated by allOf should not fail unevaluatedProperties=false");
+    }
+
     // ========== POSITIVE TESTS (Valid inputs) ==========
 
     @Test

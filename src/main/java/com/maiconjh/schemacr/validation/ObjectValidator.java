@@ -1,8 +1,10 @@
 package com.maiconjh.schemacr.validation;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.maiconjh.schemacr.schemes.Schema;
@@ -74,6 +76,7 @@ public class ObjectValidator implements Validator {
             return errors;
         }
         Map<?, ?> map = (Map<?, ?>) data;
+        Set<String> evaluatedByApplicators = collectEvaluatedObjectKeys(map, schema, path, parentKey);
 
         // Handle allOf composition - data must validate against ALL schemas
         if (schema.hasAllOf()) {
@@ -335,7 +338,7 @@ public class ObjectValidator implements Validator {
                 }
 
                 // Apply unevaluatedProperties only for properties not already handled by additionalProperties schema/false
-                if (!evaluatedByAdditionalProperties) {
+                if (!evaluatedByAdditionalProperties && !evaluatedByApplicators.contains(key)) {
                     if (schema.getUnevaluatedPropertiesSchema() != null) {
                         Schema unevaluatedSchema = schema.getUnevaluatedPropertiesSchema();
                         Validator validator = ValidatorDispatcher.forSchema(unevaluatedSchema);
@@ -355,5 +358,61 @@ public class ObjectValidator implements Validator {
         }
 
         return errors;
+    }
+
+    private Set<String> collectEvaluatedObjectKeys(Map<?, ?> map, Schema schema, String path, String parentKey) {
+        Set<String> evaluatedKeys = new HashSet<>();
+
+        // Direct properties/patternProperties in this schema
+        for (String key : schema.getProperties().keySet()) {
+            if (map.containsKey(key)) {
+                evaluatedKeys.add(key);
+            }
+        }
+        for (Object keyObj : map.keySet()) {
+            String key = String.valueOf(keyObj);
+            for (String pattern : schema.getPatternProperties().keySet()) {
+                try {
+                    if (Pattern.matches(pattern, key)) {
+                        evaluatedKeys.add(key);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        // allOf always applies all subschemas
+        for (Schema subSchema : schema.getAllOf()) {
+            evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, subSchema, path, parentKey));
+        }
+
+        // anyOf / oneOf only successful branches contribute evaluation
+        for (Schema subSchema : schema.getAnyOf()) {
+            List<ValidationError> subErrors = ValidatorDispatcher.forSchema(subSchema)
+                    .validate(map, subSchema, path, parentKey);
+            if (subErrors.isEmpty()) {
+                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, subSchema, path, parentKey));
+            }
+        }
+        for (Schema subSchema : schema.getOneOf()) {
+            List<ValidationError> subErrors = ValidatorDispatcher.forSchema(subSchema)
+                    .validate(map, subSchema, path, parentKey);
+            if (subErrors.isEmpty()) {
+                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, subSchema, path, parentKey));
+            }
+        }
+
+        // conditional branch selected by "if"
+        if (schema.getIfSchema() != null) {
+            List<ValidationError> ifErrors = ValidatorDispatcher.forSchema(schema.getIfSchema())
+                    .validate(map, schema.getIfSchema(), path, parentKey);
+            if (ifErrors.isEmpty() && schema.getThenSchema() != null) {
+                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, schema.getThenSchema(), path, parentKey));
+            } else if (!ifErrors.isEmpty() && schema.getElseSchema() != null) {
+                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, schema.getElseSchema(), path, parentKey));
+            }
+        }
+
+        return evaluatedKeys;
     }
 }
