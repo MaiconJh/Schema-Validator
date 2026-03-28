@@ -1,8 +1,10 @@
 package com.maiconjh.schemacr.validation;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.maiconjh.schemacr.schemes.Schema;
@@ -48,6 +50,16 @@ public class ObjectValidator implements Validator {
                 return errors;
             }
         }
+        if (schema.getDynamicRef() != null && refResolver != null) {
+            Schema resolvedSchema = refResolver.resolveDynamicRef(schema.getDynamicRef(), schema.getName());
+            if (resolvedSchema != null) {
+                return validate(data, resolvedSchema, path, parentKey);
+            } else {
+                errors.add(new ValidationError(path, "$dynamicRef", schema.getDynamicRef(),
+                        "Could not resolve dynamic reference: " + schema.getDynamicRef()));
+                return errors;
+            }
+        }
 
         // Verify data is a Map before proceeding with object validation
         // If data is not a Map, add error only if it's not null and is of complex type
@@ -64,6 +76,7 @@ public class ObjectValidator implements Validator {
             return errors;
         }
         Map<?, ?> map = (Map<?, ?>) data;
+        Set<String> evaluatedByApplicators = collectEvaluatedObjectKeys(map, schema, path, parentKey);
 
         // Handle allOf composition - data must validate against ALL schemas
         if (schema.hasAllOf()) {
@@ -244,6 +257,17 @@ public class ObjectValidator implements Validator {
             }
         }
 
+        // Validate propertyNames constraint
+        if (schema.getPropertyNamesSchema() != null) {
+            Schema propertyNamesSchema = schema.getPropertyNamesSchema();
+            Validator propertyNameValidator = ValidatorDispatcher.forSchema(propertyNamesSchema);
+            for (Object keyObj : map.keySet()) {
+                String key = String.valueOf(keyObj);
+                String propertyNamePath = path + "." + key;
+                errors.addAll(propertyNameValidator.validate(key, propertyNamesSchema, propertyNamePath, "propertyNames"));
+            }
+        }
+
         // Validate declared schema properties (only if present in data)
         for (Map.Entry<String, Schema> property : schema.getProperties().entrySet()) {
             String key = property.getKey();
@@ -292,6 +316,7 @@ public class ObjectValidator implements Validator {
             
             // If not matched by patternProperties, check additionalProperties
             if (!matchedPattern) {
+                boolean evaluatedByAdditionalProperties = false;
                 // Check if additionalProperties is a Schema (object) or boolean
                 if (schema.getAdditionalPropertiesSchema() != null) {
                     // additionalProperties is a Schema - validate against it
@@ -300,6 +325,7 @@ public class ObjectValidator implements Validator {
                     Object child = map.get(key);
                     String childPath = path + "." + key;
                     errors.addAll(validator.validate(child, additionalPropsSchema, childPath, key));
+                    evaluatedByAdditionalProperties = true;
                 } else if (!schema.isAdditionalPropertiesAllowed()) {
                     // additionalProperties is false - not allowed
                     errors.add(new ValidationError(
@@ -308,10 +334,85 @@ public class ObjectValidator implements Validator {
                             "forbidden",
                             "Unknown field '" + key + "' is not allowed"
                     ));
+                    evaluatedByAdditionalProperties = true;
+                }
+
+                // Apply unevaluatedProperties only for properties not already handled by additionalProperties schema/false
+                if (!evaluatedByAdditionalProperties && !evaluatedByApplicators.contains(key)) {
+                    if (schema.getUnevaluatedPropertiesSchema() != null) {
+                        Schema unevaluatedSchema = schema.getUnevaluatedPropertiesSchema();
+                        Validator validator = ValidatorDispatcher.forSchema(unevaluatedSchema);
+                        Object child = map.get(key);
+                        String childPath = path + "." + key;
+                        errors.addAll(validator.validate(child, unevaluatedSchema, childPath, key));
+                    } else if (Boolean.FALSE.equals(schema.isUnevaluatedPropertiesAllowed())) {
+                        errors.add(new ValidationError(
+                                path + "." + key,
+                                "unevaluatedProperties",
+                                "forbidden",
+                                "Unknown field '" + key + "' is not allowed by unevaluatedProperties=false"
+                        ));
+                    }
                 }
             }
         }
 
         return errors;
+    }
+
+    private Set<String> collectEvaluatedObjectKeys(Map<?, ?> map, Schema schema, String path, String parentKey) {
+        Set<String> evaluatedKeys = new HashSet<>();
+
+        // Direct properties/patternProperties in this schema
+        for (String key : schema.getProperties().keySet()) {
+            if (map.containsKey(key)) {
+                evaluatedKeys.add(key);
+            }
+        }
+        for (Object keyObj : map.keySet()) {
+            String key = String.valueOf(keyObj);
+            for (String pattern : schema.getPatternProperties().keySet()) {
+                try {
+                    if (Pattern.matches(pattern, key)) {
+                        evaluatedKeys.add(key);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        // allOf always applies all subschemas
+        for (Schema subSchema : schema.getAllOf()) {
+            evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, subSchema, path, parentKey));
+        }
+
+        // anyOf / oneOf only successful branches contribute evaluation
+        for (Schema subSchema : schema.getAnyOf()) {
+            List<ValidationError> subErrors = ValidatorDispatcher.forSchema(subSchema)
+                    .validate(map, subSchema, path, parentKey);
+            if (subErrors.isEmpty()) {
+                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, subSchema, path, parentKey));
+            }
+        }
+        for (Schema subSchema : schema.getOneOf()) {
+            List<ValidationError> subErrors = ValidatorDispatcher.forSchema(subSchema)
+                    .validate(map, subSchema, path, parentKey);
+            if (subErrors.isEmpty()) {
+                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, subSchema, path, parentKey));
+            }
+        }
+
+        // conditional branch selected by "if"
+        if (schema.getIfSchema() != null) {
+            List<ValidationError> ifErrors = ValidatorDispatcher.forSchema(schema.getIfSchema())
+                    .validate(map, schema.getIfSchema(), path, parentKey);
+            if (ifErrors.isEmpty() && schema.getThenSchema() != null) {
+                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, schema.getThenSchema(), path, parentKey));
+            } else if (!ifErrors.isEmpty() && schema.getElseSchema() != null) {
+                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, schema.getElseSchema(), path, parentKey));
+            }
+        }
+
+        return evaluatedKeys;
     }
 }
