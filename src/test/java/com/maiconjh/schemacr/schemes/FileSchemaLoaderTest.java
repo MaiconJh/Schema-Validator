@@ -401,6 +401,21 @@ class FileSchemaLoaderTest {
         }
 
         @Test
+        @DisplayName("shouldParseAdditionalPropertiesAsSchema")
+        void shouldParseAdditionalPropertiesAsSchema() {
+            Map<String, Object> schemaMap = Map.of(
+                    "type", "object",
+                    "additionalProperties", Map.of("type", "string"));
+
+            Schema schema = loader.parseSchema("additionalPropsSchema", schemaMap);
+
+            assertNotNull(schema, "Expected schema to parse successfully");
+            assertNotNull(schema.getAdditionalPropertiesSchema(), "Expected additionalProperties schema to be parsed");
+            assertEquals(SchemaType.STRING, schema.getAdditionalPropertiesSchema().getType(),
+                    "Expected additionalProperties schema type to be string");
+        }
+
+        @Test
         @DisplayName("shouldParseReadOnlyWriteOnly - parse readOnly and writeOnly keywords")
         void shouldParseReadOnlyWriteOnly() throws IOException {
             // Arrange - Create a schema with readOnly and writeOnly
@@ -511,6 +526,48 @@ class FileSchemaLoaderTest {
                 assertEquals(2, schema.getPrefixItems().size(), "prefixItems should still be parsed");
                 assertFalse(handler.hasMessageContaining("Unsupported keyword detected: 'prefixItems'"),
                         "No warning expected because prefixItems is registered as supported");
+            } finally {
+                logger.removeHandler(handler);
+            }
+        }
+
+        @Test
+        @DisplayName("shouldApplyDefaultMinContainsWhenContainsIsPresent")
+        void shouldApplyDefaultMinContainsWhenContainsIsPresent() {
+            Map<String, Object> schemaMap = Map.of(
+                    "type", "array",
+                    "contains", Map.of("type", "integer"));
+
+            Schema schema = loader.parseSchema("containsSchema", schemaMap);
+            assertNotNull(schema, "Schema should parse successfully");
+            assertNotNull(schema.getContainsSchema(), "contains schema should be parsed");
+            assertEquals(1, schema.getMinContains(), "minContains should default to 1 when contains is present");
+            assertNull(schema.getMaxContains(), "maxContains should remain null when omitted");
+        }
+
+        @Test
+        @DisplayName("shouldNotWarnForCustomPropertyNamesInsidePropertiesMap")
+        void shouldNotWarnForCustomPropertyNamesInsidePropertiesMap() {
+            CapturingHandler handler = new CapturingHandler();
+            logger.addHandler(handler);
+            try {
+                Map<String, Object> schemaMap = Map.of(
+                        "type", "object",
+                        "properties", Map.of(
+                                "user_name", Map.of("type", "string"),
+                                "x-custom", Map.of(
+                                        "type", "object",
+                                        "properties", Map.of("nested-value", Map.of("type", "integer")))));
+
+                Schema schema = loader.parseSchema("customPropertyNamesSchema", schemaMap);
+
+                assertNotNull(schema, "Schema should parse successfully");
+                assertFalse(handler.hasMessageContaining("Unsupported keyword detected: 'user_name'"),
+                        "Custom property names inside 'properties' should not be treated as keywords");
+                assertFalse(handler.hasMessageContaining("Unsupported keyword detected: 'x-custom'"),
+                        "Nested custom property names inside 'properties' should not be treated as keywords");
+                assertFalse(handler.hasMessageContaining("Unsupported keyword detected: 'nested-value'"),
+                        "Deep nested property names should not be treated as keywords");
             } finally {
                 logger.removeHandler(handler);
             }

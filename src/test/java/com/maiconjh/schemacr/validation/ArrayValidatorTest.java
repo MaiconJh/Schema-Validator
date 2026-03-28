@@ -326,10 +326,9 @@ class ArrayValidatorTest {
             List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
 
             // Assert
-            // Note: Current behavior may not validate items with itemSchema
-            // This test documents current behavior
-            assertTrue(errors.isEmpty() || errors.size() >= 0,
-                    "Validation result depends on current item schema implementation");
+            assertFalse(errors.isEmpty(), "Expected errors when at least one item violates item schema");
+            assertTrue(errors.stream().anyMatch(e -> "integer".equals(e.getExpectedType())),
+                    "Expected an integer type error for the invalid item");
         }
 
         @Test
@@ -568,10 +567,9 @@ class ArrayValidatorTest {
             List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
 
             // Assert
-            // Note: Current behavior may not validate items when itemSchema is set
-            // This test documents current behavior
-            assertTrue(errors.isEmpty() || errors.size() >= 0,
-                    "Validation result depends on current item schema implementation");
+            assertEquals(3, errors.size(), "Expected one error per invalid item");
+            assertTrue(errors.stream().allMatch(e -> "integer".equals(e.getExpectedType())),
+                    "Expected integer type errors for all invalid items");
         }
 
         @Test
@@ -648,10 +646,10 @@ class ArrayValidatorTest {
             // Act
             List<ValidationError> errors = validator.validate(outerData, arrayOfArraysSchema, "/outer", "outer");
 
-            // Assert - Current behavior may not validate nested arrays with item schema
-            // This test documents current behavior
-            assertTrue(errors.isEmpty() || errors.size() >= 0,
-                    "Validation result depends on current nested array implementation");
+            // Assert
+            assertFalse(errors.isEmpty(), "Expected nested arrays to fail when item schema expects string values");
+            assertTrue(errors.stream().anyMatch(e -> "string".equals(e.getExpectedType())),
+                    "Expected string type errors for nested array elements");
         }
 
         @Test
