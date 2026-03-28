@@ -25,8 +25,12 @@ A keyword can be accepted at parse time but still not enforced at runtime.
 - `patternProperties`
 - `required`
 - `additionalProperties` (boolean and schema forms)
+- `propertyNames`
+- `unevaluatedProperties`
 - `items`
 - `prefixItems` (2019-09/2020-12 tuple validation)
+- `contains`, `minContains`, `maxContains`
+- `unevaluatedItems`
 
 ### Primitive constraints
 
@@ -38,6 +42,7 @@ A keyword can be accepted at parse time but still not enforced at runtime.
 - `minLength`, `maxLength`
 - `pattern`
 - `format`
+- `contentEncoding`, `contentMediaType`, `contentSchema`
 
 ### Composition and conditional
 
@@ -57,6 +62,8 @@ All keywords below are now fully enforced at runtime and verified by 324 unit te
 - `uniqueItems` — Uniqueness constraint
 - `prefixItems` — Tuple validation (2019-09+)
 - `items` — Schema for array elements
+- `contains` / `minContains` / `maxContains` — Match-count constraints
+- `unevaluatedItems` — Post-evaluation array-item constraints
 - `additionalItems` — Limited support
 
 ### Object Keywords
@@ -65,10 +72,13 @@ All keywords below are now fully enforced at runtime and verified by 324 unit te
 - `dependencies` — Property and schema dependencies
 - `dependentRequired` — Required properties based on presence (2019-09+)
 - `dependentSchemas` — Schema constraints based on presence (2019-09+)
+- `propertyNames` — Property-name schema validation
+- `unevaluatedProperties` — Post-evaluation object-property constraints
 
 ### Reference Keywords
 - `$ref` — JSON Pointer reference resolution
-- `definitions` / `$defs` — Schema definitions
+- `$dynamicRef` / `$dynamicAnchor` — Dynamic reference and anchor support
+- `$defs` / `definitions` — Schema definitions (`definitions` as legacy alias)
 - `$id` — Base URI for reference resolution
 - `$schema` — Schema dialect identification
 
@@ -79,16 +89,15 @@ All keywords below are now fully enforced at runtime and verified by 324 unit te
 - `examples` — Example values
 - `readOnly` / `writeOnly` — Property constraints
 - `deprecated` — Deprecation status
-- `comment` — Annotations
+- `contentEncoding` / `contentMediaType` / `contentSchema` — Content vocabulary constraints
+- `$comment` / `comment` — Annotations (`comment` as legacy alias)
 
 ## Unsupported keyword handling
 
-Unknown non-`$` keywords are handled by `FileSchemaLoader.detectUnsupportedKeywords()`:
+Unknown keywords are handled by `FileSchemaLoader.detectUnsupportedKeywords()`:
 
 - `strict-mode: false` -> warning log, schema still loads
 - `strict-mode: true` -> throws exception and aborts loading
-
-Keys starting with `$` are skipped by unsupported detection logic.
 
 ## Reference behavior (`$ref`)
 

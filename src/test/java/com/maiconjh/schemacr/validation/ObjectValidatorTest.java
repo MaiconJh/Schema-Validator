@@ -3,6 +3,7 @@ package com.maiconjh.schemacr.validation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.maiconjh.schemacr.schemes.Schema;
+import com.maiconjh.schemacr.schemes.SchemaRefResolver;
+import com.maiconjh.schemacr.schemes.SchemaRegistry;
 import com.maiconjh.schemacr.schemes.SchemaType;
 
 /**
@@ -30,6 +33,74 @@ class ObjectValidatorTest {
     @BeforeEach
     void setUp() {
         validator = new ObjectValidator();
+    }
+
+    @Test
+    @DisplayName("shouldFail_whenUnevaluatedPropertiesFalseAndUnknownFieldPresent")
+    void shouldFail_whenUnevaluatedPropertiesFalseAndUnknownFieldPresent() {
+        Map<String, Schema> properties = new HashMap<>();
+        properties.put("name", Schema.builder("name", SchemaType.STRING).build());
+
+        schema = Schema.builder("user", SchemaType.OBJECT)
+                .properties(properties)
+                .additionalProperties(true)
+                .unevaluatedPropertiesAllowed(false)
+                .build();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "John");
+        data.put("legacy", "x");
+
+        List<ValidationError> errors = validator.validate(data, schema, "/user", "user");
+
+        assertTrue(errors.stream().anyMatch(e -> "unevaluatedProperties".equals(e.getExpectedType())),
+                "Expected unevaluatedProperties error for unknown property");
+    }
+
+    @Test
+    @DisplayName("shouldResolveDynamicRefWithResolver")
+    void shouldResolveDynamicRefWithResolver() {
+        SchemaRegistry registry = new SchemaRegistry();
+        Schema target = Schema.builder("target", SchemaType.OBJECT)
+                .dynamicAnchor("node")
+                .properties(Map.of("id", Schema.builder("id", SchemaType.INTEGER).build()))
+                .requiredFields(List.of("id"))
+                .build();
+        registry.registerSchema("holder", Schema.builder("holder", SchemaType.OBJECT).build());
+        registry.registerSchema("DynamicTarget", target);
+        SchemaRefResolver resolver = new SchemaRefResolver(registry, java.util.logging.Logger.getLogger("test"));
+        ObjectValidator dynamicValidator = new ObjectValidator(resolver);
+
+        schema = Schema.builder("holder", SchemaType.OBJECT)
+                .dynamicRef("#node")
+                .build();
+
+        List<ValidationError> errors = dynamicValidator.validate(Map.of("id", 1), schema, "/holder", "holder");
+
+        assertNotNull(errors);
+        assertTrue(errors.isEmpty(), "Expected dynamicRef to resolve to registered schema");
+    }
+
+    @Test
+    @DisplayName("shouldNotFailUnevaluatedProperties_whenEvaluatedByAllOfSubschema")
+    void shouldNotFailUnevaluatedProperties_whenEvaluatedByAllOfSubschema() {
+        Schema allOfSchema = Schema.builder("allOfPart", SchemaType.OBJECT)
+                .properties(Map.of("legacy", Schema.builder("legacy", SchemaType.STRING).build()))
+                .build();
+
+        schema = Schema.builder("root", SchemaType.OBJECT)
+                .allOf(List.of(allOfSchema))
+                .additionalProperties(true)
+                .unevaluatedPropertiesAllowed(false)
+                .build();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("legacy", "ok");
+
+        List<ValidationError> errors = validator.validate(data, schema, "/root", "root");
+
+        assertFalse(errors.stream().anyMatch(e -> "unevaluatedProperties".equals(e.getExpectedType())),
+                "Property evaluated by allOf should not fail unevaluatedProperties=false");
     }
 
     // ========== POSITIVE TESTS (Valid inputs) ==========
@@ -382,5 +453,46 @@ class ObjectValidatorTest {
 
         // Assert - Current behavior returns no errors for List (handled by ArrayValidator)
         assertTrue(errors.isEmpty(), "Expected no validation error when data is a list (current behavior)");
+    }
+
+    @Test
+    @DisplayName("shouldPass_whenPropertyNamesMatchConstraint")
+    void shouldPass_whenPropertyNamesMatchConstraint() {
+        Schema propertyNamesSchema = Schema.builder("propertyNames", SchemaType.STRING)
+                .pattern("^[a-z_]+$")
+                .build();
+
+        schema = Schema.builder("user", SchemaType.OBJECT)
+                .propertyNamesSchema(propertyNamesSchema)
+                .build();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("first_name", "John");
+        data.put("last_name", "Doe");
+
+        List<ValidationError> errors = validator.validate(data, schema, "/user", "user");
+
+        assertTrue(errors.isEmpty(), "Expected no validation errors when all property names match pattern");
+    }
+
+    @Test
+    @DisplayName("shouldFail_whenPropertyNameViolatesConstraint")
+    void shouldFail_whenPropertyNameViolatesConstraint() {
+        Schema propertyNamesSchema = Schema.builder("propertyNames", SchemaType.STRING)
+                .pattern("^[a-z_]+$")
+                .build();
+
+        schema = Schema.builder("user", SchemaType.OBJECT)
+                .propertyNamesSchema(propertyNamesSchema)
+                .build();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("Invalid-Name", "John");
+
+        List<ValidationError> errors = validator.validate(data, schema, "/user", "user");
+
+        assertFalse(errors.isEmpty(), "Expected validation errors when a property name is invalid");
+        assertTrue(errors.stream().anyMatch(e -> e.getNodePath().contains("Invalid-Name")),
+                "Expected error path to include invalid property name");
     }
 }
