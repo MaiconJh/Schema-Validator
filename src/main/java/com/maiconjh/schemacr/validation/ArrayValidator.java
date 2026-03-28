@@ -50,24 +50,64 @@ public class ArrayValidator implements Validator {
 
         // Validate additionalItems constraint
         // Only applies when prefixItems is defined
-        if (schema.getPrefixItems() != null && schema.getAdditionalItemsSchema() != null) {
+        if (schema.getPrefixItems() != null && !schema.getPrefixItems().isEmpty() && schema.getAdditionalItemsSchema() != null) {
             AdditionalItemsValidator additionalItemsValidator = new AdditionalItemsValidator(
                     schema.getAdditionalItemsSchema(), schema.getPrefixItems().size());
             errors.addAll(additionalItemsValidator.validate(data, schema, path, parentKey));
         }
 
+        // Validate contains/minContains/maxContains constraints
+        if (schema.getContainsSchema() != null) {
+            int containsMatches = 0;
+            for (int i = 0; i < list.size(); i++) {
+                Object element = list.get(i);
+                String childPath = path + "[" + i + "]";
+                List<ValidationError> containsErrors = ValidatorDispatcher.forSchema(schema.getContainsSchema())
+                        .validate(element, schema.getContainsSchema(), childPath, parentKey);
+                if (containsErrors.isEmpty()) {
+                    containsMatches++;
+                }
+            }
+
+            int minContains = schema.getMinContains() != null ? schema.getMinContains() : 1;
+            if (containsMatches < minContains) {
+                errors.add(new ValidationError(
+                        path,
+                        "minContains",
+                        String.valueOf(containsMatches),
+                        "Array must contain at least " + minContains + " element(s) matching 'contains'; found " + containsMatches
+                ));
+            }
+            if (schema.getMaxContains() != null && containsMatches > schema.getMaxContains()) {
+                errors.add(new ValidationError(
+                        path,
+                        "maxContains",
+                        String.valueOf(containsMatches),
+                        "Array must contain at most " + schema.getMaxContains() + " element(s) matching 'contains'; found " + containsMatches
+                ));
+            }
+        }
+
         // Validate items constraint (standard JSON Schema)
         // Note: If prefixItems is present, 'items' applies to items beyond prefixItems count
         // but for simplicity, we'll use items schema for all items when prefixItems is not present
-        if (schema.getItemSchema() == null && schema.getPrefixItems() == null) {
+        if (schema.getItemSchema() == null && (schema.getPrefixItems() == null || schema.getPrefixItems().isEmpty())) {
             // Array schema with no 'items' or 'prefixItems' means no deep validation for now.
             return errors;
         }
 
         // Apply item validation based on the schema structure
-        if (schema.getPrefixItems() == null && schema.getItemSchema() != null) {
+        if ((schema.getPrefixItems() == null || schema.getPrefixItems().isEmpty()) && schema.getItemSchema() != null) {
             // Standard 'items' schema applies to all items
             for (int i = 0; i < list.size(); i++) {
+                Object element = list.get(i);
+                String childPath = path + "[" + i + "]";
+                errors.addAll(ValidatorDispatcher.forSchema(schema.getItemSchema())
+                        .validate(element, schema.getItemSchema(), childPath, parentKey));
+            }
+        } else if (schema.getItemSchema() != null) {
+            // When prefixItems is present, 'items' applies only to positions beyond prefixItems length.
+            for (int i = schema.getPrefixItems().size(); i < list.size(); i++) {
                 Object element = list.get(i);
                 String childPath = path + "[" + i + "]";
                 errors.addAll(ValidatorDispatcher.forSchema(schema.getItemSchema())

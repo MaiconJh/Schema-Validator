@@ -122,6 +122,18 @@ Current loader behavior:
 
 ## Priority roadmap
 
+### Phase status snapshot (updated: 2026-03-27)
+
+| Phase | Item | Status | Notes |
+|---|---|---:|---|
+| P0 | `propertyNames` | ✅ Completed | Added to model/parser/validator and covered by tests. |
+| P0 | `contains` / `minContains` / `maxContains` | ✅ Completed | Added to model/parser/validator with `minContains` default behavior and tests. |
+| P0 | Registry synchronization (`prefixItems`, `dependentRequired`, `dependentSchemas`, `$defs`, `$comment`) | ✅ Completed | Canonical keywords added and legacy aliases retained explicitly. |
+| P1 | Unevaluated keywords | ⏳ Pending | No code changes in this PR. |
+| P1 | Dynamic refs | ⏳ Pending | No code changes in this PR. |
+| P1 | Content vocabulary | ⏳ Pending | No code changes in this PR. |
+| P2 | Metadata parity (`default`, `examples`, `deprecated`) | ⏳ Pending | No code changes in this PR. |
+
 ### P0 (High)
 
 1. `propertyNames`

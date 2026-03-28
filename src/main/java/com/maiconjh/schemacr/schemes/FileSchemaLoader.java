@@ -87,6 +87,14 @@ public class FileSchemaLoader {
                 }
             }
         }
+        if (raw.containsKey("$defs") && raw.get("$defs") instanceof Map<?, ?> defs) {
+            for (Map.Entry<?, ?> entry : defs.entrySet()) {
+                if (entry.getValue() instanceof Map<?, ?> defMap) {
+                    String defName = String.valueOf(entry.getKey());
+                    definitions.put(defName, toSchema(defName, castMap(defMap)));
+                }
+            }
+        }
         return toSchema(schemaName, raw);
     }
 
@@ -96,54 +104,50 @@ public class FileSchemaLoader {
     private Map<String, Object> castMap(Map<?, ?> source) { return (Map<String, Object>) source; }
 
     private void detectUnsupportedKeywords(Map<String, Object> raw, String path) {
-        detectUnsupportedKeywords(raw, path, null);
-    }
-
-    private void detectUnsupportedKeywords(Map<String, Object> raw, String path, java.util.Set<String> validCustomProperties) {
         if (raw == null || keywordsRegistry == null) return;
 
-        java.util.Set<String> currentValidProperties = new java.util.HashSet<>();
-        Object propertiesObj = raw.get("properties");
-        if (propertiesObj instanceof Map<?, ?> propertiesMap) {
-            for (Object key : propertiesMap.keySet()) {
-                if (key instanceof String keyStr) currentValidProperties.add(keyStr);
+        for (Map.Entry<String, Object> entry : raw.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            if (!keywordsRegistry.isKeywordSupported(key)) {
+                String message = "[" + path + "] Unsupported keyword detected: '" + key +
+                        "'. This keyword will be ignored during validation.";
+                if (failFastMode) {
+                    throw new IllegalArgumentException("FAIL-FAST: " + message);
+                } else {
+                    logger.warning(message);
+                }
             }
-        }
-        Object patternPropertiesObj = raw.get("patternProperties");
-        if (patternPropertiesObj instanceof Map<?, ?> patternPropertiesMap) {
-            for (Object key : patternPropertiesMap.keySet()) {
-                if (key instanceof String keyStr) currentValidProperties.add(keyStr);
+
+            if (isKeywordMapWithCustomKeys(key) && value instanceof Map<?, ?> customKeyMap) {
+                for (Map.Entry<?, ?> customEntry : customKeyMap.entrySet()) {
+                    if (customEntry.getValue() instanceof Map<?, ?> nestedSchemaMap) {
+                        detectUnsupportedKeywords(castMap(nestedSchemaMap), path + "." + key + "." + customEntry.getKey());
+                    }
+                }
+                continue;
             }
-        }
 
-        java.util.Set<String> allValidProperties = new java.util.HashSet<>();
-        if (validCustomProperties != null) allValidProperties.addAll(validCustomProperties);
-        allValidProperties.addAll(currentValidProperties);
-
-        for (String key : raw.keySet()) {
-            if (key.startsWith("$")) continue;
-            if (allValidProperties.contains(key) || keywordsRegistry.isKeywordSupported(key)) continue;
-
-            String message = "[" + path + "] Unsupported keyword detected: '" + key +
-                    "'. This keyword will be ignored during validation.";
-            if (failFastMode) {
-                throw new IllegalArgumentException("FAIL-FAST: " + message);
-            } else {
-                logger.warning(message);
-            }
-        }
-
-        for (Object value : raw.values()) {
             if (value instanceof Map<?, ?> nestedMap) {
-                detectUnsupportedKeywords((Map<String, Object>) nestedMap, path + ".nested", allValidProperties);
+                detectUnsupportedKeywords(castMap(nestedMap), path + "." + key);
             } else if (value instanceof List<?> list) {
-                for (Object item : list) {
+                for (int i = 0; i < list.size(); i++) {
+                    Object item = list.get(i);
                     if (item instanceof Map<?, ?> itemMap) {
-                        detectUnsupportedKeywords((Map<String, Object>) itemMap, path + ".item", allValidProperties);
+                        detectUnsupportedKeywords(castMap(itemMap), path + "." + key + "[" + i + "]");
                     }
                 }
             }
         }
+    }
+
+    private boolean isKeywordMapWithCustomKeys(String keyword) {
+        return "properties".equals(keyword)
+                || "patternProperties".equals(keyword)
+                || "definitions".equals(keyword)
+                || "$defs".equals(keyword)
+                || "dependentSchemas".equals(keyword);
     }
 
     private Schema toSchema(String name, Map<String, Object> raw) {
@@ -157,12 +161,14 @@ public class FileSchemaLoader {
         }
 
         // additionalProperties
-        boolean additionalProps = true;
         if (raw.containsKey("additionalProperties")) {
             Object value = raw.get("additionalProperties");
-            if (value instanceof Boolean) additionalProps = (Boolean) value;
+            if (value instanceof Boolean b) {
+                builder.additionalProperties(b);
+            } else if (value instanceof Map<?, ?> map) {
+                builder.additionalProperties(toSchema(name + "_additionalProperties", castMap(map)));
+            }
         }
-        builder.additionalProperties(additionalProps);
 
         // numeric
         if (raw.containsKey("minimum") && raw.get("minimum") instanceof Number min) builder.minimum(min);
@@ -293,10 +299,23 @@ public class FileSchemaLoader {
                 builder.additionalItemsSchema(toSchema(name + "_additionalItems", castMap(map)));
             }
         }
+        if (raw.containsKey("contains") && raw.get("contains") instanceof Map<?, ?> map) {
+            builder.containsSchema(toSchema(name + "_contains", castMap(map)));
+            builder.minContains(1);
+        }
+        if (raw.containsKey("minContains") && raw.get("minContains") instanceof Number n) {
+            builder.minContains(n.intValue());
+        }
+        if (raw.containsKey("maxContains") && raw.get("maxContains") instanceof Number n) {
+            builder.maxContains(n.intValue());
+        }
 
         // object constraints
         if (raw.containsKey("minProperties") && raw.get("minProperties") instanceof Number n) builder.minProperties(n.intValue());
         if (raw.containsKey("maxProperties") && raw.get("maxProperties") instanceof Number n) builder.maxProperties(n.intValue());
+        if (raw.containsKey("propertyNames") && raw.get("propertyNames") instanceof Map<?, ?> map) {
+            builder.propertyNamesSchema(toSchema(name + "_propertyNames", castMap(map)));
+        }
         if (raw.containsKey("dependentRequired") && raw.get("dependentRequired") instanceof Map<?, ?> map) {
             Map<String, List<String>> depReq = new HashMap<>();
             for (Map.Entry<?, ?> entry : map.entrySet()) {

@@ -283,6 +283,25 @@ class FileSchemaLoaderTest {
         }
 
         @Test
+        @DisplayName("shouldHandleSchemaWithDollarDefsInParseSchema")
+        void shouldHandleSchemaWithDollarDefsInParseSchema() {
+            Map<String, Object> schemaMap = Map.of(
+                    "type", "object",
+                    "$defs", Map.of(
+                            "address", Map.of(
+                                    "type", "object",
+                                    "properties", Map.of("city", Map.of("type", "string")))),
+                    "properties", Map.of("homeAddress", Map.of("$ref", "#/$defs/address")));
+
+            Schema schema = loader.parseSchema("defsSchema", schemaMap);
+
+            assertNotNull(schema, "Expected schema with $defs to be parsed");
+            Schema addressDef = loader.getDefinition("address");
+            assertNotNull(addressDef, "Expected 'address' definition from $defs to be available");
+            assertEquals(SchemaType.OBJECT, addressDef.getType());
+        }
+
+        @Test
         @DisplayName("shouldHandleSchemaWithAllOf - parse allOf composition")
         void shouldHandleSchemaWithAllOf() throws IOException {
             // Arrange - Create a schema with allOf
@@ -382,6 +401,21 @@ class FileSchemaLoaderTest {
         }
 
         @Test
+        @DisplayName("shouldParseAdditionalPropertiesAsSchema")
+        void shouldParseAdditionalPropertiesAsSchema() {
+            Map<String, Object> schemaMap = Map.of(
+                    "type", "object",
+                    "additionalProperties", Map.of("type", "string"));
+
+            Schema schema = loader.parseSchema("additionalPropsSchema", schemaMap);
+
+            assertNotNull(schema, "Expected schema to parse successfully");
+            assertNotNull(schema.getAdditionalPropertiesSchema(), "Expected additionalProperties schema to be parsed");
+            assertEquals(SchemaType.STRING, schema.getAdditionalPropertiesSchema().getType(),
+                    "Expected additionalProperties schema type to be string");
+        }
+
+        @Test
         @DisplayName("shouldParseReadOnlyWriteOnly - parse readOnly and writeOnly keywords")
         void shouldParseReadOnlyWriteOnly() throws IOException {
             // Arrange - Create a schema with readOnly and writeOnly
@@ -421,8 +455,8 @@ class FileSchemaLoaderTest {
     class UnsupportedKeywordBehaviorTests {
 
         @Test
-        @DisplayName("shouldWarnAndIgnoreUnsupportedKeywordInNonFailFastMode")
-        void shouldWarnAndIgnoreUnsupportedKeywordInNonFailFastMode() {
+        @DisplayName("shouldParsePropertyNamesWithoutUnsupportedWarning")
+        void shouldParsePropertyNamesWithoutUnsupportedWarning() {
             CapturingHandler handler = new CapturingHandler();
             logger.addHandler(handler);
             try {
@@ -433,25 +467,26 @@ class FileSchemaLoaderTest {
 
                 Schema schema = loader.parseSchema("warnSchema", schemaMap);
                 assertNotNull(schema, "Schema should still be parsed when fail-fast is disabled");
-                assertTrue(handler.hasMessageContaining("Unsupported keyword detected: 'propertyNames'"),
-                        "Expected warning log for unsupported keyword");
+                assertNotNull(schema.getPropertyNamesSchema(), "propertyNames should be parsed into the schema model");
+                assertFalse(handler.hasMessageContaining("Unsupported keyword detected: 'propertyNames'"),
+                        "No unsupported warning expected because propertyNames is now in registry");
             } finally {
                 logger.removeHandler(handler);
             }
         }
 
         @Test
-        @DisplayName("shouldThrowInFailFastModeForUnsupportedKeyword")
-        void shouldThrowInFailFastModeForUnsupportedKeyword() {
+        @DisplayName("shouldThrowInFailFastModeForUnsupportedDollarKeyword")
+        void shouldThrowInFailFastModeForUnsupportedDollarKeyword() {
             loader.setFailFastMode(true);
             Map<String, Object> schemaMap = Map.of(
                     "type", "object",
-                    "propertyNames", Map.of("pattern", "^[a-z]+$"));
+                    "$unsupportedKeyword", true);
 
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                     () -> loader.parseSchema("failFastSchema", schemaMap));
-            assertTrue(ex.getMessage().contains("Unsupported keyword detected: 'propertyNames'"),
-                    "Expected fail-fast message mentioning propertyNames");
+            assertTrue(ex.getMessage().contains("Unsupported keyword detected: '$unsupportedKeyword'"),
+                    "Expected fail-fast message mentioning unsupported '$' keyword");
         }
 
         @Test
@@ -475,8 +510,8 @@ class FileSchemaLoaderTest {
         }
 
         @Test
-        @DisplayName("shouldWarnForPrefixItemsBecauseRegistryIsOutOfSync")
-        void shouldWarnForPrefixItemsBecauseRegistryIsOutOfSync() {
+        @DisplayName("shouldParsePrefixItemsWithoutUnsupportedWarning")
+        void shouldParsePrefixItemsWithoutUnsupportedWarning() {
             CapturingHandler handler = new CapturingHandler();
             logger.addHandler(handler);
             try {
@@ -489,8 +524,50 @@ class FileSchemaLoaderTest {
                 Schema schema = loader.parseSchema("prefixItemsSchema", schemaMap);
                 assertNotNull(schema, "Schema should parse successfully even if warning is emitted");
                 assertEquals(2, schema.getPrefixItems().size(), "prefixItems should still be parsed");
-                assertTrue(handler.hasMessageContaining("Unsupported keyword detected: 'prefixItems'"),
-                        "Expected warning because prefixItems is implemented but not in registry");
+                assertFalse(handler.hasMessageContaining("Unsupported keyword detected: 'prefixItems'"),
+                        "No warning expected because prefixItems is registered as supported");
+            } finally {
+                logger.removeHandler(handler);
+            }
+        }
+
+        @Test
+        @DisplayName("shouldApplyDefaultMinContainsWhenContainsIsPresent")
+        void shouldApplyDefaultMinContainsWhenContainsIsPresent() {
+            Map<String, Object> schemaMap = Map.of(
+                    "type", "array",
+                    "contains", Map.of("type", "integer"));
+
+            Schema schema = loader.parseSchema("containsSchema", schemaMap);
+            assertNotNull(schema, "Schema should parse successfully");
+            assertNotNull(schema.getContainsSchema(), "contains schema should be parsed");
+            assertEquals(1, schema.getMinContains(), "minContains should default to 1 when contains is present");
+            assertNull(schema.getMaxContains(), "maxContains should remain null when omitted");
+        }
+
+        @Test
+        @DisplayName("shouldNotWarnForCustomPropertyNamesInsidePropertiesMap")
+        void shouldNotWarnForCustomPropertyNamesInsidePropertiesMap() {
+            CapturingHandler handler = new CapturingHandler();
+            logger.addHandler(handler);
+            try {
+                Map<String, Object> schemaMap = Map.of(
+                        "type", "object",
+                        "properties", Map.of(
+                                "user_name", Map.of("type", "string"),
+                                "x-custom", Map.of(
+                                        "type", "object",
+                                        "properties", Map.of("nested-value", Map.of("type", "integer")))));
+
+                Schema schema = loader.parseSchema("customPropertyNamesSchema", schemaMap);
+
+                assertNotNull(schema, "Schema should parse successfully");
+                assertFalse(handler.hasMessageContaining("Unsupported keyword detected: 'user_name'"),
+                        "Custom property names inside 'properties' should not be treated as keywords");
+                assertFalse(handler.hasMessageContaining("Unsupported keyword detected: 'x-custom'"),
+                        "Nested custom property names inside 'properties' should not be treated as keywords");
+                assertFalse(handler.hasMessageContaining("Unsupported keyword detected: 'nested-value'"),
+                        "Deep nested property names should not be treated as keywords");
             } finally {
                 logger.removeHandler(handler);
             }
