@@ -603,6 +603,20 @@ class FileSchemaLoaderTest {
                 logger.removeHandler(handler);
             }
         }
+
+        @Test
+        @DisplayName("shouldApplyDefaultMinContainsWhenContainsIsPresent")
+        void shouldApplyDefaultMinContainsWhenContainsIsPresent() {
+            Map<String, Object> schemaMap = Map.of(
+                    "type", "array",
+                    "contains", Map.of("type", "integer"));
+
+            Schema schema = loader.parseSchema("containsSchema", schemaMap);
+            assertNotNull(schema, "Schema should parse successfully");
+            assertNotNull(schema.getContainsSchema(), "contains schema should be parsed");
+            assertEquals(1, schema.getMinContains(), "minContains should default to 1 when contains is present");
+            assertNull(schema.getMaxContains(), "maxContains should remain null when omitted");
+        }
     }
 
     private static final class CapturingHandler extends Handler {
