@@ -109,6 +109,486 @@ Unknown keywords are handled by `FileSchemaLoader.detectUnsupportedKeywords()`:
 - Escaping support for `~0` (represents `~`) and `~1` (represents `/`)
 - `$id`-based indexing for external reference resolution
 
+---
+
+## Keyword Examples
+
+### Type and structure
+
+#### type
+
+```json
+{
+  "type": "string"
+}
+```
+
+Validates that the value is a string.
+
+#### properties
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "age": {"type": "integer"}
+  }
+}
+```
+
+Defines schemas for specific object properties.
+
+#### patternProperties
+
+```json
+{
+  "type": "object",
+  "patternProperties": {
+    "^S_": {"type": "string"},
+    "^I_": {"type": "integer"}
+  }
+}
+```
+
+Defines schemas for properties matching regex patterns.
+
+#### required
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "email": {"type": "string"}
+  },
+  "required": ["name", "email"]
+}
+```
+
+Specifies which properties must be present.
+
+#### additionalProperties
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"}
+  },
+  "additionalProperties": false
+}
+```
+
+Controls whether additional properties are allowed.
+
+#### propertyNames
+
+```json
+{
+  "type": "object",
+  "propertyNames": {
+    "pattern": "^[A-Z][a-z]+$"
+  }
+}
+```
+
+Validates property names against a schema.
+
+#### items
+
+```json
+{
+  "type": "array",
+  "items": {
+    "type": "integer",
+    "minimum": 0
+  }
+}
+```
+
+Defines schema for all array elements.
+
+#### prefixItems
+
+```json
+{
+  "type": "array",
+  "prefixItems": [
+    {"type": "string"},
+    {"type": "integer"}
+  ],
+  "items": false
+}
+```
+
+Defines schemas for specific array positions (tuple validation).
+
+#### contains / minContains / maxContains
+
+```json
+{
+  "type": "array",
+  "contains": {"type": "integer"},
+  "minContains": 1,
+  "maxContains": 3
+}
+```
+
+Requires at least one element to match the contains schema.
+
+### Primitive constraints
+
+#### enum
+
+```json
+{
+  "type": "string",
+  "enum": ["active", "inactive", "pending"]
+}
+```
+
+Restricts value to a specific set.
+
+#### const
+
+```json
+{
+  "type": "string",
+  "const": "fixed-value"
+}
+```
+
+Requires exact value match.
+
+#### minimum / maximum
+
+```json
+{
+  "type": "number",
+  "minimum": 0,
+  "maximum": 100
+}
+```
+
+Sets inclusive numeric bounds.
+
+#### exclusiveMinimum / exclusiveMaximum
+
+```json
+{
+  "type": "number",
+  "exclusiveMinimum": 0,
+  "exclusiveMaximum": 100
+}
+```
+
+Sets exclusive numeric bounds (value must be greater than 0 and less than 100).
+
+#### multipleOf
+
+```json
+{
+  "type": "number",
+  "multipleOf": 0.5
+}
+```
+
+Requires value to be a multiple of specified number.
+
+#### minLength / maxLength
+
+```json
+{
+  "type": "string",
+  "minLength": 3,
+  "maxLength": 50
+}
+```
+
+Constrains string length.
+
+#### pattern
+
+```json
+{
+  "type": "string",
+  "pattern": "^[A-Z][a-z]+$"
+}
+```
+
+Validates string against regex pattern.
+
+#### format
+
+```json
+{
+  "type": "string",
+  "format": "email"
+}
+```
+
+Validates string format (email, date, uri, etc.).
+
+### Composition and conditional
+
+#### allOf
+
+```json
+{
+  "allOf": [
+    {"type": "object"},
+    {"properties": {"name": {"type": "string"}}}
+  ]
+}
+```
+
+Value must validate against ALL schemas.
+
+#### anyOf
+
+```json
+{
+  "anyOf": [
+    {"type": "string"},
+    {"type": "integer"}
+  ]
+}
+```
+
+Value must validate against AT LEAST ONE schema.
+
+#### oneOf
+
+```json
+{
+  "oneOf": [
+    {"type": "string"},
+    {"type": "integer"}
+  ]
+}
+```
+
+Value must validate against EXACTLY ONE schema.
+
+#### not
+
+```json
+{
+  "not": {"type": "string"}
+}
+```
+
+Value must NOT validate against the schema.
+
+#### if / then / else
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "type": {"enum": ["user", "admin"]}
+  },
+  "if": {"properties": {"type": {"const": "admin"}}},
+  "then": {"properties": {"permissions": {"type": "array"}}},
+  "else": {"properties": {"permissions": {"type": "null"}}}
+}
+```
+
+Applies conditional validation based on if/then/else logic.
+
+### Object Keywords
+
+#### minProperties / maxProperties
+
+```json
+{
+  "type": "object",
+  "minProperties": 1,
+  "maxProperties": 10
+}
+```
+
+Constrains number of object properties.
+
+#### dependencies
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "credit_card": {"type": "string"}
+  },
+  "dependencies": {
+    "credit_card": ["billing_address"]
+  }
+}
+```
+
+Makes properties required based on presence of other properties.
+
+#### dependentRequired
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "credit_card": {"type": "string"}
+  },
+  "dependentRequired": {
+    "credit_card": ["billing_address"]
+  }
+}
+```
+
+Modern replacement for dependencies (2019-09+).
+
+#### dependentSchemas
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"}
+  },
+  "dependentSchemas": {
+    "name": {
+      "properties": {
+        "first": {"type": "string"},
+        "last": {"type": "string"}
+      },
+      "required": ["first", "last"]
+    }
+  }
+}
+```
+
+Applies schema constraints based on property presence (2019-09+).
+
+### Reference Keywords
+
+#### $ref
+
+```json
+{
+  "$defs": {
+    "address": {
+      "type": "object",
+      "properties": {
+        "street": {"type": "string"}
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "billing": {"$ref": "#/$defs/address"}
+  }
+}
+```
+
+References another schema definition.
+
+#### $defs / definitions
+
+```json
+{
+  "$defs": {
+    "person": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"}
+      }
+    }
+  }
+}
+```
+
+Defines reusable schema components.
+
+### Metadata Keywords
+
+#### title / description
+
+```json
+{
+  "title": "User Profile",
+  "description": "Schema for user profile validation",
+  "type": "object"
+}
+```
+
+Provides human-readable documentation.
+
+#### default
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "default": "active"
+    }
+  }
+}
+```
+
+Specifies default value if property is missing.
+
+#### examples
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "examples": ["John", "Jane"]
+    }
+  }
+}
+```
+
+Provides example values for documentation.
+
+#### readOnly / writeOnly
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "readOnly": true
+    },
+    "password": {
+      "type": "string",
+      "writeOnly": true
+    }
+  }
+}
+```
+
+Marks properties as read-only or write-only.
+
+#### deprecated
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "oldField": {
+      "type": "string",
+      "deprecated": true
+n    }
+  }
+}
+```
+
+Marks property as deprecated.
+
 ## Source mapping
 
 - Parse and unsupported detection: `FileSchemaLoader.java`
