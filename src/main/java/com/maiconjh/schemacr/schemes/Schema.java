@@ -51,17 +51,33 @@ public class Schema {
     private final Boolean uniqueItems;
     private final List<Schema> prefixItems;
     private final Schema additionalItemsSchema;
+    private final Schema containsSchema;
+    private final Integer minContains;
+    private final Integer maxContains;
 
     // Object constraints
     private final Integer minProperties;
     private final Integer maxProperties;
     private final Map<String, List<String>> dependentRequired;
     private final Map<String, Schema> dependentSchemas;
+    private final Schema propertyNamesSchema;
+    private final Boolean unevaluatedPropertiesAllowed;
+    private final Schema unevaluatedPropertiesSchema;
 
     // Const and metadata keywords
     private final Object constValue;
     private final Boolean readOnly;
     private final Boolean writeOnly;
+    private final Object defaultValue;
+    private final List<Object> examples;
+    private final Boolean deprecated;
+    private final String contentEncoding;
+    private final String contentMediaType;
+    private final Schema contentSchema;
+    private final Boolean unevaluatedItemsAllowed;
+    private final Schema unevaluatedItemsSchema;
+    private final String dynamicRef;
+    private final String dynamicAnchor;
 
     // Construtor principal (único)
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
@@ -74,8 +90,14 @@ public class Schema {
                   List<Schema> allOf, List<Schema> anyOf, List<Schema> oneOf,
                   Schema notSchema, Schema ifSchema, Schema thenSchema, Schema elseSchema,
                   Integer minItems, Integer maxItems, Boolean uniqueItems, List<Schema> prefixItems, Schema additionalItemsSchema,
+                  Schema containsSchema, Integer minContains, Integer maxContains,
                   Integer minProperties, Integer maxProperties, Map<String, List<String>> dependentRequired, Map<String, Schema> dependentSchemas,
-                  Object constValue, Boolean readOnly, Boolean writeOnly) {
+                  Schema propertyNamesSchema, Boolean unevaluatedPropertiesAllowed, Schema unevaluatedPropertiesSchema,
+                  Object constValue, Boolean readOnly, Boolean writeOnly,
+                  Object defaultValue, List<Object> examples, Boolean deprecated,
+                  String contentEncoding, String contentMediaType, Schema contentSchema,
+                  Boolean unevaluatedItemsAllowed, Schema unevaluatedItemsSchema,
+                  String dynamicRef, String dynamicAnchor) {
         this.name = name;
         this.type = type;
         this.properties = properties == null ? Collections.emptyMap() : Collections.unmodifiableMap(properties);
@@ -115,17 +137,33 @@ public class Schema {
         this.uniqueItems = uniqueItems;
         this.prefixItems = prefixItems == null ? Collections.emptyList() : Collections.unmodifiableList(prefixItems);
         this.additionalItemsSchema = additionalItemsSchema;
+        this.containsSchema = containsSchema;
+        this.minContains = minContains;
+        this.maxContains = maxContains;
 
         // Object constraints
         this.minProperties = minProperties;
         this.maxProperties = maxProperties;
         this.dependentRequired = dependentRequired == null ? Collections.emptyMap() : Collections.unmodifiableMap(dependentRequired);
         this.dependentSchemas = dependentSchemas == null ? Collections.emptyMap() : Collections.unmodifiableMap(dependentSchemas);
+        this.propertyNamesSchema = propertyNamesSchema;
+        this.unevaluatedPropertiesAllowed = unevaluatedPropertiesAllowed;
+        this.unevaluatedPropertiesSchema = unevaluatedPropertiesSchema;
 
         // Const and metadata
         this.constValue = constValue;
         this.readOnly = readOnly;
         this.writeOnly = writeOnly;
+        this.defaultValue = defaultValue;
+        this.examples = examples == null ? Collections.emptyList() : Collections.unmodifiableList(examples);
+        this.deprecated = deprecated;
+        this.contentEncoding = contentEncoding;
+        this.contentMediaType = contentMediaType;
+        this.contentSchema = contentSchema;
+        this.unevaluatedItemsAllowed = unevaluatedItemsAllowed;
+        this.unevaluatedItemsSchema = unevaluatedItemsSchema;
+        this.dynamicRef = dynamicRef;
+        this.dynamicAnchor = dynamicAnchor;
     }
 
     // ========== Getters (todos os campos) ==========
@@ -190,14 +228,28 @@ public class Schema {
     public Boolean isUniqueItems() { return uniqueItems; }
     public List<Schema> getPrefixItems() { return prefixItems; }
     public Schema getAdditionalItemsSchema() { return additionalItemsSchema; }
-    public boolean hasArrayConstraints() { return minItems != null || maxItems != null || uniqueItems != null; }
+    public Schema getContainsSchema() { return containsSchema; }
+    public Integer getMinContains() { return minContains; }
+    public Integer getMaxContains() { return maxContains; }
+    public boolean hasArrayConstraints() {
+        return minItems != null || maxItems != null || uniqueItems != null || containsSchema != null
+                || minContains != null || maxContains != null
+                || unevaluatedItemsAllowed != null || unevaluatedItemsSchema != null;
+    }
 
     // Object getters
     public Integer getMinProperties() { return minProperties; }
     public Integer getMaxProperties() { return maxProperties; }
     public Map<String, List<String>> getDependentRequired() { return dependentRequired; }
     public Map<String, Schema> getDependentSchemas() { return dependentSchemas; }
-    public boolean hasObjectConstraints() { return minProperties != null || maxProperties != null || !dependentRequired.isEmpty() || !dependentSchemas.isEmpty(); }
+    public Schema getPropertyNamesSchema() { return propertyNamesSchema; }
+    public Boolean isUnevaluatedPropertiesAllowed() { return unevaluatedPropertiesAllowed; }
+    public Schema getUnevaluatedPropertiesSchema() { return unevaluatedPropertiesSchema; }
+    public boolean hasObjectConstraints() {
+        return minProperties != null || maxProperties != null || !dependentRequired.isEmpty()
+                || !dependentSchemas.isEmpty() || propertyNamesSchema != null
+                || unevaluatedPropertiesAllowed != null || unevaluatedPropertiesSchema != null;
+    }
 
     // Const & metadata getters
     public Object getConstValue() { return constValue; }
@@ -205,6 +257,19 @@ public class Schema {
     public Boolean isReadOnly() { return readOnly; }
     public Boolean isWriteOnly() { return writeOnly; }
     public boolean hasReadWriteOnly() { return readOnly != null || writeOnly != null; }
+    public Object getDefaultValue() { return defaultValue; }
+    public List<Object> getExamples() { return examples; }
+    public Boolean isDeprecated() { return deprecated; }
+    public String getContentEncoding() { return contentEncoding; }
+    public String getContentMediaType() { return contentMediaType; }
+    public Schema getContentSchema() { return contentSchema; }
+    public Boolean isUnevaluatedItemsAllowed() { return unevaluatedItemsAllowed; }
+    public Schema getUnevaluatedItemsSchema() { return unevaluatedItemsSchema; }
+    public String getDynamicRef() { return dynamicRef; }
+    public String getDynamicAnchor() { return dynamicAnchor; }
+    public boolean hasContentVocabulary() {
+        return contentEncoding != null || contentMediaType != null || contentSchema != null;
+    }
 
     // ========== Builder ==========
     public static Builder builder(String name, SchemaType type) {
@@ -250,15 +315,31 @@ public class Schema {
         private Boolean uniqueItems;
         private List<Schema> prefixItems = Collections.emptyList();
         private Schema additionalItemsSchema;
+        private Schema containsSchema;
+        private Integer minContains;
+        private Integer maxContains;
         // Object
         private Integer minProperties;
         private Integer maxProperties;
         private Map<String, List<String>> dependentRequired = Collections.emptyMap();
         private Map<String, Schema> dependentSchemas = Collections.emptyMap();
+        private Schema propertyNamesSchema;
+        private Boolean unevaluatedPropertiesAllowed;
+        private Schema unevaluatedPropertiesSchema;
         // Const & metadata
         private Object constValue;
         private Boolean readOnly;
         private Boolean writeOnly;
+        private Object defaultValue;
+        private List<Object> examples = Collections.emptyList();
+        private Boolean deprecated;
+        private String contentEncoding;
+        private String contentMediaType;
+        private Schema contentSchema;
+        private Boolean unevaluatedItemsAllowed;
+        private Schema unevaluatedItemsSchema;
+        private String dynamicRef;
+        private String dynamicAnchor;
 
         private Builder(String name, SchemaType type) {
             this.name = name;
@@ -302,15 +383,31 @@ public class Schema {
         public Builder uniqueItems(Boolean uniqueItems) { this.uniqueItems = uniqueItems; return this; }
         public Builder prefixItems(List<Schema> prefixItems) { this.prefixItems = prefixItems; return this; }
         public Builder additionalItemsSchema(Schema additionalItemsSchema) { this.additionalItemsSchema = additionalItemsSchema; return this; }
+        public Builder containsSchema(Schema containsSchema) { this.containsSchema = containsSchema; return this; }
+        public Builder minContains(Integer minContains) { this.minContains = minContains; return this; }
+        public Builder maxContains(Integer maxContains) { this.maxContains = maxContains; return this; }
         // Object
         public Builder minProperties(Integer minProperties) { this.minProperties = minProperties; return this; }
         public Builder maxProperties(Integer maxProperties) { this.maxProperties = maxProperties; return this; }
         public Builder dependentRequired(Map<String, List<String>> dependentRequired) { this.dependentRequired = dependentRequired; return this; }
         public Builder dependentSchemas(Map<String, Schema> dependentSchemas) { this.dependentSchemas = dependentSchemas; return this; }
+        public Builder propertyNamesSchema(Schema propertyNamesSchema) { this.propertyNamesSchema = propertyNamesSchema; return this; }
+        public Builder unevaluatedPropertiesAllowed(Boolean unevaluatedPropertiesAllowed) { this.unevaluatedPropertiesAllowed = unevaluatedPropertiesAllowed; return this; }
+        public Builder unevaluatedPropertiesSchema(Schema unevaluatedPropertiesSchema) { this.unevaluatedPropertiesSchema = unevaluatedPropertiesSchema; return this; }
         // Const & metadata
         public Builder constValue(Object constValue) { this.constValue = constValue; return this; }
         public Builder readOnly(Boolean readOnly) { this.readOnly = readOnly; return this; }
         public Builder writeOnly(Boolean writeOnly) { this.writeOnly = writeOnly; return this; }
+        public Builder defaultValue(Object defaultValue) { this.defaultValue = defaultValue; return this; }
+        public Builder examples(List<Object> examples) { this.examples = examples; return this; }
+        public Builder deprecated(Boolean deprecated) { this.deprecated = deprecated; return this; }
+        public Builder contentEncoding(String contentEncoding) { this.contentEncoding = contentEncoding; return this; }
+        public Builder contentMediaType(String contentMediaType) { this.contentMediaType = contentMediaType; return this; }
+        public Builder contentSchema(Schema contentSchema) { this.contentSchema = contentSchema; return this; }
+        public Builder unevaluatedItemsAllowed(Boolean unevaluatedItemsAllowed) { this.unevaluatedItemsAllowed = unevaluatedItemsAllowed; return this; }
+        public Builder unevaluatedItemsSchema(Schema unevaluatedItemsSchema) { this.unevaluatedItemsSchema = unevaluatedItemsSchema; return this; }
+        public Builder dynamicRef(String dynamicRef) { this.dynamicRef = dynamicRef; return this; }
+        public Builder dynamicAnchor(String dynamicAnchor) { this.dynamicAnchor = dynamicAnchor; return this; }
 
         public Schema build() {
             return new Schema(name, type, properties, patternProperties, itemSchema, requiredFields,
@@ -319,8 +416,14 @@ public class Schema {
                     schemaDialect, id, title, description, typeList, ref, version, compatibility,
                     allOf, anyOf, oneOf, notSchema, ifSchema, thenSchema, elseSchema,
                     minItems, maxItems, uniqueItems, prefixItems, additionalItemsSchema,
+                    containsSchema, minContains, maxContains,
                     minProperties, maxProperties, dependentRequired, dependentSchemas,
-                    constValue, readOnly, writeOnly);
+                    propertyNamesSchema, unevaluatedPropertiesAllowed, unevaluatedPropertiesSchema,
+                    constValue, readOnly, writeOnly,
+                    defaultValue, examples, deprecated,
+                    contentEncoding, contentMediaType, contentSchema,
+                    unevaluatedItemsAllowed, unevaluatedItemsSchema,
+                    dynamicRef, dynamicAnchor);
         }
     }
 }

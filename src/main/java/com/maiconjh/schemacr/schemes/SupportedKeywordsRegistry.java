@@ -86,14 +86,23 @@ public class SupportedKeywordsRegistry {
         keywords.add("required");
         keywords.add("minProperties");
         keywords.add("maxProperties");
-        keywords.add("dependencies");  // Note: partial support (schema dependencies only)
+        keywords.add("propertyNames");
+        keywords.add("dependentRequired");
+        keywords.add("dependentSchemas");
+        keywords.add("unevaluatedProperties");
+        keywords.add("dependencies"); // Legacy alias
 
         // === ARRAY KEYWORDS ===
         keywords.add("items");
         keywords.add("minItems");
         keywords.add("maxItems");
         keywords.add("uniqueItems");
-        keywords.add("additionalItems");  // Limited support
+        keywords.add("prefixItems");
+        keywords.add("contains");
+        keywords.add("minContains");
+        keywords.add("maxContains");
+        keywords.add("unevaluatedItems");
+        keywords.add("additionalItems"); // Legacy keyword
 
         // === STRING KEYWORDS ===
         keywords.add("minLength");
@@ -121,7 +130,9 @@ public class SupportedKeywordsRegistry {
 
         // === REFERENCE KEYWORDS ===
         keywords.add("$ref");
-        keywords.add("definitions");
+        keywords.add("$dynamicRef");
+        keywords.add("$defs");
+        keywords.add("definitions"); // Legacy alias
         keywords.add("$schema");
         keywords.add("$id");
 
@@ -137,7 +148,11 @@ public class SupportedKeywordsRegistry {
         keywords.add("readOnly");
         keywords.add("writeOnly");
         keywords.add("deprecated");
-        keywords.add("comment");
+        keywords.add("$comment");
+        keywords.add("comment"); // Legacy alias
+        keywords.add("contentEncoding");
+        keywords.add("contentMediaType");
+        keywords.add("contentSchema");
 
         // === VOCABULARY KEYWORDS ===
         keywords.add("$vocabulary");
@@ -228,6 +243,10 @@ public class SupportedKeywordsRegistry {
                 result.add("required");
                 result.add("minProperties");
                 result.add("maxProperties");
+                result.add("propertyNames");
+                result.add("dependentRequired");
+                result.add("dependentSchemas");
+                result.add("unevaluatedProperties");
                 result.add("dependencies");
             }
             case ARRAY_KEYWORDS -> {
@@ -235,6 +254,11 @@ public class SupportedKeywordsRegistry {
                 result.add("minItems");
                 result.add("maxItems");
                 result.add("uniqueItems");
+                result.add("prefixItems");
+                result.add("contains");
+                result.add("minContains");
+                result.add("maxContains");
+                result.add("unevaluatedItems");
                 result.add("additionalItems");
             }
             case STRING_KEYWORDS -> {
@@ -263,6 +287,8 @@ public class SupportedKeywordsRegistry {
             }
             case REFERENCE_KEYWORDS -> {
                 result.add("$ref");
+                result.add("$dynamicRef");
+                result.add("$defs");
                 result.add("definitions");
                 result.add("$schema");
                 result.add("$id");
@@ -273,6 +299,12 @@ public class SupportedKeywordsRegistry {
             case CONSTRAINT_KEYWORDS -> {
                 result.add("enum");
                 result.add("const");
+                result.add("contentEncoding");
+                result.add("contentMediaType");
+                result.add("contentSchema");
+                result.add("default");
+                result.add("examples");
+                result.add("deprecated");
             }
         }
         

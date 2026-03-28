@@ -48,6 +48,16 @@ public class ObjectValidator implements Validator {
                 return errors;
             }
         }
+        if (schema.getDynamicRef() != null && refResolver != null) {
+            Schema resolvedSchema = refResolver.resolveRef(schema.getDynamicRef(), schema.getName());
+            if (resolvedSchema != null) {
+                return validate(data, resolvedSchema, path, parentKey);
+            } else {
+                errors.add(new ValidationError(path, "$dynamicRef", schema.getDynamicRef(),
+                        "Could not resolve dynamic reference: " + schema.getDynamicRef()));
+                return errors;
+            }
+        }
 
         // Verify data is a Map before proceeding with object validation
         // If data is not a Map, add error only if it's not null and is of complex type
@@ -244,6 +254,17 @@ public class ObjectValidator implements Validator {
             }
         }
 
+        // Validate propertyNames constraint
+        if (schema.getPropertyNamesSchema() != null) {
+            Schema propertyNamesSchema = schema.getPropertyNamesSchema();
+            Validator propertyNameValidator = ValidatorDispatcher.forSchema(propertyNamesSchema);
+            for (Object keyObj : map.keySet()) {
+                String key = String.valueOf(keyObj);
+                String propertyNamePath = path + "." + key;
+                errors.addAll(propertyNameValidator.validate(key, propertyNamesSchema, propertyNamePath, "propertyNames"));
+            }
+        }
+
         // Validate declared schema properties (only if present in data)
         for (Map.Entry<String, Schema> property : schema.getProperties().entrySet()) {
             String key = property.getKey();
@@ -292,6 +313,7 @@ public class ObjectValidator implements Validator {
             
             // If not matched by patternProperties, check additionalProperties
             if (!matchedPattern) {
+                boolean evaluatedByAdditionalProperties = false;
                 // Check if additionalProperties is a Schema (object) or boolean
                 if (schema.getAdditionalPropertiesSchema() != null) {
                     // additionalProperties is a Schema - validate against it
@@ -300,6 +322,7 @@ public class ObjectValidator implements Validator {
                     Object child = map.get(key);
                     String childPath = path + "." + key;
                     errors.addAll(validator.validate(child, additionalPropsSchema, childPath, key));
+                    evaluatedByAdditionalProperties = true;
                 } else if (!schema.isAdditionalPropertiesAllowed()) {
                     // additionalProperties is false - not allowed
                     errors.add(new ValidationError(
@@ -308,6 +331,25 @@ public class ObjectValidator implements Validator {
                             "forbidden",
                             "Unknown field '" + key + "' is not allowed"
                     ));
+                    evaluatedByAdditionalProperties = true;
+                }
+
+                // Apply unevaluatedProperties only for properties not already handled by additionalProperties schema/false
+                if (!evaluatedByAdditionalProperties) {
+                    if (schema.getUnevaluatedPropertiesSchema() != null) {
+                        Schema unevaluatedSchema = schema.getUnevaluatedPropertiesSchema();
+                        Validator validator = ValidatorDispatcher.forSchema(unevaluatedSchema);
+                        Object child = map.get(key);
+                        String childPath = path + "." + key;
+                        errors.addAll(validator.validate(child, unevaluatedSchema, childPath, key));
+                    } else if (Boolean.FALSE.equals(schema.isUnevaluatedPropertiesAllowed())) {
+                        errors.add(new ValidationError(
+                                path + "." + key,
+                                "unevaluatedProperties",
+                                "forbidden",
+                                "Unknown field '" + key + "' is not allowed by unevaluatedProperties=false"
+                        ));
+                    }
                 }
             }
         }

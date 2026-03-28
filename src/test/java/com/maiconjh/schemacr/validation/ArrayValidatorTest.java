@@ -204,6 +204,20 @@ class ArrayValidatorTest {
             // Assert
             assertTrue(errors.isEmpty(), "Expected no errors when array has exactly maxItems");
         }
+
+        @Test
+        @DisplayName("shouldPass_whenContainsMatchesDefaultMinContains")
+        void shouldPass_whenContainsMatchesDefaultMinContains() {
+            Schema containsSchema = Schema.builder("containsInt", SchemaType.INTEGER).build();
+            Schema schema = Schema.builder("items", SchemaType.ARRAY)
+                    .containsSchema(containsSchema)
+                    .build();
+            List<Object> data = Arrays.asList("a", 1, "b");
+
+            List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
+
+            assertTrue(errors.isEmpty(), "Expected no errors when at least one item matches contains schema");
+        }
     }
 
     // ========== NEGATIVE TESTS (Invalid arrays that should fail) ==========
@@ -312,10 +326,9 @@ class ArrayValidatorTest {
             List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
 
             // Assert
-            // Note: Current behavior may not validate items with itemSchema
-            // This test documents current behavior
-            assertTrue(errors.isEmpty() || errors.size() >= 0,
-                    "Validation result depends on current item schema implementation");
+            assertFalse(errors.isEmpty(), "Expected errors when at least one item violates item schema");
+            assertTrue(errors.stream().anyMatch(e -> "integer".equals(e.getExpectedType())),
+                    "Expected an integer type error for the invalid item");
         }
 
         @Test
@@ -337,6 +350,55 @@ class ArrayValidatorTest {
             
             ValidationError error = errors.get(0);
             assertEquals("maxItems", error.getExpectedType(), "Expected keyword should be 'maxItems'");
+        }
+
+        @Test
+        @DisplayName("shouldFail_whenContainsViolatesMinContains")
+        void shouldFail_whenContainsViolatesMinContains() {
+            Schema containsSchema = Schema.builder("containsString", SchemaType.STRING).build();
+            Schema schema = Schema.builder("items", SchemaType.ARRAY)
+                    .containsSchema(containsSchema)
+                    .minContains(2)
+                    .build();
+            List<Object> data = Arrays.asList("one", 2, 3);
+
+            List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
+
+            assertFalse(errors.isEmpty(), "Expected errors when contains matches are below minContains");
+            assertTrue(errors.stream().anyMatch(e -> "minContains".equals(e.getExpectedType())),
+                    "Expected minContains error");
+        }
+
+        @Test
+        @DisplayName("shouldFail_whenContainsExceedsMaxContains")
+        void shouldFail_whenContainsExceedsMaxContains() {
+            Schema containsSchema = Schema.builder("containsNumber", SchemaType.NUMBER).build();
+            Schema schema = Schema.builder("items", SchemaType.ARRAY)
+                    .containsSchema(containsSchema)
+                    .maxContains(1)
+                    .build();
+            List<Object> data = Arrays.asList(1, 2, "x");
+
+            List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
+
+            assertFalse(errors.isEmpty(), "Expected errors when contains matches exceed maxContains");
+            assertTrue(errors.stream().anyMatch(e -> "maxContains".equals(e.getExpectedType())),
+                    "Expected maxContains error");
+        }
+
+        @Test
+        @DisplayName("shouldFail_whenUnevaluatedItemsIsFalse")
+        void shouldFail_whenUnevaluatedItemsIsFalse() {
+            Schema schema = Schema.builder("items", SchemaType.ARRAY)
+                    .prefixItems(List.of(Schema.builder("first", SchemaType.STRING).build()))
+                    .unevaluatedItemsAllowed(false)
+                    .build();
+            List<Object> data = Arrays.asList("ok", 2);
+
+            List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
+
+            assertTrue(errors.stream().anyMatch(e -> "unevaluatedItems".equals(e.getExpectedType())),
+                    "Expected unevaluatedItems error for trailing item");
         }
 
         @Test
@@ -520,10 +582,9 @@ class ArrayValidatorTest {
             List<ValidationError> errors = validator.validate(data, schema, "/items", "items");
 
             // Assert
-            // Note: Current behavior may not validate items when itemSchema is set
-            // This test documents current behavior
-            assertTrue(errors.isEmpty() || errors.size() >= 0,
-                    "Validation result depends on current item schema implementation");
+            assertEquals(3, errors.size(), "Expected one error per invalid item");
+            assertTrue(errors.stream().allMatch(e -> "integer".equals(e.getExpectedType())),
+                    "Expected integer type errors for all invalid items");
         }
 
         @Test
@@ -600,10 +661,10 @@ class ArrayValidatorTest {
             // Act
             List<ValidationError> errors = validator.validate(outerData, arrayOfArraysSchema, "/outer", "outer");
 
-            // Assert - Current behavior may not validate nested arrays with item schema
-            // This test documents current behavior
-            assertTrue(errors.isEmpty() || errors.size() >= 0,
-                    "Validation result depends on current nested array implementation");
+            // Assert
+            assertFalse(errors.isEmpty(), "Expected nested arrays to fail when item schema expects string values");
+            assertTrue(errors.stream().anyMatch(e -> "string".equals(e.getExpectedType())),
+                    "Expected string type errors for nested array elements");
         }
 
         @Test
