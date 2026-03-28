@@ -56,6 +56,38 @@ public class ArrayValidator implements Validator {
             errors.addAll(additionalItemsValidator.validate(data, schema, path, parentKey));
         }
 
+        // Validate contains/minContains/maxContains constraints
+        if (schema.getContainsSchema() != null) {
+            int containsMatches = 0;
+            for (int i = 0; i < list.size(); i++) {
+                Object element = list.get(i);
+                String childPath = path + "[" + i + "]";
+                List<ValidationError> containsErrors = ValidatorDispatcher.forSchema(schema.getContainsSchema())
+                        .validate(element, schema.getContainsSchema(), childPath, parentKey);
+                if (containsErrors.isEmpty()) {
+                    containsMatches++;
+                }
+            }
+
+            int minContains = schema.getMinContains() != null ? schema.getMinContains() : 1;
+            if (containsMatches < minContains) {
+                errors.add(new ValidationError(
+                        path,
+                        "minContains",
+                        String.valueOf(containsMatches),
+                        "Array must contain at least " + minContains + " element(s) matching 'contains'; found " + containsMatches
+                ));
+            }
+            if (schema.getMaxContains() != null && containsMatches > schema.getMaxContains()) {
+                errors.add(new ValidationError(
+                        path,
+                        "maxContains",
+                        String.valueOf(containsMatches),
+                        "Array must contain at most " + schema.getMaxContains() + " element(s) matching 'contains'; found " + containsMatches
+                ));
+            }
+        }
+
         // Validate items constraint (standard JSON Schema)
         // Note: If prefixItems is present, 'items' applies to items beyond prefixItems count
         // but for simplicity, we'll use items schema for all items when prefixItems is not present

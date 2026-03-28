@@ -383,4 +383,45 @@ class ObjectValidatorTest {
         // Assert - Current behavior returns no errors for List (handled by ArrayValidator)
         assertTrue(errors.isEmpty(), "Expected no validation error when data is a list (current behavior)");
     }
+
+    @Test
+    @DisplayName("shouldPass_whenPropertyNamesMatchConstraint")
+    void shouldPass_whenPropertyNamesMatchConstraint() {
+        Schema propertyNamesSchema = Schema.builder("propertyNames", SchemaType.STRING)
+                .pattern("^[a-z_]+$")
+                .build();
+
+        schema = Schema.builder("user", SchemaType.OBJECT)
+                .propertyNamesSchema(propertyNamesSchema)
+                .build();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("first_name", "John");
+        data.put("last_name", "Doe");
+
+        List<ValidationError> errors = validator.validate(data, schema, "/user", "user");
+
+        assertTrue(errors.isEmpty(), "Expected no validation errors when all property names match pattern");
+    }
+
+    @Test
+    @DisplayName("shouldFail_whenPropertyNameViolatesConstraint")
+    void shouldFail_whenPropertyNameViolatesConstraint() {
+        Schema propertyNamesSchema = Schema.builder("propertyNames", SchemaType.STRING)
+                .pattern("^[a-z_]+$")
+                .build();
+
+        schema = Schema.builder("user", SchemaType.OBJECT)
+                .propertyNamesSchema(propertyNamesSchema)
+                .build();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("Invalid-Name", "John");
+
+        List<ValidationError> errors = validator.validate(data, schema, "/user", "user");
+
+        assertFalse(errors.isEmpty(), "Expected validation errors when a property name is invalid");
+        assertTrue(errors.stream().anyMatch(e -> e.getNodePath().contains("Invalid-Name")),
+                "Expected error path to include invalid property name");
+    }
 }

@@ -87,6 +87,14 @@ public class FileSchemaLoader {
                 }
             }
         }
+        if (raw.containsKey("$defs") && raw.get("$defs") instanceof Map<?, ?> defs) {
+            for (Map.Entry<?, ?> entry : defs.entrySet()) {
+                if (entry.getValue() instanceof Map<?, ?> defMap) {
+                    String defName = String.valueOf(entry.getKey());
+                    definitions.put(defName, toSchema(defName, castMap(defMap)));
+                }
+            }
+        }
         return toSchema(schemaName, raw);
     }
 
@@ -121,7 +129,6 @@ public class FileSchemaLoader {
         allValidProperties.addAll(currentValidProperties);
 
         for (String key : raw.keySet()) {
-            if (key.startsWith("$")) continue;
             if (allValidProperties.contains(key) || keywordsRegistry.isKeywordSupported(key)) continue;
 
             String message = "[" + path + "] Unsupported keyword detected: '" + key +
@@ -293,10 +300,23 @@ public class FileSchemaLoader {
                 builder.additionalItemsSchema(toSchema(name + "_additionalItems", castMap(map)));
             }
         }
+        if (raw.containsKey("contains") && raw.get("contains") instanceof Map<?, ?> map) {
+            builder.containsSchema(toSchema(name + "_contains", castMap(map)));
+            builder.minContains(1);
+        }
+        if (raw.containsKey("minContains") && raw.get("minContains") instanceof Number n) {
+            builder.minContains(n.intValue());
+        }
+        if (raw.containsKey("maxContains") && raw.get("maxContains") instanceof Number n) {
+            builder.maxContains(n.intValue());
+        }
 
         // object constraints
         if (raw.containsKey("minProperties") && raw.get("minProperties") instanceof Number n) builder.minProperties(n.intValue());
         if (raw.containsKey("maxProperties") && raw.get("maxProperties") instanceof Number n) builder.maxProperties(n.intValue());
+        if (raw.containsKey("propertyNames") && raw.get("propertyNames") instanceof Map<?, ?> map) {
+            builder.propertyNamesSchema(toSchema(name + "_propertyNames", castMap(map)));
+        }
         if (raw.containsKey("dependentRequired") && raw.get("dependentRequired") instanceof Map<?, ?> map) {
             Map<String, List<String>> depReq = new HashMap<>();
             for (Map.Entry<?, ?> entry : map.entrySet()) {
