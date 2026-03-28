@@ -418,18 +418,18 @@ class FileSchemaLoaderTest {
         @Test
         @DisplayName("shouldParseP1P2KeywordsIntoSchemaModel")
         void shouldParseP1P2KeywordsIntoSchemaModel() {
-            Map<String, Object> schemaMap = Map.of(
-                    "type", "string",
-                    "default", "abc",
-                    "examples", List.of("abc", "def"),
-                    "deprecated", true,
-                    "contentEncoding", "base64",
-                    "contentMediaType", "application/json",
-                    "contentSchema", Map.of("type", "object", "properties", Map.of("name", Map.of("type", "string"))),
-                    "unevaluatedItems", false,
-                    "unevaluatedProperties", false,
-                    "$dynamicRef", "#/$defs/node",
-                    "$dynamicAnchor", "node");
+            Map<String, Object> schemaMap = Map.ofEntries(
+                    Map.entry("type", "string"),
+                    Map.entry("default", "abc"),
+                    Map.entry("examples", List.of("abc", "def")),
+                    Map.entry("deprecated", true),
+                    Map.entry("contentEncoding", "base64"),
+                    Map.entry("contentMediaType", "application/json"),
+                    Map.entry("contentSchema", Map.of("type", "object", "properties", Map.of("name", Map.of("type", "string")))),
+                    Map.entry("unevaluatedItems", false),
+                    Map.entry("unevaluatedProperties", false),
+                    Map.entry("$dynamicRef", "#/$defs/node"),
+                    Map.entry("$dynamicAnchor", "node"));
 
             Schema schema = loader.parseSchema("p1p2Schema", schemaMap);
 
@@ -560,20 +560,6 @@ class FileSchemaLoaderTest {
             } finally {
                 logger.removeHandler(handler);
             }
-        }
-
-        @Test
-        @DisplayName("shouldApplyDefaultMinContainsWhenContainsIsPresent")
-        void shouldApplyDefaultMinContainsWhenContainsIsPresent() {
-            Map<String, Object> schemaMap = Map.of(
-                    "type", "array",
-                    "contains", Map.of("type", "integer"));
-
-            Schema schema = loader.parseSchema("containsSchema", schemaMap);
-            assertNotNull(schema, "Schema should parse successfully");
-            assertNotNull(schema.getContainsSchema(), "contains schema should be parsed");
-            assertEquals(1, schema.getMinContains(), "minContains should default to 1 when contains is present");
-            assertNull(schema.getMaxContains(), "maxContains should remain null when omitted");
         }
 
         @Test

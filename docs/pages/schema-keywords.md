@@ -54,7 +54,7 @@ A keyword can be accepted at parse time but still not enforced at runtime.
 
 ## Fully Implemented Keywords
 
-All keywords below are now fully enforced at runtime and verified by 324 unit tests across 22 validator classes.
+All keywords below are now fully enforced at runtime and verified by 373 unit tests across 23 validator classes.
 
 ### Array Keywords
 - `minItems` — Minimum array length
@@ -64,7 +64,7 @@ All keywords below are now fully enforced at runtime and verified by 324 unit te
 - `items` — Schema for array elements
 - `contains` / `minContains` / `maxContains` — Match-count constraints
 - `unevaluatedItems` — Post-evaluation array-item constraints
-- `additionalItems` — Limited support
+- `additionalItems` — Limited support (applies only when `prefixItems` is defined; standard `items` keyword behavior is fully supported)
 
 ### Object Keywords
 - `minProperties` — Minimum property count
@@ -78,7 +78,7 @@ All keywords below are now fully enforced at runtime and verified by 324 unit te
 ### Reference Keywords
 - `$ref` — JSON Pointer reference resolution
 - `$dynamicRef` / `$dynamicAnchor` — Dynamic reference and anchor support
-- `$defs` / `definitions` — Schema definitions (`definitions` as legacy alias)
+- `$defs` / `definitions` — Schema definitions (`definitions` as legacy alias; `$defs` is the Draft 2020-12+ preferred form)
 - `$id` — Base URI for reference resolution
 - `$schema` — Schema dialect identification
 

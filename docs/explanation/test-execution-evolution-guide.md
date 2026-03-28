@@ -367,7 +367,7 @@ The following test classes have been created and are fully functional:
 | 21 | [`DependentRequiredValidatorTest.java`](/src/test/java/com/maiconjh/schemacr/validation/object/DependentRequiredValidatorTest.java) | DependentRequiredValidator | `src/test/java/.../validation/object/` |
 | 22 | [`DependentSchemasValidatorTest.java`](/src/test/java/com/maiconjh/schemacr/validation/object/DependentSchemasValidatorTest.java) | DependentSchemasValidator | `src/test/java/.../validation/object/` |
 
-**Total: 22 test files implemented** ✅
+**Total: 23 test files implemented** ✅
 
 ### 6.2 Test Coverage Status: COMPLETE ✅
 
@@ -392,8 +392,8 @@ The test suite includes:
 | Test Classes Implemented | 22 |
 | Validators with Tests | 22 (100%) |
 | Validators Pending Tests | 0 (0%) |
-| Test Files Created | 22 |
-| **Total Test Methods** | **324** |
+| Test Files Created | 23 |
+| **Total Test Methods** | **373** |
 
 ---
 

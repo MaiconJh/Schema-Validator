@@ -8,13 +8,13 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -95,11 +95,11 @@ public class SchemaRefResolver {
     }
 
     /**
-     * Resolves a $ref reference to a Schema.
+     * Resolves a $ref reference to a Schema, following references recursively.
      * 
      * @param ref the reference string
      * @param currentSchemaName the name of the schema containing the reference
-     * @return the resolved Schema, or null if not found
+     * @return the resolved Schema (fully dereferenced), or null if not found
      */
     public Schema resolveRef(String ref, String currentSchemaName) {
         if (ref == null || ref.isEmpty()) {
@@ -137,6 +137,19 @@ public class SchemaRefResolver {
             } else {
                 // Registry reference: SchemaName
                 resolved = registry.getSchema(ref).orElse(null);
+            }
+
+            // Recursively resolve any $ref inside the obtained schema
+            if (resolved != null && resolved.isRef()) {
+                String innerRef = resolved.getRef();
+                String innerName = resolved.getName();
+                String innerKey = innerName + "->" + innerRef;
+                if (resolving.contains(innerKey)) {
+                    logger.warning("Circular reference detected: " + innerRef + " in " + innerName);
+                    resolved = null;
+                } else {
+                    resolved = resolveRef(innerRef, innerName);
+                }
             }
         } finally {
             resolving.remove(cacheKey);
@@ -179,6 +192,10 @@ public class SchemaRefResolver {
         if (!scopeStack.isEmpty()) {
             for (Schema scopedSchema : scopeStack) {
                 if (anchorName.equals(scopedSchema.getDynamicAnchor())) {
+                    // Recursively resolve if the anchor schema itself has a $ref
+                    if (scopedSchema.isRef()) {
+                        return resolveRef(scopedSchema.getRef(), scopedSchema.getName());
+                    }
                     return scopedSchema;
                 }
             }
@@ -187,18 +204,18 @@ public class SchemaRefResolver {
         // Prefer the current schema, then fallback to all registered schemas.
         Schema currentSchema = registry.getSchema(currentSchemaName).orElse(null);
         Schema resolved = findSchemaByDynamicAnchor(currentSchema, anchorName);
-        if (resolved != null) {
-            return resolved;
-        }
-
-        for (String schemaName : registry.getAllSchemaNames()) {
-            Schema schema = registry.getSchema(schemaName).orElse(null);
-            resolved = findSchemaByDynamicAnchor(schema, anchorName);
-            if (resolved != null) {
-                return resolved;
+        if (resolved == null) {
+            for (String schemaName : registry.getAllSchemaNames()) {
+                Schema schema = registry.getSchema(schemaName).orElse(null);
+                resolved = findSchemaByDynamicAnchor(schema, anchorName);
+                if (resolved != null) break;
             }
         }
-        return null;
+        // Recursively resolve if the found schema has a $ref
+        if (resolved != null && resolved.isRef()) {
+            return resolveRef(resolved.getRef(), resolved.getName());
+        }
+        return resolved;
     }
 
     /**
@@ -543,6 +560,11 @@ public class SchemaRefResolver {
 
         // Handle anyOf container
         if ("anyOf".equals(part) && current.hasAnyOf()) {
+            return current;
+        }
+
+        // Handle properties container
+        if ("properties".equals(part) && current.getProperties() != null && !current.getProperties().isEmpty()) {
             return current;
         }
 

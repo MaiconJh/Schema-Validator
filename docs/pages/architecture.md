@@ -50,7 +50,7 @@ permalink: /architecture.html
 ## Implementation notes
 
 - Cache expiry in `SchemaRegistry` is fixed at construction (`5 minutes` in plugin startup).
-- All major JSON Schema keywords are now supported and enforced. **Test coverage:** 324 unit tests passing across 22 validator test classes.
+- All major JSON Schema keywords are now supported and enforced. **Test coverage:** 373 unit tests passing across 23 validator test classes.
 
 ## Related pages
 

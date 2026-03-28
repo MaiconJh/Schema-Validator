@@ -20,12 +20,32 @@ permalink: /validation-behavior.html
 `ObjectValidator` evaluates in this order:
 
 1. Resolve `$ref` when schema is reference and resolver is wired.
-2. Ensure data is `Map<?, ?>`.
-3. Apply composition and conditionals (`allOf`, `anyOf`, `oneOf`, `not`, `if/then/else`).
-4. Validate required fields.
-5. Validate declared `properties` that exist in input.
-6. Validate unknown keys with `patternProperties`.
-7. If still unmatched, enforce `additionalProperties`.
+2. Resolve `$dynamicRef` if present and no static reference.
+3. Ensure data is `Map<?, ?>` (null values are skipped).
+4. **Composition and conditionals** (order is as follows):
+   - `allOf`: all subschemas must pass.
+   - `anyOf`: at least one subschema must pass.
+   - `oneOf`: exactly one subschema must pass.
+   - `not`: instance must NOT match the subschema.
+   - `if`/`then`/`else`: branch according to the `if` condition.
+5. Validate required fields.
+6. Validate declared `properties` that exist in input.
+7. Validate unknown keys with `patternProperties` (regex matches).
+8. If still unmatched, enforce `additionalProperties` (boolean or schema).
+9. Finally, enforce `unevaluatedProperties` for any property not covered by steps 6–8.
+
+## Array validation order
+
+`ArrayValidator` evaluates in this order:
+
+1. Ensure data is `List<?>`.
+2. Apply `minItems` and `maxItems` constraints.
+3. Apply `uniqueItems` constraint.
+4. Validate `prefixItems` schemas for the first N items (tuple validation).
+5. Apply `additionalItems` schema to items beyond `prefixItems` (if defined).
+6. Validate `contains` with `minContains`/`maxContains`.
+7. Validate items using `items` schema (applies to all items if `prefixItems` not defined, or to items beyond `prefixItems` if present).
+8. Enforce `unevaluatedItems` for items not covered by `prefixItems`, `items`, `contains`.
 
 ## Primitive validation details
 
@@ -42,14 +62,6 @@ permalink: /validation-behavior.html
 2. `enum` check next.
 3. If `enum` exists and fails, remaining primitive constraints are not evaluated.
 4. Numeric/string/format constraints run after successful type and enum checks.
-
-## Array validation details
-
-- Value must be `List<?>`.
-- `items` schema is applied recursively to each element.
-- If `items` is missing, per-item checks are skipped.
-- `minItems`, `maxItems`, `uniqueItems` are fully enforced.
-- `prefixItems` supports tuple validation (2019-09/2020-12).
 
 ## Error model
 

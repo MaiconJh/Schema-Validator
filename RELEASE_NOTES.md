@@ -19,7 +19,46 @@ This addon was created with **Artificial Intelligence assistance**. Use with cau
 
 ---
 
-## ✨ What's New in v1.0.0 - Complete Test Suite & Full Coverage
+## ✨ What's New in v1.0.5 - Complete Test Suite & Full Coverage
+
+### 🎯 Major Features Added
+
+#### 1. Advanced JSON Schema Validation Keywords
+- Implementation of remaining P1/P2 keywords across parser and validators
+- Fix for keyword detection scope and array items validation
+- Implementation of P0 draft-2020-12 gaps: propertyNames, contains, and registry sync
+- Hardening of unevaluated and dynamicRef semantics with follow-up plan
+- Advance Phase H2 with dynamicRef and unevaluated regressions
+- Complete next hardening stage for dynamic scope and content vocab
+- Start next hardening stage for unevaluated applicator coverage
+
+#### 2. Enhanced Documentation and User Experience
+- Added star rating system with rate limiting (1-5 stars)
+- Improved documentation with UUID validation utility
+- Updated format-reference.md with corrected tables and examples
+- Enhanced getting-started.html and installation.html documentation
+- Added comprehensive examples for all JSON Schema features
+- Updated documentation to reflect implemented JSON Schema features
+- Removed GitHub discussions link from help-support
+- Updated help-support page with repository links
+
+#### 3. Cloudflare Workers Integration
+- Complete configuration of Cloudflare Workers with KV
+- Migrate rating storage from GitHub API to Cloudflare KV
+- Allow dots in page parameter validation for .html support
+- Improve privacy by removing userAgent/referrer storage and add data retention
+- Add User-Agent header for GitHub API
+- Add debug logs to worker
+- Add feedback system with Cloudflare Workers integration
+
+#### 4. Bug Fixes and Stability Improvements
+- Fix complex schema to resolve validation issues
+- Corrected FormatValidator regex patterns for RFC compliance
+- Fix: Updated worker's URL of feedback for production
+- Various documentation fixes and typo corrections
+- Reset feedbacks.json periodically for clean state
+
+---
 
 ### 🎯 Major Features Added
 
@@ -27,7 +66,7 @@ This addon was created with **Artificial Intelligence assistance**. Use with cau
 
 Comprehensive test coverage for all JSON Schema validators:
 
-- **324 unit tests** across **22 test classes**
+- **373 unit tests** across **23 test classes**
 - **100% pass rate** on all validators
 - Test classes for:
   - Array validators: MinItems, MaxItems, UniqueItems, PrefixItems, AdditionalItems

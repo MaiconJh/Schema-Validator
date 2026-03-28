@@ -424,60 +424,6 @@ public class ObjectValidator implements Validator {
 
         return evaluatedKeys;
     }
-
-    private Set<String> collectEvaluatedObjectKeys(Map<?, ?> map, Schema schema, String path, String parentKey) {
-        Set<String> evaluatedKeys = new HashSet<>();
-
-        // Direct properties/patternProperties in this schema
-        for (String key : schema.getProperties().keySet()) {
-            if (map.containsKey(key)) {
-                evaluatedKeys.add(key);
-            }
-        }
-        for (Object keyObj : map.keySet()) {
-            String key = String.valueOf(keyObj);
-            for (String pattern : schema.getPatternProperties().keySet()) {
-                try {
-                    if (Pattern.matches(pattern, key)) {
-                        evaluatedKeys.add(key);
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-        }
-
-        // allOf always applies all subschemas
-        for (Schema subSchema : schema.getAllOf()) {
-            evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, subSchema, path, parentKey));
-        }
-
-        // anyOf / oneOf only successful branches contribute evaluation
-        for (Schema subSchema : schema.getAnyOf()) {
-            List<ValidationError> subErrors = ValidatorDispatcher.forSchema(subSchema)
-                    .validate(map, subSchema, path, parentKey);
-            if (subErrors.isEmpty()) {
-                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, subSchema, path, parentKey));
-            }
-        }
-        for (Schema subSchema : schema.getOneOf()) {
-            List<ValidationError> subErrors = ValidatorDispatcher.forSchema(subSchema)
-                    .validate(map, subSchema, path, parentKey);
-            if (subErrors.isEmpty()) {
-                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, subSchema, path, parentKey));
-            }
-        }
-
-        // conditional branch selected by "if"
-        if (schema.getIfSchema() != null) {
-            List<ValidationError> ifErrors = ValidatorDispatcher.forSchema(schema.getIfSchema())
-                    .validate(map, schema.getIfSchema(), path, parentKey);
-            if (ifErrors.isEmpty() && schema.getThenSchema() != null) {
-                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, schema.getThenSchema(), path, parentKey));
-            } else if (!ifErrors.isEmpty() && schema.getElseSchema() != null) {
-                evaluatedKeys.addAll(collectEvaluatedObjectKeys(map, schema.getElseSchema(), path, parentKey));
-            }
-        }
-
-        return evaluatedKeys;
-    }
 }
+
+

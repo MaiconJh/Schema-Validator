@@ -24,6 +24,11 @@ Schema Validator reads:
 | `strict-mode` | boolean | `false` | Turns unsupported keyword warnings into load exceptions |
 
 > [!NOTE]
+> The `strict-mode` setting controls how the schema loader handles unsupported keywords:
+> - `false` (default): Logs a warning and continues loading the schema
+> - `true`: Throws an exception and aborts schema loading (fail-fast behavior)
+
+> [!NOTE]
 > `PluginConfig` uses fallback defaults if a key is missing. For `validation-on-load`, bundled file is `false`, but code fallback is `true` if the key is removed.
 
 ## Safe tuning strategy

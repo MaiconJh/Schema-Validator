@@ -441,8 +441,8 @@ This document lists all unit tests created for the Schema Validator project, org
 
 | Category | Number of Tests |
 |----------|-----------------|
-| **Total Test Classes** | 22 |
-| **Total Test Methods** | 324 |
+| **Total Test Classes** | 23 |
+| **Total Test Methods** | 373 |
 | **Positive Tests** | 85 |
 | **Negative Tests** | 62 |
 | **Edge Case Tests** | 177 |

@@ -298,7 +298,7 @@ Limitation:
 
 This registry lists **51 keywords** as "supported". The following functionality has been implemented as verified by tests:
 
-#### Keywords that ARE implemented (verified via 324 tests)
+#### Keywords that ARE implemented (verified via 373 tests)
 
 | Keyword | Parser | Model | Validator | Tests |
 |---------|--------|-------|----------|-------|
@@ -357,14 +357,14 @@ This registry lists **51 keywords** as "supported". The following functionality 
 | Feature | Schema-Validator | everit-org |
 |---------|-----------------|------------|
 | Supported Drafts | ⚠️ Partial | ✅ All (07, 2019-09, 2020-12) |
-| minItems/maxItems | ✅ Yes (324 tests) | ✅ Yes |
+| minItems/maxItems | ✅ Yes (373 tests) | ✅ Yes |
 | uniqueItems | ✅ Yes (9 tests) | ✅ Yes |
 | prefixItems | ✅ Yes (8 tests) | ✅ Yes |
 | minProperties/maxProperties | ✅ Yes (12 tests) | ✅ Yes |
 | dependentRequired/dependentSchemas | ✅ Yes (12 tests) | ✅ Yes |
 | External $ref | ⚠️ Limited | ✅ Complete |
 | Customizable formats | ✅ Yes (FormatValidator supports extended + Minecraft) | ✅ Yes |
-| Performance | ✅ Tested (324 tests passing) | ✅ Optimized |
+| Performance | ✅ Tested (373 tests passing) | ✅ Optimized |
 
 ### 4.2 networknt/json-schema-validator (Java)
 
@@ -375,7 +375,7 @@ This registry lists **51 keywords** as "supported". The following functionality 
 | uniqueItems | ✅ Yes | ✅ Yes |
 | prefixItems | ✅ Yes | ✅ Yes |
 | Schema cache | ✅ Yes (SchemaRegistry.java) | ✅ Complete |
-| Performance | ✅ Tested (324 tests passing) | ✅ High |
+| Performance | ✅ Tested (373 tests passing) | ✅ High |
 
 ### 4.3 AJV (JavaScript)
 
@@ -390,7 +390,7 @@ This registry lists **51 keywords** as "supported". The following functionality 
 
 ## 5. Implementation Plan
 
-> **UPDATE (March 2026):** All functionalities listed below as "missing" have been successfully implemented and tested. The 324 passing unit tests confirm the complete implementation.
+> **UPDATE (March 2026):** All functionalities listed below as "missing" have been successfully implemented and tested. The 373 passing unit tests confirm the complete implementation.
 
 ### 5.1 Array Constraints - ✅ IMPLEMENTED
 
@@ -523,7 +523,7 @@ The following advanced features are already implemented:
 1. ✅ **Incremental addition:** New fields were added to the end of Schema.java class and constructor
 2. ✅ **Backward compatibility:** New fields have safe default values (null, empty list)
 3. ✅ **Graceful degradation:** If a keyword is not recognized, Warn but continue (implemented behavior)
-4. ✅ **Unit tests:** 324 unit tests were implemented and passed successfully
+4. ✅ **Unit tests:** 373 unit tests were implemented and passed successfully
 
 ### 6.2 Implementation Order Completed
 
@@ -558,7 +558,7 @@ The following advanced features are already implemented:
 | Array Validator | ✅ ~100% of features | ArrayValidator.java validates minItems, maxItems, uniqueItems, prefixItems, additionalItems |
 | Primitive Validator | ✅ ~100% of features | PrimitiveValidator.java validates const, readOnly, writeOnly |
 | Keywords Registry | ✅ **Consistent** — all keywords implemented | SupportedKeywordsRegistry.java |
-| Documentation | ✅ **Updated** — claims adjusted based on 324 tests | This audit |
+| Documentation | ✅ **Updated** — claims adjusted based on 373 tests | This audit |
 
 ### Key Findings (Updated)
 
@@ -574,13 +574,13 @@ The following advanced features are already implemented:
 2. **✅ Documentation updated** to reflect implemented functionality
 3. **✅ Array constraints implemented** (minItems, maxItems, uniqueItems, prefixItems, additionalItems)
 4. **✅ Object constraints implemented** (minProperties, maxProperties, dependentRequired, dependentSchemas)
-5. **✅ Existing validation tests** — 324 unit tests passed successfully
+5. **✅ Existing validation tests** — 373 unit tests passed successfully
 
 ---
 
 ## 8. Verification Source
 
-> **UPDATE (March 2026):** This audit was based on the 324 unit tests that passed successfully. References to test files are the "source of truth" to determine the actual implementation state.
+> **UPDATE (March 2026):** This audit was based on the 373 unit tests that passed successfully. References to test files are the "source of truth" to determine the actual implementation state.
 
 | Artifact | Path |
 |----------|------|
@@ -591,7 +591,7 @@ The following advanced features are already implemented:
 | Array Validator | [`src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java`](src/main/java/com/maiconjh/schemacr/validation/ArrayValidator.java) |
 | Primitive Validator | [`src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java`](src/main/java/com/maiconjh/schemacr/validation/PrimitiveValidator.java) |
 
-### Test Files (Source of Truth - 324 tests passed)
+### Test Files (Source of Truth - 373 tests passed)
 
 | Validator | Test File |
 |-----------|-----------|

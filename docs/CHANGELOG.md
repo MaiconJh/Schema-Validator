@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Unit Test Suite
-- 324 unit tests across 22 validator test classes
+- 373 unit tests across 23 validator test classes
 - Test coverage for all JSON Schema validators:
   - Array validators: MinItems, MaxItems, UniqueItems, PrefixItems, AdditionalItems
   - Object validators: MinProperties, MaxProperties, DependentRequired, DependentSchemas
@@ -41,6 +41,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MinPropertiesValidator now handles null data correctly
 - MaxPropertiesValidator now handles null data correctly
 - ObjectValidator now handles non-Map data gracefully
+
+---
+
+## [1.0.5] - 2026-03-28 - Advanced JSON Schema Validation & Documentation
+
+### Added
+
+#### Advanced JSON Schema Validation Keywords
+- Implementation of remaining P1/P2 keywords across parser and validators
+- Fix for keyword detection scope and array items validation
+- Implementation of P0 draft-2020-12 gaps: propertyNames, contains, and registry sync
+- Hardening of unevaluated and dynamicRef semantics with follow-up plan
+- Advance Phase H2 with dynamicRef and unevaluated regressions
+- Complete next hardening stage for dynamic scope and content vocab
+- Start next hardening stage for unevaluated applicator coverage
+
+#### Enhanced Documentation and User Experience
+- Added star rating system with rate limiting (1-5 stars)
+- Improved documentation with UUID validation utility
+- Updated format-reference.md with corrected tables and examples
+- Enhanced getting-started.html and installation.html documentation
+- Added comprehensive examples for all JSON Schema features
+- Updated documentation to reflect implemented JSON Schema features
+- Removed GitHub discussions link from help-support
+- Updated help-support page with repository links
+
+#### Cloudflare Workers Integration
+- Complete configuration of Cloudflare Workers with KV
+- Migrate rating storage from GitHub API to Cloudflare KV
+- Allow dots in page parameter validation for .html support
+- Improve privacy by removing userAgent/referrer storage and add data retention
+- Add User-Agent header for GitHub API
+- Add debug logs to worker
+- Add feedback system with Cloudflare Workers integration
+
+### Changed
+
+- Updated plugin version to 1.0.5
+- Updated documentation version to 1.0.5
+- Updated plugin version range to 1.0.5
+
+### Fixed
+
+- Fix complex schema to resolve validation issues
+- Corrected FormatValidator regex patterns for RFC compliance
+- Fix: Atualiza URL do worker de feedback para produção
+- Various documentation fixes and typo corrections
+- Reset feedbacks.json periodically for clean state
 
 ---
 

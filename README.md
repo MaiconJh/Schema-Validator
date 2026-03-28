@@ -1,12 +1,12 @@
-﻿# Schema-Validator v1.0.0
+# Schema-Validator v1.0.5
 
 Schema-Validator is a Paper/Skript plugin that validates JSON or YAML data files against JSON Schema files.
 
 > **Note:** If documentation and code diverge, the code is authoritative.
 
-## 🎯 Version 1.0.0 Highlights
+## 🎯 Version 1.0.5 Highlights
 
-- **324 unit tests** passing across **22 test classes**
+- **373 unit tests** passing across **23 test classes**
 - **100% coverage** on all implemented validators
 - Complete coverage for: array, object, string, number, logical, format and conditional validators
 
@@ -32,7 +32,7 @@ Schema-Validator is a Paper/Skript plugin that validates JSON or YAML data files
 
 ## 🧪 Unit Test Suite
 
-Version 1.0.0 introduces a complete test suite with **324 unit tests** organized across **22 test classes**, ensuring **100% coverage** on all implemented validators.
+Version 1.0.5 introduces a complete test suite with **373 unit tests** organized across **23 test classes**, ensuring **100% coverage** on all implemented validators.
 
 ### Test Classes
 
@@ -234,7 +234,7 @@ Schema-Validator/
 │   ├── examples/                # Usage examples
 │   ├── config.yml
 │   └── plugin.yml
-├── src/test/java/               # Unit tests (324 tests)
+├── src/test/java/               # Unit tests (373 tests)
 ├── docs/                        # Documentation
 │   ├── pages/                   # Site documentation
 │   └── explanation/             # Internal documentation
@@ -257,15 +257,65 @@ Schema-Validator/
 
 ## 📋 Release Notes
 
-### v1.0.0 - Complete Test Suite & Full Coverage
+### v1.0.5 - Complete Test Suite & Full Coverage
 
 #### Major Features Added
 
-1. **Complete Unit Test Suite**
-   - 324 unit tests across 22 test classes
-   - 100% pass rate on all validators
+1. **Advanced JSON Schema Validation Keywords**
+   - Implementation of remaining P1/P2 keywords across parser and validators
+   - Fix for keyword detection scope and array items validation
+   - Implementation of P0 draft-2020-12 gaps: propertyNames, contains, and registry sync
+   - Hardening of unevaluated and dynamicRef semantics with follow-up plan
+   - Advance Phase H2 with dynamicRef and unevaluated regressions
+   - Complete next hardening stage for dynamic scope and content vocab
+   - Start next hardening stage for unevaluated applicator coverage
 
-2. **Bug Fixes**
+2. **Enhanced Documentation and User Experience**
+   - Added star rating system with rate limiting (1-5 stars)
+   - Improved documentation with UUID validation utility
+   - Updated format-reference.md with corrected tables and examples
+   - Enhanced getting-started.html and installation.html documentation
+   - Added comprehensive examples for all JSON Schema features
+   - Updated documentation to reflect implemented JSON Schema features
+   - Removed GitHub discussions link from help-support
+   - Updated help-support page with repository links
+
+3. **Cloudflare Workers Integration**
+   - Complete configuration of Cloudflare Workers with KV
+   - Migrate rating storage from GitHub API to Cloudflare KV
+   - Allow dots in page parameter validation for .html support
+   - Improve privacy by removing userAgent/referrer storage and add data retention
+   - Add User-Agent header for GitHub API
+   - Add debug logs to worker
+   - Add feedback system with Cloudflare Workers integration
+
+4. **Bug Fixes and Stability Improvements**
+   - Fix complex schema to resolve validation issues
+   - Corrected FormatValidator regex patterns for RFC compliance
+   - Fix: Updated worker's URL of feedback for production
+   - Various documentation fixes and typo corrections
+   - Reset feedbacks.json periodically for clean state
+
+5. **Complete Unit Test Suite**
+   - 373 unit tests across 23 test classes
+   - 100% pass rate on all validators
+   - Test classes for:
+     - Array validators: MinItems, MaxItems, UniqueItems, PrefixItems, AdditionalItems
+     - Object validators: MinProperties, MaxProperties, DependentRequired, DependentSchemas
+     - Conditional validators: ConditionalValidator, OneOfValidator, NotValidator
+     - Format validators: 21 formats (12 standard + 9 Minecraft-specific)
+     - Primitive validators: Type, Enum, Numeric, String constraints
+     - Misc validators: Const, ReadOnly, WriteOnly
+     - Schema system: Schema, FileSchemaLoader, SchemaRefResolver
+
+6. **Documentation Updates**
+   - Test execution & evolution guide with detailed instructions
+   - Test coverage report with comprehensive metrics
+   - Updated architecture documentation with test coverage status
+   - Updated schema-keywords documentation with verification status
+   - Corrected code-audit-2026-03.md to reflect actual implementation
+
+7. **Bug Fixes**
    - MinPropertiesValidator now handles null data correctly
    - MaxPropertiesValidator now handles null data correctly
    - ObjectValidator now handles non-Map data gracefully

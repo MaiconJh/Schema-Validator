@@ -292,7 +292,7 @@ my_awesome_block:
     # Validar ao carregar
     validate-on-load: true
     # Versão do schema
-    version: "1.0.0"
+    version: "1.0.5"
     # Compatibilidade
     compatibility:
       - "paper"

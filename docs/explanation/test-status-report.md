@@ -1,10 +1,10 @@
 # Test Status Report
 
-> **STATUS: ALL TESTS COMPLETED - 324 tests executed with 100% success**
+> **STATUS: ALL TESTS COMPLETED - 373 tests executed with 100% success**
 
-**Generation Date:** 2026-03-24  
-**Project Version:** 1.0.0  
-**Overall Status:** ✅ ALL TESTS COMPLETED - 324 tests passing with 100% success
+**Generation Date:** 2026-03-28  
+  **Project Version:** 1.0.5  
+  **Overall Status:** ✅ ALL TESTS COMPLETED - 373 tests passing with 100% success
 
 ---
 
@@ -13,8 +13,8 @@
 This report presents the current status of the Schema Validator test suite. The project has a solid unit test structure covering the main components of the validation system.
 
 **Highlights:**
-- **324 tests** executed with **100% success**
-- **22 test classes** covering validators and main components
+- **373 tests** executed with **100% success**
+- **23 test classes** covering validators and main components
 - Complete coverage of ALL validators
 
 ---
@@ -25,11 +25,11 @@ This report presents the current status of the Schema Validator test suite. The 
 
 | Metric | Value |
 |--------|-------|
-| **Total Tests Executed** | 324 |
-| **Passing Tests** | 324 |
+| **Total Tests Executed** | 373 |
+| **Passing Tests** | 373 |
 | **Failing Tests** | 0 |
 | **Success Rate** | 100% |
-| **Test Classes** | 22 |
+| **Test Classes** | 23 |
 
 ### Distribution by Scenario Type
 
@@ -68,7 +68,7 @@ This report presents the current status of the Schema Validator test suite. The 
 
 ## 3. Status by Validator
 
-### ✅ Validators with Passing Tests (22)
+### ✅ Validators with Passing Tests (23)
 
 | Validator | Location | Status |
 |-----------|----------|--------|
@@ -181,9 +181,9 @@ Tests for main validators have been successfully implemented:
 | Core Tests (Array, Object, Primitive, Format) | 40+ tests | 81 | 100% ✅ |
 | Composition Tests | 25+ tests | 73 | 100% ✅ |
 | Properties Tests | 15+ tests | 81 | 100% ✅ |
-| **Total** | **324+ tests** | **324** | **100%** |
+| **Total** | **373+ tests** | **373** | **100%** |
 
-> **Note:** ALL tests completed successfully! 324 tests executed with 100% success. All validators now have complete test coverage.
+> **Note:** ALL tests completed successfully! 373 tests executed with 100% success. All validators now have complete test coverage.
 
 ---
 
