@@ -400,4 +400,38 @@ class PrimitiveValidatorTest {
         assertTrue(validErrors.isEmpty(), "Expected JSON content matching contentSchema to pass");
         assertFalse(invalidErrors.isEmpty(), "Expected JSON content violating contentSchema to fail");
     }
+
+    @Test
+    @DisplayName("shouldValidateBase64UrlContentEncoding")
+    void shouldValidateBase64UrlContentEncoding() {
+        schema = Schema.builder("payload", SchemaType.STRING)
+                .contentEncoding("base64url")
+                .build();
+
+        List<ValidationError> validErrors = validator.validate("eyJuYW1lIjoiYWxpY2UifQ", schema, "/payload", "payload");
+        List<ValidationError> invalidErrors = validator.validate("###", schema, "/payload", "payload");
+
+        assertTrue(validErrors.isEmpty(), "Expected valid base64url to pass");
+        assertTrue(invalidErrors.stream().anyMatch(e -> "contentEncoding".equals(e.getExpectedType())),
+                "Expected contentEncoding error for invalid base64url");
+    }
+
+    @Test
+    @DisplayName("shouldValidateContentSchemaForPlusJsonMediaType")
+    void shouldValidateContentSchemaForPlusJsonMediaType() {
+        Schema contentSchema = Schema.builder("content", SchemaType.OBJECT)
+                .properties(java.util.Map.of("name", Schema.builder("name", SchemaType.STRING).build()))
+                .requiredFields(List.of("name"))
+                .build();
+        schema = Schema.builder("payload", SchemaType.STRING)
+                .contentMediaType("application/ld+json")
+                .contentSchema(contentSchema)
+                .build();
+
+        List<ValidationError> validErrors = validator.validate("{\"name\":\"alice\"}", schema, "/payload", "payload");
+        List<ValidationError> invalidErrors = validator.validate("{\"age\":10}", schema, "/payload", "payload");
+
+        assertTrue(validErrors.isEmpty(), "Expected +json media type content to be validated as JSON");
+        assertFalse(invalidErrors.isEmpty(), "Expected +json content violating contentSchema to fail");
+    }
 }

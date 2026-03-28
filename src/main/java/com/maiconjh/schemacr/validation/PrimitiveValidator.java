@@ -147,9 +147,11 @@ public class PrimitiveValidator implements Validator {
             }
 
             // Validate contentEncoding/contentMediaType/contentSchema (Draft 2020-12 content vocabulary)
-            if (schema.getContentEncoding() != null && "base64".equalsIgnoreCase(schema.getContentEncoding())) {
+            if (schema.getContentEncoding() != null
+                    && ("base64".equalsIgnoreCase(schema.getContentEncoding())
+                    || "base64url".equalsIgnoreCase(schema.getContentEncoding()))) {
                 try {
-                    Base64.getDecoder().decode(str);
+                    decodeByEncoding(str, schema.getContentEncoding());
                 } catch (IllegalArgumentException ex) {
                     errors.add(new ValidationError(
                             path,
@@ -160,10 +162,16 @@ public class PrimitiveValidator implements Validator {
                 }
             }
             if (schema.getContentSchema() != null && schema.getContentMediaType() != null
-                    && "application/json".equalsIgnoreCase(schema.getContentMediaType())) {
+                    && isJsonMediaType(schema.getContentMediaType())) {
                 try {
+                    String contentToParse = str;
+                    if (schema.getContentEncoding() != null
+                            && ("base64".equalsIgnoreCase(schema.getContentEncoding())
+                            || "base64url".equalsIgnoreCase(schema.getContentEncoding()))) {
+                        contentToParse = decodeByEncoding(str, schema.getContentEncoding());
+                    }
                     com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                    Object parsed = mapper.readValue(str, Object.class);
+                    Object parsed = mapper.readValue(contentToParse, Object.class);
                     List<ValidationError> contentSchemaErrors = ValidatorDispatcher.forSchema(schema.getContentSchema())
                             .validate(parsed, schema.getContentSchema(), path + "#content", parentKey);
                     errors.addAll(contentSchemaErrors);
@@ -197,6 +205,19 @@ public class PrimitiveValidator implements Validator {
         }
 
         return errors;
+    }
+
+    private boolean isJsonMediaType(String mediaType) {
+        if (mediaType == null) return false;
+        String normalized = mediaType.toLowerCase();
+        return "application/json".equals(normalized) || normalized.endsWith("+json");
+    }
+
+    private String decodeByEncoding(String content, String encoding) {
+        if ("base64url".equalsIgnoreCase(encoding)) {
+            return new String(Base64.getUrlDecoder().decode(content), java.nio.charset.StandardCharsets.UTF_8);
+        }
+        return new String(Base64.getDecoder().decode(content), java.nio.charset.StandardCharsets.UTF_8);
     }
     
     /**

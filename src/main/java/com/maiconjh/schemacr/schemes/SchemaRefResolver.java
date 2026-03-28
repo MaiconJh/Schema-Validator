@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -56,6 +58,7 @@ public class SchemaRefResolver {
     private final HttpClient httpClient;
     private final boolean cacheExternalSchemas;
     private final long cacheExpiryMs;
+    private final ThreadLocal<Deque<Schema>> dynamicScopeStack = ThreadLocal.withInitial(ArrayDeque::new);
 
     /**
      * Creates a SchemaRefResolver with default settings.
@@ -171,6 +174,16 @@ public class SchemaRefResolver {
             return null;
         }
 
+        // First, use dynamic scope stack (nearest scope wins).
+        Deque<Schema> scopeStack = dynamicScopeStack.get();
+        if (!scopeStack.isEmpty()) {
+            for (Schema scopedSchema : scopeStack) {
+                if (anchorName.equals(scopedSchema.getDynamicAnchor())) {
+                    return scopedSchema;
+                }
+            }
+        }
+
         // Prefer the current schema, then fallback to all registered schemas.
         Schema currentSchema = registry.getSchema(currentSchemaName).orElse(null);
         Schema resolved = findSchemaByDynamicAnchor(currentSchema, anchorName);
@@ -186,6 +199,25 @@ public class SchemaRefResolver {
             }
         }
         return null;
+    }
+
+    /**
+     * Pushes a schema into the dynamic scope stack for $dynamicRef resolution.
+     */
+    public void enterDynamicScope(Schema schema) {
+        if (schema != null) {
+            dynamicScopeStack.get().push(schema);
+        }
+    }
+
+    /**
+     * Pops the current schema from the dynamic scope stack.
+     */
+    public void exitDynamicScope() {
+        Deque<Schema> stack = dynamicScopeStack.get();
+        if (!stack.isEmpty()) {
+            stack.pop();
+        }
     }
 
     private Schema findSchemaByDynamicAnchor(Schema schema, String anchorName) {

@@ -294,6 +294,28 @@ class SchemaRefResolverTest {
         }
 
         @Test
+        @DisplayName("shouldPrioritizeNearestDynamicScopeAnchor")
+        void shouldPrioritizeNearestDynamicScopeAnchor() {
+            Schema outer = Schema.builder("Outer", SchemaType.OBJECT)
+                    .dynamicAnchor("node")
+                    .build();
+            Schema inner = Schema.builder("Inner", SchemaType.OBJECT)
+                    .dynamicAnchor("node")
+                    .build();
+
+            resolver.enterDynamicScope(outer);
+            resolver.enterDynamicScope(inner);
+            try {
+                Schema resolved = resolver.resolveDynamicRef("#node", "MainSchema");
+                assertNotNull(resolved);
+                assertEquals("Inner", resolved.getName(), "Nearest scope should win for dynamic anchor resolution");
+            } finally {
+                resolver.exitDynamicScope();
+                resolver.exitDynamicScope();
+            }
+        }
+
+        @Test
         @DisplayName("shouldClearCache - limpar cache")
         void shouldClearCache() {
             // Arrange - Create and register schemas
