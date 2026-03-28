@@ -18,6 +18,8 @@ This plan captures follow-up hardening after the first implementation pass of P1
 
 - [x] Add array regression test for `unevaluatedItems=false` without `items`/`prefixItems`.
 - [x] Add dynamic anchor/ref resolution test (`$dynamicAnchor` + `$dynamicRef`).
+- [x] Add dynamicRef JSON-pointer fallback regression (`#/properties/...`).
+- [x] Add `additionalItems` + `unevaluatedItems` interplay regression.
 
 ## Next hardening candidates
 

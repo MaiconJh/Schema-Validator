@@ -259,6 +259,41 @@ class SchemaRefResolverTest {
         }
 
         @Test
+        @DisplayName("shouldResolveDynamicRefByAnchor")
+        void shouldResolveDynamicRefByAnchor() {
+            Schema anchored = Schema.builder("Anchored", SchemaType.OBJECT)
+                    .dynamicAnchor("node")
+                    .properties(Collections.singletonMap("id",
+                            Schema.builder("id", SchemaType.INTEGER).build()))
+                    .build();
+            Schema root = Schema.builder("Root", SchemaType.OBJECT)
+                    .properties(Collections.singletonMap("child", anchored))
+                    .build();
+
+            registry.registerSchema("Root", root);
+
+            Schema resolved = resolver.resolveDynamicRef("#node", "Root");
+
+            assertNotNull(resolved, "Expected dynamic anchor to resolve");
+            assertEquals("Anchored", resolved.getName());
+        }
+
+        @Test
+        @DisplayName("shouldResolveDynamicRefUsingJsonPointerFallback")
+        void shouldResolveDynamicRefUsingJsonPointerFallback() {
+            Schema child = Schema.builder("Child", SchemaType.STRING).build();
+            Schema root = Schema.builder("Root", SchemaType.OBJECT)
+                    .properties(Collections.singletonMap("child", child))
+                    .build();
+            registry.registerSchema("Root", root);
+
+            Schema resolved = resolver.resolveDynamicRef("#/properties/child", "Root");
+
+            assertNotNull(resolved, "Expected dynamicRef with JSON pointer to fallback to resolveRef");
+            assertEquals("Child", resolved.getName());
+        }
+
+        @Test
         @DisplayName("shouldClearCache - limpar cache")
         void shouldClearCache() {
             // Arrange - Create and register schemas
