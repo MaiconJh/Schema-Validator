@@ -143,6 +143,14 @@ public class ArrayValidator implements Validator {
                     ));
                 }
             }
+        } else if (schema.getItemSchema() != null) {
+            // When prefixItems is present, 'items' applies only to positions beyond prefixItems length.
+            for (int i = schema.getPrefixItems().size(); i < list.size(); i++) {
+                Object element = list.get(i);
+                String childPath = path + "[" + i + "]";
+                errors.addAll(ValidatorDispatcher.forSchema(schema.getItemSchema())
+                        .validate(element, schema.getItemSchema(), childPath, parentKey));
+            }
         }
 
         return errors;
