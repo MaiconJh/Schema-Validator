@@ -244,6 +244,17 @@ public class ObjectValidator implements Validator {
             }
         }
 
+        // Validate propertyNames constraint
+        if (schema.getPropertyNamesSchema() != null) {
+            Schema propertyNamesSchema = schema.getPropertyNamesSchema();
+            Validator propertyNameValidator = ValidatorDispatcher.forSchema(propertyNamesSchema);
+            for (Object keyObj : map.keySet()) {
+                String key = String.valueOf(keyObj);
+                String propertyNamePath = path + "." + key;
+                errors.addAll(propertyNameValidator.validate(key, propertyNamesSchema, propertyNamePath, "propertyNames"));
+            }
+        }
+
         // Validate declared schema properties (only if present in data)
         for (Map.Entry<String, Schema> property : schema.getProperties().entrySet()) {
             String key = property.getKey();

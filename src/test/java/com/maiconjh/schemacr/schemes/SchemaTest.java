@@ -62,6 +62,8 @@ class SchemaTest {
             patternProperties.put("^s_", Schema.builder("s_property", SchemaType.STRING).build());
 
             Schema itemSchema = Schema.builder("item", SchemaType.STRING).build();
+            Schema propertyNamesSchema = Schema.builder("propertyNames", SchemaType.STRING).pattern("^[a-z]+$").build();
+            Schema containsSchema = Schema.builder("contains", SchemaType.INTEGER).build();
 
             // Act
             Schema schema = Schema.builder("testSchema", SchemaType.OBJECT)
@@ -90,8 +92,12 @@ class SchemaTest {
                     .minItems(1)
                     .maxItems(10)
                     .uniqueItems(true)
+                    .containsSchema(containsSchema)
+                    .minContains(1)
+                    .maxContains(2)
                     .minProperties(2)
                     .maxProperties(10)
+                    .propertyNamesSchema(propertyNamesSchema)
                     .readOnly(false)
                     .writeOnly(false)
                     .constValue("fixedValue")
@@ -129,8 +135,12 @@ class SchemaTest {
             assertEquals(1, schema.getMinItems());
             assertEquals(10, schema.getMaxItems());
             assertTrue(schema.isUniqueItems());
+            assertNotNull(schema.getContainsSchema());
+            assertEquals(1, schema.getMinContains());
+            assertEquals(2, schema.getMaxContains());
             assertEquals(2, schema.getMinProperties());
             assertEquals(10, schema.getMaxProperties());
+            assertNotNull(schema.getPropertyNamesSchema());
             assertFalse(schema.isReadOnly());
             assertFalse(schema.isWriteOnly());
             assertEquals("fixedValue", schema.getConstValue());

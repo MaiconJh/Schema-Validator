@@ -51,12 +51,16 @@ public class Schema {
     private final Boolean uniqueItems;
     private final List<Schema> prefixItems;
     private final Schema additionalItemsSchema;
+    private final Schema containsSchema;
+    private final Integer minContains;
+    private final Integer maxContains;
 
     // Object constraints
     private final Integer minProperties;
     private final Integer maxProperties;
     private final Map<String, List<String>> dependentRequired;
     private final Map<String, Schema> dependentSchemas;
+    private final Schema propertyNamesSchema;
 
     // Const and metadata keywords
     private final Object constValue;
@@ -74,7 +78,9 @@ public class Schema {
                   List<Schema> allOf, List<Schema> anyOf, List<Schema> oneOf,
                   Schema notSchema, Schema ifSchema, Schema thenSchema, Schema elseSchema,
                   Integer minItems, Integer maxItems, Boolean uniqueItems, List<Schema> prefixItems, Schema additionalItemsSchema,
+                  Schema containsSchema, Integer minContains, Integer maxContains,
                   Integer minProperties, Integer maxProperties, Map<String, List<String>> dependentRequired, Map<String, Schema> dependentSchemas,
+                  Schema propertyNamesSchema,
                   Object constValue, Boolean readOnly, Boolean writeOnly) {
         this.name = name;
         this.type = type;
@@ -115,12 +121,16 @@ public class Schema {
         this.uniqueItems = uniqueItems;
         this.prefixItems = prefixItems == null ? Collections.emptyList() : Collections.unmodifiableList(prefixItems);
         this.additionalItemsSchema = additionalItemsSchema;
+        this.containsSchema = containsSchema;
+        this.minContains = minContains;
+        this.maxContains = maxContains;
 
         // Object constraints
         this.minProperties = minProperties;
         this.maxProperties = maxProperties;
         this.dependentRequired = dependentRequired == null ? Collections.emptyMap() : Collections.unmodifiableMap(dependentRequired);
         this.dependentSchemas = dependentSchemas == null ? Collections.emptyMap() : Collections.unmodifiableMap(dependentSchemas);
+        this.propertyNamesSchema = propertyNamesSchema;
 
         // Const and metadata
         this.constValue = constValue;
@@ -190,14 +200,18 @@ public class Schema {
     public Boolean isUniqueItems() { return uniqueItems; }
     public List<Schema> getPrefixItems() { return prefixItems; }
     public Schema getAdditionalItemsSchema() { return additionalItemsSchema; }
-    public boolean hasArrayConstraints() { return minItems != null || maxItems != null || uniqueItems != null; }
+    public Schema getContainsSchema() { return containsSchema; }
+    public Integer getMinContains() { return minContains; }
+    public Integer getMaxContains() { return maxContains; }
+    public boolean hasArrayConstraints() { return minItems != null || maxItems != null || uniqueItems != null || containsSchema != null || minContains != null || maxContains != null; }
 
     // Object getters
     public Integer getMinProperties() { return minProperties; }
     public Integer getMaxProperties() { return maxProperties; }
     public Map<String, List<String>> getDependentRequired() { return dependentRequired; }
     public Map<String, Schema> getDependentSchemas() { return dependentSchemas; }
-    public boolean hasObjectConstraints() { return minProperties != null || maxProperties != null || !dependentRequired.isEmpty() || !dependentSchemas.isEmpty(); }
+    public Schema getPropertyNamesSchema() { return propertyNamesSchema; }
+    public boolean hasObjectConstraints() { return minProperties != null || maxProperties != null || !dependentRequired.isEmpty() || !dependentSchemas.isEmpty() || propertyNamesSchema != null; }
 
     // Const & metadata getters
     public Object getConstValue() { return constValue; }
@@ -250,11 +264,15 @@ public class Schema {
         private Boolean uniqueItems;
         private List<Schema> prefixItems = Collections.emptyList();
         private Schema additionalItemsSchema;
+        private Schema containsSchema;
+        private Integer minContains;
+        private Integer maxContains;
         // Object
         private Integer minProperties;
         private Integer maxProperties;
         private Map<String, List<String>> dependentRequired = Collections.emptyMap();
         private Map<String, Schema> dependentSchemas = Collections.emptyMap();
+        private Schema propertyNamesSchema;
         // Const & metadata
         private Object constValue;
         private Boolean readOnly;
@@ -302,11 +320,15 @@ public class Schema {
         public Builder uniqueItems(Boolean uniqueItems) { this.uniqueItems = uniqueItems; return this; }
         public Builder prefixItems(List<Schema> prefixItems) { this.prefixItems = prefixItems; return this; }
         public Builder additionalItemsSchema(Schema additionalItemsSchema) { this.additionalItemsSchema = additionalItemsSchema; return this; }
+        public Builder containsSchema(Schema containsSchema) { this.containsSchema = containsSchema; return this; }
+        public Builder minContains(Integer minContains) { this.minContains = minContains; return this; }
+        public Builder maxContains(Integer maxContains) { this.maxContains = maxContains; return this; }
         // Object
         public Builder minProperties(Integer minProperties) { this.minProperties = minProperties; return this; }
         public Builder maxProperties(Integer maxProperties) { this.maxProperties = maxProperties; return this; }
         public Builder dependentRequired(Map<String, List<String>> dependentRequired) { this.dependentRequired = dependentRequired; return this; }
         public Builder dependentSchemas(Map<String, Schema> dependentSchemas) { this.dependentSchemas = dependentSchemas; return this; }
+        public Builder propertyNamesSchema(Schema propertyNamesSchema) { this.propertyNamesSchema = propertyNamesSchema; return this; }
         // Const & metadata
         public Builder constValue(Object constValue) { this.constValue = constValue; return this; }
         public Builder readOnly(Boolean readOnly) { this.readOnly = readOnly; return this; }
@@ -319,7 +341,9 @@ public class Schema {
                     schemaDialect, id, title, description, typeList, ref, version, compatibility,
                     allOf, anyOf, oneOf, notSchema, ifSchema, thenSchema, elseSchema,
                     minItems, maxItems, uniqueItems, prefixItems, additionalItemsSchema,
+                    containsSchema, minContains, maxContains,
                     minProperties, maxProperties, dependentRequired, dependentSchemas,
+                    propertyNamesSchema,
                     constValue, readOnly, writeOnly);
         }
     }
