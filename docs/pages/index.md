@@ -83,3 +83,142 @@ This site uses Diataxis so each page has one clear purpose:
 - Structure and implementation details: [Pages architecture](pages-architecture.html)
 - Writing standards: [Writing guide](writing-guide.html)
 - Contributor workflow: [Developer guide](dev-guide.html)
+
+---
+
+## JSON Schema Versions and Drafts
+
+Schema-Validator supports multiple JSON Schema drafts. Understanding the differences helps you write better schemas.
+
+### Supported Drafts
+
+| Draft | Status | Key Features |
+|---|---|---|
+| Draft-04 | Legacy | `exclusiveMinimum`/`exclusiveMaximum` as booleans, `dependencies` keyword |
+| Draft-06 | Legacy | `const`, `contains`, `propertyNames` |
+| Draft-07 | Legacy | `if`/`then`/`else`, `readOnly`/`writeOnly` |
+| 2019-09 | Current | `dependentRequired`/`dependentSchemas`, `unevaluatedProperties`/`unevaluatedItems`, `$defs` |
+| 2020-12 | Current | `prefixItems` (replaces `items` for tuples), `prefixItems` + `items` for tuple validation |
+
+### Draft-Specific Examples
+
+#### Draft-04 (Legacy)
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "age": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "exclusiveMinimum": true,
+      "exclusiveMaximum": true
+    }
+  }
+}
+```
+
+**Note**: In Draft-04, `exclusiveMinimum` and `exclusiveMaximum` are booleans that modify `minimum` and `maximum`.
+
+#### Draft-06
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "type": "object",
+  "properties": {
+    "status": {
+      "const": "active"
+    },
+    "tags": {
+      "type": "array",
+      "contains": {"type": "string"}
+    }
+  }
+}
+```
+
+**Note**: Draft-06 introduced `const` and `contains` keywords.
+
+#### Draft-07
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "type": {"enum": ["user", "admin"]},
+    "permissions": {"type": "array"}
+  },
+  "if": {"properties": {"type": {"const": "admin"}}},
+  "then": {"required": ["permissions"]},
+  "else": {"properties": {"permissions": false}}
+}
+```
+
+**Note**: Draft-07 introduced `if`/`then`/`else` for conditional validation.
+
+#### 2019-09
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "email": {"type": "string"}
+  },
+  "dependentRequired": {
+    "email": ["name"]
+  },
+  "$defs": {
+    "address": {
+      "type": "object",
+      "properties": {
+        "street": {"type": "string"}
+      }
+    }
+  }
+}
+```
+
+**Note**: 2019-09 introduced `dependentRequired`, `dependentSchemas`, `unevaluatedProperties`, and `$defs`.
+
+#### 2020-12 (Recommended)
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "prefixItems": [
+    {"type": "string"},
+    {"type": "integer"}
+  ],
+  "items": false
+}
+```
+
+**Note**: 2020-12 uses `prefixItems` for tuple validation (replaces Draft-07's `items` array form).
+
+### Migration Guides
+
+- **Draft-04 to 2020-12**: Update `exclusiveMinimum`/`exclusiveMaximum` from boolean to numeric form
+- **Draft-07 to 2020-12**: Replace `items` array with `prefixItems`
+- **All drafts**: Use `$defs` instead of `definitions` for new schemas
+
+### External Resources
+
+- [JSON Schema Official Documentation](https://json-schema.org/)
+- [JSON Schema Specification (2020-12)](https://json-schema.org/draft/2020-12/schema)
+- [JSON Schema Specification (2019-09)](https://json-schema.org/draft/2019-09/schema)
+- [Understanding JSON Schema](https://json-schema.org/understanding-json-schema/)
+- [JSON Schema Examples](https://json-schema.org/learn/getting-started-step-by-step)
+
+### Related Pages
+
+- [Schema keywords](schema-keywords.html) - Complete keyword reference
+- [Examples and schema construction](examples-and-schema-construction.html) - Practical schema patterns
+- [Format reference](format-reference.html) - Supported string formats
+- [Validation behavior](validation-behavior.html) - Runtime execution order
