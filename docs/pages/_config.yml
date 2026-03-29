@@ -11,6 +11,11 @@ permalink: pretty
 # Feedback worker URL (Cloudflare Workers)
 # Configure this after deploying the worker
 feedback_worker_url: "https://feedback-handler-prod.maiconjairhansen.workers.dev"
+# AI chat worker URL (Cloudflare Workers)
+# Configure this after deploying the chat worker
+ai_assistant_worker_url: "https://schema-validator-ai-chat-prod.maiconjairhansen.workers.dev/v1/chat"
+# Public Turnstile site key used only when the chat worker requests verification
+ai_assistant_turnstile_site_key: ""
 defaults:
   - scope:
       path: ""

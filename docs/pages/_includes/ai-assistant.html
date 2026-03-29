@@ -1,0 +1,92 @@
+<!-- AI Assistant Widget -->
+<div id="ai-assistant-widget" class="ai-assistant-widget">
+  <button id="ai-assistant-toggle" class="ai-assistant-toggle" aria-label="Open AI Assistant" aria-expanded="false" aria-controls="ai-assistant-chat">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+  </button>
+
+  <section
+    id="ai-assistant-chat"
+    class="ai-assistant-chat"
+    style="display: none;"
+    aria-hidden="true"
+    data-page-url="{{ page.url | relative_url }}"
+    data-page-title="{{ page.title | escape }}"
+    data-page-description="{{ page.description | default: '' | escape }}"
+    data-api-endpoint="{{ site.ai_assistant_worker_url | default: '' | escape }}"
+    data-turnstile-site-key="{{ site.ai_assistant_turnstile_site_key | default: '' | escape }}"
+  >
+    <div class="ai-assistant-header">
+      <div class="ai-assistant-title-group">
+        <h3>AI Assistant</h3>
+        <p class="ai-assistant-subtitle">Schema-Validator docs only</p>
+      </div>
+      <div class="ai-assistant-actions">
+        <button id="ai-assistant-maximize" class="ai-assistant-action" aria-label="Maximize chat" title="Maximize chat"></button>
+        <button id="ai-assistant-close" class="ai-assistant-action ai-assistant-close" aria-label="Close chat" title="Close chat"></button>
+      </div>
+    </div>
+
+    <div class="ai-assistant-contextbar">
+      <span class="ai-assistant-scope-pill ai-assistant-scope-pill--primary">
+        <span class="ai-assistant-scope-pill-label">Scope</span>
+        <span>Schema-Validator documentation</span>
+      </span>
+      <span class="ai-assistant-scope-pill">
+        <span class="ai-assistant-scope-pill-label">Page</span>
+        <span id="ai-assistant-page-context">{{ page.title }}</span>
+      </span>
+      <span class="ai-assistant-scope-pill">
+        <span class="ai-assistant-scope-pill-label">Visible</span>
+        <span id="ai-assistant-visible-context">Current section</span>
+      </span>
+    </div>
+
+    <div id="ai-assistant-messages" class="ai-assistant-messages">
+      <div id="ai-assistant-thread" class="ai-assistant-thread">
+        <div class="ai-message ai-message--intro">
+          <p><strong>Schema-Validator docs assistant.</strong> I answer only within the documentation scope for this project.</p>
+          <p>Use <code>@</code> to mention the current page, the visible section, or a heading from this article. If the docs do not cover the topic, I should say so instead of guessing.</p>
+          <p class="ai-context">Current page: <span id="ai-current-page">{{ page.title }}</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-assistant-composer">
+      <div id="ai-assistant-active-mentions" class="ai-assistant-active-mentions"></div>
+
+      <div id="ai-assistant-mention-menu" class="ai-assistant-mention-menu" hidden>
+        <div class="ai-assistant-mention-menu-label">Mention page context</div>
+        <div id="ai-assistant-mention-list" class="ai-assistant-mention-list" role="listbox" aria-label="Page context mentions"></div>
+      </div>
+
+      <div id="ai-assistant-challenge" class="ai-assistant-challenge" hidden>
+        <p id="ai-assistant-challenge-copy" class="ai-assistant-challenge-copy">Complete a quick verification to continue using the chat.</p>
+        <div id="ai-assistant-turnstile" class="ai-assistant-turnstile"></div>
+      </div>
+
+      <div class="ai-assistant-input">
+        <textarea
+          id="ai-user-input"
+          rows="1"
+          placeholder="Ask about this page, or type @ to mention a section..."
+          aria-label="Ask a question about the Schema-Validator documentation"
+          spellcheck="false"
+        ></textarea>
+        <button id="ai-send-button" aria-label="Send message" title="Send message">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+
+      <p class="ai-assistant-hint">Use <code>@</code> for page sections. The assistant is grounded only in Schema-Validator docs and should refuse unrelated topics.</p>
+    </div>
+
+    <div class="ai-resize-handle" aria-hidden="true"></div>
+  </section>
+</div>
+
+<script src="{{ '/assets/js/ai-assistant.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>

@@ -1,0 +1,5 @@
+SESSION_HMAC_SECRET=replace-with-a-long-random-secret
+ABUSE_KEY_SALT=replace-with-a-second-random-secret
+UPSTREAM_API_KEY=
+UPSTREAM_AUTH_SCHEME=Bearer
+TURNSTILE_SECRET_KEY=

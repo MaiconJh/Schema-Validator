@@ -2,6 +2,7 @@
 <html lang="en" data-color-mode="auto">
   <head>
     {% include head.html %}
+    <link rel="stylesheet" href="{{ '/assets/css/ai-assistant.css' | relative_url }}?v={{ site.time | date: '%s' }}">
   </head>
   <body>
     <a class="skip-link" href="#content">Skip to content</a>
@@ -45,5 +46,7 @@
 
       </main>
     </div>
+    
+    {% include ai-assistant.html %}
   </body>
 </html>
