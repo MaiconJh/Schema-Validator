@@ -59,6 +59,7 @@
   const ICONS = {
     maximize: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>',
     restore: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg>',
+    newChat: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h7"></path><path d="M16 3h5"></path><path d="M18.5 0.5v5"></path></svg>',
     close: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
     copy: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
     check: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
@@ -72,6 +73,7 @@
   const chatContainer = document.getElementById('ai-assistant-chat');
   const closeButton = document.getElementById('ai-assistant-close');
   const maximizeButton = document.getElementById('ai-assistant-maximize');
+  const resetButton = document.getElementById('ai-assistant-reset');
   const messagesContainer = document.getElementById('ai-assistant-messages');
   const threadContainer = document.getElementById('ai-assistant-thread');
   const userInput = document.getElementById('ai-user-input');
@@ -82,6 +84,9 @@
   const activeMentionsContainer = document.getElementById('ai-assistant-active-mentions');
   const mentionMenu = document.getElementById('ai-assistant-mention-menu');
   const mentionList = document.getElementById('ai-assistant-mention-list');
+  const resetConfirmPanel = document.getElementById('ai-assistant-reset-panel');
+  const resetCancelButton = document.getElementById('ai-assistant-reset-cancel');
+  const resetConfirmButton = document.getElementById('ai-assistant-reset-confirm');
   const challengeContainer = document.getElementById('ai-assistant-challenge');
   const challengeCopy = document.getElementById('ai-assistant-challenge-copy');
   const turnstileContainer = document.getElementById('ai-assistant-turnstile');
@@ -114,6 +119,7 @@
       !chatContainer ||
       !closeButton ||
       !maximizeButton ||
+      !resetButton ||
       !messagesContainer ||
       !threadContainer ||
       !userInput ||
@@ -122,6 +128,9 @@
       !resizeHandle ||
       !mentionMenu ||
       !mentionList ||
+      !resetConfirmPanel ||
+      !resetCancelButton ||
+      !resetConfirmButton ||
       !activeMentionsContainer ||
       !challengeContainer ||
       !challengeCopy ||
@@ -131,6 +140,7 @@
       return;
     }
 
+    resetButton.innerHTML = ICONS.newChat;
     maximizeButton.innerHTML = ICONS.maximize;
     closeButton.innerHTML = ICONS.close;
 
@@ -144,6 +154,7 @@
     restorePersistedState();
     syncChatLayout();
     updateHeaderControls();
+    updateResetControlState();
     autoResizeComposer();
     enhanceCodeBlocks(threadContainer);
     loadDocsIndex();
@@ -151,6 +162,9 @@
 
   function bindEvents() {
     toggleButton.addEventListener('click', toggleChat);
+    resetButton.addEventListener('click', requestChatReset);
+    resetCancelButton.addEventListener('click', hideResetConfirmation);
+    resetConfirmButton.addEventListener('click', performChatReset);
     closeButton.addEventListener('click', closeChat);
     maximizeButton.addEventListener('click', toggleMaximize);
     sendButton.addEventListener('click', sendMessage);
@@ -269,6 +283,7 @@
     if (!isOpen) {
       stopInteractions();
       closeMentionMenu();
+      hideResetConfirmation();
     }
 
     chatContainer.style.display = isOpen ? 'flex' : 'none';
@@ -286,6 +301,11 @@
 
   function handleGlobalKeyDown(event) {
     if (event.key !== 'Escape' || !isOpen) {
+      return;
+    }
+
+    if (!resetConfirmPanel.hidden) {
+      hideResetConfirmation();
       return;
     }
 
@@ -309,6 +329,14 @@
   }
 
   function handleDocumentClick(event) {
+    if (!resetConfirmPanel.hidden) {
+      if (resetConfirmPanel.contains(event.target) || resetButton.contains(event.target)) {
+        return;
+      }
+
+      hideResetConfirmation();
+    }
+
     if (!mentionState.isOpen) {
       return;
     }
@@ -329,6 +357,7 @@
 
   function handleVisibilityChange() {
     if (document.visibilityState === 'hidden') {
+      hideResetConfirmation();
       persistAssistantState();
     }
   }
@@ -451,6 +480,13 @@
     maximizeButton.setAttribute('title', isMaximized ? 'Restore chat size' : 'Maximize chat');
   }
 
+  function updateResetControlState() {
+    const disabled = isLoading || !hasResettableContent();
+    resetButton.disabled = disabled;
+    resetButton.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    resetButton.setAttribute('title', disabled ? 'No conversation to clear' : 'Start new chat');
+  }
+
   function syncChatLayout() {
     if (isMaximized) {
       applyRect(getMaximizedRect(), false);
@@ -546,6 +582,7 @@
     autoResizeComposer();
     updateMentionSuggestions();
     renderActiveMentionChips();
+    updateResetControlState();
     schedulePersistState();
   }
 
@@ -589,10 +626,70 @@
       }
     }
 
+    if (event.key === 'Escape' && !resetConfirmPanel.hidden) {
+      event.preventDefault();
+      hideResetConfirmation();
+      return;
+    }
+
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       sendMessage();
     }
+  }
+
+  function requestChatReset() {
+    if (isLoading) {
+      return;
+    }
+
+    if (!hasResettableContent()) {
+      userInput.focus();
+      return;
+    }
+
+    closeMentionMenu();
+    resetConfirmPanel.hidden = false;
+    resetConfirmButton.focus();
+  }
+
+  function hideResetConfirmation() {
+    resetConfirmPanel.hidden = true;
+  }
+
+  function performChatReset() {
+    if (isLoading) {
+      return;
+    }
+
+    conversationHistory = [];
+    renderedMessages = [];
+    mentionState = { isOpen: false, start: -1, end: -1, items: [], activeIndex: 0 };
+    hideResetConfirmation();
+    closeMentionMenu();
+    hideChallenge();
+    turnstileState.pendingSubmission = null;
+    turnstileState.retryInFlight = false;
+    turnstileState.token = '';
+    if (window.turnstile && turnstileState.widgetId !== null) {
+      window.turnstile.reset(turnstileState.widgetId);
+    }
+
+    userInput.value = '';
+    autoResizeComposer();
+    renderActiveMentionChips();
+    renderPersistedMessages();
+    updateResetControlState();
+    persistAssistantState();
+    userInput.focus();
+  }
+
+  function hasResettableContent() {
+    return Boolean(
+      renderedMessages.length ||
+      conversationHistory.length ||
+      cleanText(userInput.value)
+    );
   }
 
   function handleMentionListClick(event) {
@@ -915,6 +1012,11 @@
       return;
     }
 
+    if (/^\/(?:clear|new)\s*$/i.test(rawMessage)) {
+      performChatReset();
+      return;
+    }
+
     if (!CONFIG.apiEndpoint) {
       addMessage('Configure `ai_assistant_worker_url` before enabling the documentation chat service.', 'assistant');
       return;
@@ -966,6 +1068,7 @@
     const locale = detectQuestionLanguage(submission.userQuestion);
     isLoading = true;
     sendButton.disabled = true;
+    updateResetControlState();
     const loadingMessage = addMessage(getLocalizedCopy(submission.userQuestion, {
       en: 'Grounding answer in Schema-Validator docs...',
       pt: 'Buscando contexto na documentacao do Schema-Validator...'
@@ -1028,6 +1131,7 @@
       turnstileState.retryInFlight = false;
       isLoading = false;
       sendButton.disabled = false;
+      updateResetControlState();
       userInput.focus();
     }
   }
@@ -1407,6 +1511,7 @@
       conversationHistory = conversationHistory.slice(-CONFIG.maxHistoryMessages * 2);
     }
 
+    updateResetControlState();
     schedulePersistState();
   }
 
@@ -1434,6 +1539,8 @@
       schedulePersistState();
     }
 
+    updateResetControlState();
+
     return messageDiv;
   }
 
@@ -1458,6 +1565,7 @@
 
     renderPersistedMessages();
     setChatOpenState(Boolean(persisted.isOpen), { focus: false, persist: false });
+    updateResetControlState();
   }
 
   function renderPersistedMessages() {
@@ -1806,29 +1914,94 @@
 
   function parseInline(text) {
     const codeSegments = [];
+    const markdownLinkSegments = [];
     const withCodeTokens = String(text || '').replace(/`([^`]+)`/g, function (_, code) {
       const token = `@@AI_CODE_${codeSegments.length}@@`;
       codeSegments.push(`<code>${escapeHtml(code)}</code>`);
       return token;
     });
 
-    let html = escapeHtml(withCodeTokens);
-
-    html = html.replace(
+    const withLinkTokens = withCodeTokens.replace(
       /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
       function (_, label, url) {
-        return `<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer noopener">${label}</a>`;
+        const token = `@@AI_LINK_${markdownLinkSegments.length}@@`;
+        markdownLinkSegments.push(buildExternalLinkHtml(url, escapeHtml(label)));
+        return token;
       }
     );
 
+    let html = escapeHtml(withLinkTokens);
+    html = linkifyPlainUrls(html);
     html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+
+    markdownLinkSegments.forEach(function (segment, index) {
+      html = html.replace(`@@AI_LINK_${index}@@`, segment);
+    });
 
     codeSegments.forEach(function (segment, index) {
       html = html.replace(`@@AI_CODE_${index}@@`, segment);
     });
 
     return html;
+  }
+
+  function linkifyPlainUrls(text) {
+    return String(text || '').replace(/\bhttps?:\/\/[^\s<]+/g, function (match) {
+      const split = splitTrailingUrlPunctuation(match);
+      return `${buildExternalLinkHtml(split.url, escapeHtml(split.url))}${split.trailing}`;
+    });
+  }
+
+  function splitTrailingUrlPunctuation(url) {
+    let core = String(url || '');
+    let trailing = '';
+
+    while (core) {
+      const lastChar = core.charAt(core.length - 1);
+      if (/[.,!?;:]/.test(lastChar)) {
+        trailing = lastChar + trailing;
+        core = core.slice(0, -1);
+        continue;
+      }
+
+      if (lastChar === ')' && hasUnmatchedClosingParen(core)) {
+        trailing = lastChar + trailing;
+        core = core.slice(0, -1);
+        continue;
+      }
+
+      break;
+    }
+
+    return {
+      url: core,
+      trailing
+    };
+  }
+
+  function hasUnmatchedClosingParen(value) {
+    let balance = 0;
+
+    for (let index = 0; index < value.length; index += 1) {
+      const char = value.charAt(index);
+      if (char === '(') {
+        balance += 1;
+      } else if (char === ')') {
+        if (balance === 0) {
+          return true;
+        }
+        balance -= 1;
+      }
+    }
+
+    return balance < 0;
+  }
+
+  function buildExternalLinkHtml(url, label) {
+    const safeUrl = escapeHtml(url);
+    const safeLabel = label || safeUrl;
+    return `<a href="${safeUrl}" target="_blank" rel="noreferrer noopener">${safeLabel}</a>`;
   }
 
   function enhanceCodeBlocks(container) {

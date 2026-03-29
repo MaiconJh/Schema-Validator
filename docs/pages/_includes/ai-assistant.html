@@ -23,6 +23,7 @@
         <p class="ai-assistant-subtitle">Schema-Validator docs only</p>
       </div>
       <div class="ai-assistant-actions">
+        <button id="ai-assistant-reset" class="ai-assistant-action" aria-label="Start new chat" title="Start new chat"></button>
         <button id="ai-assistant-maximize" class="ai-assistant-action" aria-label="Maximize chat" title="Maximize chat"></button>
         <button id="ai-assistant-close" class="ai-assistant-action ai-assistant-close" aria-label="Close chat" title="Close chat"></button>
       </div>
@@ -54,6 +55,14 @@
     </div>
 
     <div class="ai-assistant-composer">
+      <div id="ai-assistant-reset-panel" class="ai-assistant-reset-confirm" hidden>
+        <p class="ai-assistant-reset-confirm-copy">Start a new chat and clear the current conversation for this tab?</p>
+        <div class="ai-assistant-reset-confirm-actions">
+          <button id="ai-assistant-reset-cancel" type="button" class="ai-assistant-reset-confirm-button">Cancel</button>
+          <button id="ai-assistant-reset-confirm" type="button" class="ai-assistant-reset-confirm-button ai-assistant-reset-confirm-button--danger">Start new chat</button>
+        </div>
+      </div>
+
       <div id="ai-assistant-active-mentions" class="ai-assistant-active-mentions"></div>
 
       <div id="ai-assistant-mention-menu" class="ai-assistant-mention-menu" hidden>
