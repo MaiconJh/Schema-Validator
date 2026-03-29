@@ -367,7 +367,7 @@
       return;
     }
 
-    if (event.target.closest('.ai-assistant-action')) {
+    if (event.target.closest('.ai-assistant-action, a, button, input, textarea, select')) {
       return;
     }
 

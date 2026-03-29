@@ -131,6 +131,13 @@
   min-width: 0;
 }
 
+.ai-assistant-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .ai-assistant-header h3 {
   margin: 0;
   font-size: 1rem;
@@ -144,6 +151,35 @@
   font-size: 0.76rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.ai-assistant-policy-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  color: rgb(255 255 255 / 0.84);
+  background: rgb(255 255 255 / 0.08);
+  font-size: 0.73rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.ai-assistant-policy-link:hover {
+  color: #fff;
+  background: rgb(255 255 255 / 0.14);
+  border-color: rgb(255 255 255 / 0.28);
+  transform: translateY(-1px);
+}
+
+.ai-assistant-policy-link:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.72);
+  outline-offset: 2px;
 }
 
 .ai-assistant-actions {
