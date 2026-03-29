@@ -1,339 +1,223 @@
 # Schema-Validator v1.0.5
 
-Schema-Validator is a Paper/Skript plugin that validates JSON or YAML data files against JSON Schema files.
+Schema-Validator is a Paper/Skript plugin that validates JSON or YAML data files against JSON Schema files and ships with a full documentation site for users, schema authors, and maintainers.
 
-> **Note:** If documentation and code diverge, the code is authoritative.
+> If documentation and code diverge, the code is authoritative.
 
-## 🎯 Version 1.0.5 Highlights
+## Project at a glance
 
-- **373 unit tests** passing across **23 test classes**
-- **100% coverage** on all implemented validators
-- Complete coverage for: array, object, string, number, logical, format and conditional validators
+- Paper plugin for validating JSON and YAML data against schemas
+- Skript integration for running validations and retrieving compact errors
+- JSON Schema support across object, array, primitive, logical, conditional, reference, and format keywords
+- Jekyll documentation site in `docs/pages/`
+- Interactive documentation features: search, dark mode, table of contents, breadcrumbs, page rating, privacy policy, and AI assistant chat
+- Cloudflare-backed services for documentation feedback and the AI assistant
 
----
+## Core plugin functionality
 
-## 📚 Documentation
+Schema-Validator is focused on operational validation workflows inside a Paper server with Skript.
 
-### Online Documentation
+### Validation workflow
 
-- **Full documentation:** [Schema Validator Docs](https://maiconjh.github.io/Schema-Validator/)
-- **Quick start:** [docs/pages/index.md](docs/pages/index.md)
+At runtime, the main flow is:
 
-[![SkriptHubViewTheDocs](http://skripthub.net/static/addon/ViewTheDocsButton.png)](http://skripthub.net/docs/?addon=Schema-Validator)
+1. A schema is loaded and parsed by `FileSchemaLoader`
+2. Data is loaded by `DataFileLoader`
+3. Validation is dispatched by schema type
+4. Errors are stored in `SkriptValidationBridge`
+5. Skript reads the last validation result through `last schema validation errors`
 
-### Reference Documentation
+### Skript API
 
-- [Schema keywords](docs/pages/schema-keywords.md)
-- [Validation behavior](docs/pages/validation-behavior.md)
-- [Architecture](docs/pages/architecture.md)
-- [Developer guide](docs/pages/dev-guide.md)
+Registered syntax:
 
----
-
-## 🧪 Unit Test Suite
-
-Version 1.0.5 introduces a complete test suite with **373 unit tests** organized across **23 test classes**, ensuring **100% coverage** on all implemented validators.
-
-### Test Classes
-
-| Category | Test Classes |
-|----------|---------------|
-| **Array Validators** | MinItemsValidatorTest, MaxItemsValidatorTest, UniqueItemsValidatorTest, PrefixItemsValidatorTest, AdditionalItemsValidatorTest |
-| **Object Validators** | MinPropertiesValidatorTest, MaxPropertiesValidatorTest, DependentRequiredValidatorTest, DependentSchemasValidatorTest |
-| **Conditional Validators** | ConditionalValidatorTest, OneOfValidatorTest, NotValidatorTest |
-| **Format Validators** | FormatValidatorTest (21 formats) |
-| **Primitive Validators** | PrimitiveValidatorTest |
-| **Schema System** | SchemaTest, FileSchemaLoaderTest, SchemaRefResolverTest |
-
-### Coverage by Validator
-
-- **Array validators:** minItems, maxItems, uniqueItems, prefixItems, items, additionalItems
-- **Object validators:** minProperties, maxProperties, dependencies, dependentRequired, dependentSchemas
-- **String validators:** minLength, maxLength, pattern
-- **Number validators:** minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf
-- **Logical validators:** allOf, anyOf, oneOf, not
-- **Format validators:** 21 formats (12 standard + 9 Minecraft-specific)
-- **Conditional validators:** if/then/else
-- **Misc validators:** const, enum, readOnly, writeOnly
-
----
-
-## ✅ Supported JSON Schema Validators
-
-### Array Keywords
-- `minItems` — Minimum array length validation
-- `maxItems` — Maximum array length validation
-- `uniqueItems` — Uniqueness constraint for array elements
-- `prefixItems` — Tuple validation (2019-09/2020-12)
-- `items` — Schema validation for array elements
-- `additionalItems` — Limited support
-
-### Object Keywords
-- `minProperties` — Minimum property count
-- `maxProperties` — Maximum property count
-- `dependencies` — Property and schema dependency modes
-- `dependentRequired` — Required properties when dependency is present (2019-09+)
-- `dependentSchemas` — Schema constraints when dependency is present (2019-09+)
-- `properties` — Property definitions
-- `patternProperties` — Properties with pattern matching
-- `additionalProperties` — Supports boolean and schema forms
-- `required` — Required property list
-
-### String Keywords
-- `minLength` — Minimum string length
-- `maxLength` — Maximum string length
-- `pattern` — Regex pattern
-- `format` — Predefined format
-
-### Number Keywords
-- `minimum` / `maximum` — Numeric bounds
-- `exclusiveMinimum` / `exclusiveMaximum` — Modern form (2019-09/2020-12) + legacy compatibility
-- `multipleOf` — Multiple of value
-
-### Logical Keywords
-- `allOf` — All conditions must be valid
-- `anyOf` — At least one condition must be valid
-- `oneOf` — Exactly one condition must be valid
-- `not` — Negation
-
-### Conditional Keywords
-- `if` — Primary condition
-- `then` — Schema if condition is true
-- `else` — Schema if condition is false
-
-### Format Keywords
-21 formats supported (12 standard + 9 Minecraft-specific):
-
-**Standard Formats:**
-- `date-time`, `date`, `time`, `duration`, `email`, `uri`, `uri-reference`, `uuid`, `hostname`, `ipv4`, `ipv6`, `json-pointer`
-
-**Minecraft Formats:**
-- `minecraft:entity` — Validation against EntityType registry
-- `minecraft:biome` — Validation against Biome registry
-- `minecraft:enchantment` — Validation against Enchantment registry
-- `minecraft:particle` — Validation against Particle registry
-- `minecraft:sound` — Validation against Sound registry
-- `minecraft:effect` — Validation against PotionEffectType registry
-- `minecraft:potion` — Validation against PotionType registry
-- `minecraft:dimension` — Validation against list (overworld, nether, the_end)
-- `minecraft:recipe` — Validation against Bukkit.getRecipe()
-
-### Reference Keywords
-- `$ref` — JSON Pointer reference resolution
-- `definitions` / `$defs` — Schema definitions
-- `$id` — Base URI for reference resolution
-- `$schema` — Schema dialect identification
-
-### Metadata Keywords
-- `title` — Schema title
-- `description` — Schema description
-- `default` — Default value
-- `examples` — Example values
-- `readOnly` / `writeOnly` — Property constraints
-- `deprecated` — Deprecation status
-
----
-
-## 🔧 Installation and Configuration
-
-### Installation
-
-1. Download the latest release from the **Assets** section
-2. Place the `.jar` file into your server's `/plugins` folder
-3. Ensure **Skript** is already installed on your server
-4. Restart the server
-
-### File Structure
-
-The plugin will create a `Schema-Validator/` folder in your plugins directory with:
-- `schemas/` — Place your schema files here
-- `config.yml` — Plugin settings
-
-### Configuration
-
-Edit `plugins/Schema-Validator/config.yml`:
-
-```yaml
-# Strict mode - rejects schemas with unsupported keywords
-strict-mode: false
-
-# Directory containing schema files
-schema-directory: "plugins/Schema-Validator/schemas"
-
-# Auto-load schemas on startup
-auto-load: true
-
-# Validate schemas on load
-validation-on-load: true
+```text
+validate yaml %string% using schema %string%
+validate json %string% using schema %string%
+last schema validation errors
 ```
 
----
+### Configuration features
 
-## 🎮 Exposed Skript API
+The plugin supports these runtime controls through `plugins/Schema-Validator/config.yml`:
 
-### Effects
+- `schema-directory`
+- `auto-load`
+- `cache-enabled`
+- `validation-on-load`
+- `strict-mode`
 
-```skript
-# Validate a YAML file
-validate yaml "playerdata/myplayer.yml" using schema "schemas/player-profile.schema.json"
+### Supported validation capabilities
 
-# Validate a JSON file
-validate json "config/settings.json" using schema "schemas/settings.schema.json"
+The implementation covers the major JSON Schema groups documented in the site:
+
+- Object keywords such as `properties`, `patternProperties`, `required`, `additionalProperties`, `minProperties`, `maxProperties`, `dependencies`, `dependentRequired`, `dependentSchemas`
+- Array keywords such as `items`, `prefixItems`, `additionalItems`, `minItems`, `maxItems`, `uniqueItems`, `contains`, `minContains`, `maxContains`, `unevaluatedItems`
+- Primitive and numeric keywords such as `type`, `enum`, `const`, `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`, `minLength`, `maxLength`, `pattern`
+- Logical and conditional keywords such as `allOf`, `anyOf`, `oneOf`, `not`, `if`, `then`, `else`
+- Reference and metadata keywords such as `$ref`, `$dynamicRef`, `definitions`, `$defs`, `$id`, `$schema`, `title`, `description`
+- Format validation with standard and Minecraft-specific formats
+
+## Documentation site functionality
+
+The documentation is not just a page collection. It is a structured product with navigation, discovery, feedback, and AI-assisted help.
+
+### Information architecture
+
+The site follows Diataxis and separates content into:
+
+- Tutorials
+- How-to guides
+- Reference
+- Explanation
+
+This structure is introduced in [docs/pages/index.md](docs/pages/index.md) and reinforced by the sidebar, breadcrumbs, previous/next navigation, and per-page table of contents.
+
+### Navigation and reading experience
+
+The documentation UI includes:
+
+- Responsive sidebar navigation grouped by document type
+- Breadcrumb trail for current page context
+- Previous and next page arrows
+- On-page table of contents
+- Version banner support when the reader is not on the latest docs version
+- Responsive mobile menu and mobile search toggle
+- Light and dark theme toggle
+
+Relevant implementation files:
+
+- [docs/pages/_layouts/default.html](docs/pages/_layouts/default.html)
+- [docs/pages/_includes/sidebar.html](docs/pages/_includes/sidebar.html)
+- [docs/pages/_includes/breadcrumbs.html](docs/pages/_includes/breadcrumbs.html)
+- [docs/pages/_includes/nav-arrows.html](docs/pages/_includes/nav-arrows.html)
+- [docs/pages/_includes/version-banner.html](docs/pages/_includes/version-banner.html)
+- [docs/pages/assets/js/modern-docs.js](docs/pages/assets/js/modern-docs.js)
+- [docs/pages/assets/css/modern-docs.css](docs/pages/assets/css/modern-docs.css)
+
+### Search
+
+The site provides client-side search backed by [docs/pages/search.json](docs/pages/search.json), with fallback to sidebar navigation links if the search index is unavailable.
+
+Search behavior includes:
+
+- Ranked client-side results
+- Highlighted snippets
+- Keyboard navigation
+- Mobile-friendly search toggle
+
+### Feedback and privacy
+
+Each documentation page includes a feedback widget with:
+
+- 1 to 5 star page rating
+- Current average rating and rating count
+- Privacy-policy link beside the rating component
+
+The feedback backend is configured through a Cloudflare Worker URL in [docs/pages/_config.yml](docs/pages/_config.yml) and rendered from [docs/pages/_includes/help-support.html](docs/pages/_includes/help-support.html).
+
+### AI Assistant chat
+
+The documentation site includes an AI assistant dedicated to the Schema-Validator docs.
+
+Current chat functionality includes:
+
+- Floating assistant widget available across documentation pages
+- Scope restriction to Schema-Validator documentation only
+- Grounding using current page context, visible sections, breadcrumbs, `search.json`, and retrieved documentation matches
+- `@mention` support for page sections and visible headings
+- Continuity across page navigation in the same browser tab
+- Same-tab opening for internal documentation references so context is preserved
+- Code block rendering with language-aware styling
+- Copy and in-place edit support for generated code blocks
+- Start-new-chat control to clear current tab conversation
+- Privacy-policy link directly in the chat header
+- Abuse protection with rate limits, cooldowns, temporary blocks, and optional Turnstile verification
+
+Relevant files:
+
+- [docs/pages/_includes/ai-assistant.html](docs/pages/_includes/ai-assistant.html)
+- [docs/pages/assets/js/ai-assistant.js](docs/pages/assets/js/ai-assistant.js)
+- [docs/pages/assets/css/ai-assistant.css](docs/pages/assets/css/ai-assistant.css)
+- [docs/pages/privacy-policy.md](docs/pages/privacy-policy.md)
+- [.cloudflare/chat-assistant/worker.js](.cloudflare/chat-assistant/worker.js)
+
+## Documentation map
+
+The documentation source currently covers these pages and workflows.
+
+### Tutorials
+
+- [Getting started](docs/pages/getting-started.md): mental model for schema loading, validation dispatch, and Skript exposure
+- [Quickstart](docs/pages/quickstart.md): one successful and one failing validation
+- [First validation workflow](docs/pages/first-validation.md): intentionally fail a validation and interpret the errors
+- [Examples](docs/pages/examples.md): practical examples for common validation tasks
+
+### How-to guides
+
+- [Installation](docs/pages/installation.md): build, deploy, and verify the plugin on Paper with Skript
+- [Configuration](docs/pages/configuration.md): schema loading, cache behavior, and strictness controls
+- [Validate JSON file](docs/pages/validate-json-file.md): JSON-specific execution path
+- [Schema directory workflow](docs/pages/schema-directory-workflow.md): startup autoload and schema registration workflow
+
+### Reference
+
+- [Schema keywords](docs/pages/schema-keywords.md): parsed and enforced keyword behavior
+- [Validation behavior](docs/pages/validation-behavior.md): dispatch order, evaluation order, and error model
+- [Skript API](docs/pages/skript-api.md): registered syntax and runtime semantics
+- [Format reference](docs/pages/format-reference.md): supported formats and examples
+- [Config reference](docs/pages/config-reference.md): canonical config table
+- [Examples and schema construction](docs/pages/examples-and-schema-construction.md): reference patterns for building schemas
+
+### Explanation
+
+- [Overview](docs/pages/index.md): documentation model and reading paths
+- [Architecture](docs/pages/architecture.md): components, boundaries, and runtime flow
+- [Design constraints](docs/pages/design-constraints.md): known runtime constraints and tradeoffs
+
+### Documentation governance and maintenance
+
+- [Pages architecture](docs/pages/PAGES_ARCHITECTURE.md): structure of the documentation site itself
+- [Writing guide](docs/pages/WRITING_GUIDE.md): standards for writing and maintaining pages
+- [Developer guide](docs/pages/dev-guide.md): contributor workflow inside `docs/pages`
+- [Privacy Policy](docs/pages/privacy-policy.md): data handling for ratings and AI assistant interactions
+
+## Quality and testing
+
+The project currently documents and ships:
+
+- 373 passing unit tests
+- 23 test classes
+- Full coverage on implemented validators
+
+Run the main build and test workflow with:
+
+```powershell
+.\gradlew.bat test
+.\gradlew.bat build
 ```
 
-### Expression
+## Repository structure
 
-```skript
-# Get errors from last validation
-set {_errors::*} to last schema validation errors
-
-if size of {_errors::*} is 0:
-    broadcast "✓ Validation passed!"
-else:
-    broadcast "✗ Validation failed:"
-    loop {_errors::*}:
-        broadcast "- %loop-value%"
-```
-
----
-
-## 🏗 Project Structure
-
-```
+```text
 Schema-Validator/
-├── src/main/java/com/maiconjh/schemacr/
-│   ├── core/                    # Plugin lifecycle
-│   │   ├── SchemaValidatorPlugin.java
-│   │   ├── PluginContext.java
-│   │   └── ValidationService.java
-│   ├── config/                  # Configuration
-│   │   └── PluginConfig.java
-│   ├── schemes/                 # Schema system
-│   │   ├── Schema.java
-│   │   ├── SchemaRefResolver.java
-│   │   ├── FileSchemaLoader.java
-│   │   ├── SchemaRegistry.java
-│   │   └── SupportedKeywordsRegistry.java
-│   ├── validation/              # Validators
-│   │   ├── ArrayValidator.java
-│   │   ├── ObjectValidator.java
-│   │   ├── PrimitiveValidator.java
-│   │   ├── FormatValidator.java
-│   │   ├── ConditionalValidator.java
-│   │   ├── OneOfValidator.java
-│   │   ├── NotValidator.java
-│   │   ├── array/               # Array validators
-│   │   ├── object/              # Object validators
-│   │   └── misc/                # Miscellaneous validators
-│   └── integration/             # Skript integration
-│       ├── SkriptSyntaxRegistration.java
-│       ├── EffValidateData.java
-│       └── ExprLastValidationErrors.java
-├── src/main/resources/
-│   ├── schemas/                 # Built-in schemas
-│   ├── examples/                # Usage examples
-│   ├── config.yml
-│   └── plugin.yml
-├── src/test/java/               # Unit tests (373 tests)
-├── docs/                        # Documentation
-│   ├── pages/                   # Site documentation
-│   └── explanation/             # Internal documentation
-└── build/libs/                  # Compiled artifacts
+|-- src/main/java/               Plugin source
+|-- src/main/resources/          Plugin resources and plugin.yml
+|-- src/test/java/               Unit tests
+|-- docs/pages/                  Documentation source site
+|-- .cloudflare/                 Workers for docs feedback and chat
+|-- README.md
+|-- RELEASE_NOTES.md
+|-- build.gradle
+`-- settings.gradle
 ```
 
-### Main Components
+## Online documentation
 
-| Component | Description |
-|-----------|-------------|
-| `SchemaValidatorPlugin` | Lifecycle (onEnable/onDisable) and startup orchestration |
-| `PluginConfig` | Reads config keys and resolves schema directory path |
-| `SchemaRegistry` | Case-insensitive schema storage with cache |
-| `FileSchemaLoader` | JSON/YAML parsing, unsupported keyword detection |
-| `ValidationService` | Facade over validator dispatch and result assembly |
-| `Validators` | ObjectValidator, ArrayValidator, PrimitiveValidator, FormatValidator |
-| `Skript bridge` | SkriptSyntaxRegistration, EffValidateData, ExprLastValidationErrors |
+- Published docs: <https://maiconjh.github.io/Schema-Validator/>
+- Source index page: [docs/pages/index.md](docs/pages/index.md)
+- Release notes: [RELEASE_NOTES.md](RELEASE_NOTES.md)
 
----
+## License
 
-## 📋 Release Notes
-
-### v1.0.5 - Complete Test Suite & Full Coverage
-
-#### Major Features Added
-
-1. **Advanced JSON Schema Validation Keywords**
-   - Implementation of remaining P1/P2 keywords across parser and validators
-   - Fix for keyword detection scope and array items validation
-   - Implementation of P0 draft-2020-12 gaps: propertyNames, contains, and registry sync
-   - Hardening of unevaluated and dynamicRef semantics with follow-up plan
-   - Advance Phase H2 with dynamicRef and unevaluated regressions
-   - Complete next hardening stage for dynamic scope and content vocab
-   - Start next hardening stage for unevaluated applicator coverage
-
-2. **Enhanced Documentation and User Experience**
-   - Added star rating system with rate limiting (1-5 stars)
-   - Improved documentation with UUID validation utility
-   - Updated format-reference.md with corrected tables and examples
-   - Enhanced getting-started.html and installation.html documentation
-   - Added comprehensive examples for all JSON Schema features
-   - Updated documentation to reflect implemented JSON Schema features
-   - Removed GitHub discussions link from help-support
-   - Updated help-support page with repository links
-
-3. **Cloudflare Workers Integration**
-   - Complete configuration of Cloudflare Workers with KV
-   - Migrate rating storage from GitHub API to Cloudflare KV
-   - Allow dots in page parameter validation for .html support
-   - Improve privacy by removing userAgent/referrer storage and add data retention
-   - Add User-Agent header for GitHub API
-   - Add debug logs to worker
-   - Add feedback system with Cloudflare Workers integration
-
-4. **Bug Fixes and Stability Improvements**
-   - Fix complex schema to resolve validation issues
-   - Corrected FormatValidator regex patterns for RFC compliance
-   - Fix: Updated worker's URL of feedback for production
-   - Various documentation fixes and typo corrections
-   - Reset feedbacks.json periodically for clean state
-
-5. **Complete Unit Test Suite**
-   - 373 unit tests across 23 test classes
-   - 100% pass rate on all validators
-   - Test classes for:
-     - Array validators: MinItems, MaxItems, UniqueItems, PrefixItems, AdditionalItems
-     - Object validators: MinProperties, MaxProperties, DependentRequired, DependentSchemas
-     - Conditional validators: ConditionalValidator, OneOfValidator, NotValidator
-     - Format validators: 21 formats (12 standard + 9 Minecraft-specific)
-     - Primitive validators: Type, Enum, Numeric, String constraints
-     - Misc validators: Const, ReadOnly, WriteOnly
-     - Schema system: Schema, FileSchemaLoader, SchemaRefResolver
-
-6. **Documentation Updates**
-   - Test execution & evolution guide with detailed instructions
-   - Test coverage report with comprehensive metrics
-   - Updated architecture documentation with test coverage status
-   - Updated schema-keywords documentation with verification status
-   - Corrected code-audit-2026-03.md to reflect actual implementation
-
-7. **Bug Fixes**
-   - MinPropertiesValidator now handles null data correctly
-   - MaxPropertiesValidator now handles null data correctly
-   - ObjectValidator now handles non-Map data gracefully
-
----
-
-## 🐞 Bug Reports & Contributions
-
-Found a bug or have a feature request? Please open an issue on the GitHub repository:
-
-🔗 **GitHub Issues:** https://github.com/MaiconJh/Schema-Validator/issues
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License**.
-
----
-
-*Thank you for using Schema-Validator!*
+This project is licensed under the [MIT License](LICENSE).
