@@ -22,6 +22,17 @@
     gapFromToggle: 16
   };
 
+  const PERSISTENCE = {
+    stateKey: 'schema-validator-ai-chat-state-v2',
+    sessionTokenKey: 'schema-validator-ai-chat-session-v2',
+    legacySessionTokenKey: 'schema-validator-ai-chat-session',
+    maxAgeMs: 12 * 60 * 60 * 1000,
+    maxRenderedMessages: 24,
+    maxMessageChars: 6000,
+    maxDraftChars: 2000,
+    debounceMs: 120
+  };
+
   const STOP_WORDS = new Set([
     'a', 'about', 'after', 'again', 'all', 'also', 'an', 'and', 'any', 'are', 'as', 'at',
     'be', 'been', 'but', 'by', 'can', 'com', 'como', 'da', 'das', 'de', 'do', 'dos', 'em',
@@ -91,6 +102,8 @@
   let mentionState = { isOpen: false, start: -1, end: -1, items: [], activeIndex: 0 };
   let turnstileState = { loadingPromise: null, widgetId: null, token: '', pendingSubmission: null, retryInFlight: false };
   let sessionToken = '';
+  let renderedMessages = [];
+  let persistTimer = null;
 
   let dragOffset = { x: 0, y: 0 };
   let resizeState = { startX: 0, startY: 0, startWidth: 0, startHeight: 0, left: 0, top: 0 };
@@ -127,11 +140,12 @@
     hydrateStaticContext();
     updateVisibleSections();
     renderActiveMentionChips();
+    hideChallenge();
+    restorePersistedState();
     syncChatLayout();
     updateHeaderControls();
     autoResizeComposer();
     enhanceCodeBlocks(threadContainer);
-    hideChallenge();
     loadDocsIndex();
   }
 
@@ -156,8 +170,10 @@
     document.addEventListener('mouseup', stopInteractions);
     document.addEventListener('keydown', handleGlobalKeyDown);
     document.addEventListener('click', handleDocumentClick);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('resize', handleViewportChange);
     window.addEventListener('scroll', scheduleVisibleSectionRefresh, { passive: true });
+    window.addEventListener('pagehide', persistAssistantState);
   }
 
   function hydrateStaticContext() {
@@ -237,22 +253,35 @@
   }
 
   function openChat() {
-    isOpen = true;
-    chatContainer.style.display = 'flex';
-    chatContainer.setAttribute('aria-hidden', 'false');
-    toggleButton.setAttribute('aria-expanded', 'true');
+    setChatOpenState(true, { focus: true });
     syncChatLayout();
     autoResizeComposer();
-    userInput.focus();
   }
 
   function closeChat() {
-    isOpen = false;
-    stopInteractions();
-    closeMentionMenu();
-    chatContainer.style.display = 'none';
-    chatContainer.setAttribute('aria-hidden', 'true');
-    toggleButton.setAttribute('aria-expanded', 'false');
+    setChatOpenState(false);
+  }
+
+  function setChatOpenState(nextOpen, options) {
+    const settings = options || {};
+
+    isOpen = Boolean(nextOpen);
+    if (!isOpen) {
+      stopInteractions();
+      closeMentionMenu();
+    }
+
+    chatContainer.style.display = isOpen ? 'flex' : 'none';
+    chatContainer.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    toggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+    if (isOpen && settings.focus) {
+      userInput.focus();
+    }
+
+    if (settings.persist !== false) {
+      schedulePersistState();
+    }
   }
 
   function handleGlobalKeyDown(event) {
@@ -295,6 +324,13 @@
     syncChatLayout();
     autoResizeComposer();
     scheduleVisibleSectionRefresh();
+    schedulePersistState();
+  }
+
+  function handleVisibilityChange() {
+    if (document.visibilityState === 'hidden') {
+      persistAssistantState();
+    }
   }
 
   function startDrag(event) {
@@ -390,6 +426,7 @@
       chatContainer.classList.remove('is-maximized');
       syncChatLayout();
       updateHeaderControls();
+      schedulePersistState();
       return;
     }
 
@@ -405,6 +442,7 @@
     chatContainer.classList.add('is-maximized');
     applyRect(getMaximizedRect(), false);
     updateHeaderControls();
+    schedulePersistState();
   }
 
   function updateHeaderControls() {
@@ -496,6 +534,7 @@
 
     if (rememberRect) {
       lastNormalRect = { ...rect };
+      schedulePersistState();
     }
   }
 
@@ -507,6 +546,7 @@
     autoResizeComposer();
     updateMentionSuggestions();
     renderActiveMentionChips();
+    schedulePersistState();
   }
 
   function handleComposerCursorMove(event) {
@@ -1171,7 +1211,20 @@
 
   function loadStoredSessionToken() {
     try {
-      return window.localStorage.getItem('schema-validator-ai-chat-session') || '';
+      const storage = window.sessionStorage;
+      const current = storage.getItem(PERSISTENCE.sessionTokenKey) || '';
+      if (current) {
+        return current;
+      }
+
+      const legacy = window.localStorage.getItem(PERSISTENCE.legacySessionTokenKey) || '';
+      if (legacy) {
+        storage.setItem(PERSISTENCE.sessionTokenKey, legacy);
+        window.localStorage.removeItem(PERSISTENCE.legacySessionTokenKey);
+        return legacy;
+      }
+
+      return '';
     } catch (error) {
       return '';
     }
@@ -1185,10 +1238,13 @@
 
     sessionToken = nextToken;
     try {
-      window.localStorage.setItem('schema-validator-ai-chat-session', nextToken);
+      window.sessionStorage.setItem(PERSISTENCE.sessionTokenKey, nextToken);
+      window.localStorage.removeItem(PERSISTENCE.legacySessionTokenKey);
     } catch (error) {
       // Ignore storage errors and continue with in-memory session state.
     }
+
+    schedulePersistState();
   }
 
   function buildPayloadMessages(userQuestion, mentionReferences, docsMatches) {
@@ -1350,9 +1406,12 @@
     if (conversationHistory.length > CONFIG.maxHistoryMessages * 2) {
       conversationHistory = conversationHistory.slice(-CONFIG.maxHistoryMessages * 2);
     }
+
+    schedulePersistState();
   }
 
-  function addMessage(content, type, isMessageLoading) {
+  function addMessage(content, type, isMessageLoading, options) {
+    const settings = options || {};
     const messageDiv = document.createElement('div');
     const baseClass = type === 'user' ? 'user-message' : 'ai-message';
     messageDiv.className = `${baseClass}${isMessageLoading ? ' loading' : ''}`;
@@ -1362,7 +1421,171 @@
     enhanceCodeBlocks(messageDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
+    if (!isMessageLoading && !settings.skipPersist) {
+      renderedMessages.push({
+        role: type === 'user' ? 'user' : 'assistant',
+        content: sanitizeStoredText(content, PERSISTENCE.maxMessageChars)
+      });
+
+      if (renderedMessages.length > PERSISTENCE.maxRenderedMessages) {
+        renderedMessages = renderedMessages.slice(-PERSISTENCE.maxRenderedMessages);
+      }
+
+      schedulePersistState();
+    }
+
     return messageDiv;
+  }
+
+  function restorePersistedState() {
+    const persisted = readPersistedState();
+    if (!persisted) {
+      setChatOpenState(false, { persist: false });
+      return;
+    }
+
+    conversationHistory = sanitizePersistedConversationHistory(persisted.conversationHistory);
+    renderedMessages = sanitizePersistedRenderedMessages(persisted.renderedMessages);
+    sessionToken = persisted.sessionToken || sessionToken;
+    lastNormalRect = sanitizePersistedRect(persisted.lastNormalRect);
+    isMaximized = Boolean(persisted.isMaximized);
+    chatContainer.classList.toggle('is-maximized', isMaximized);
+
+    if (persisted.draft) {
+      userInput.value = sanitizeStoredText(persisted.draft, PERSISTENCE.maxDraftChars);
+      renderActiveMentionChips();
+    }
+
+    renderPersistedMessages();
+    setChatOpenState(Boolean(persisted.isOpen), { focus: false, persist: false });
+  }
+
+  function renderPersistedMessages() {
+    Array.from(threadContainer.children).forEach((child) => {
+      if (!child.classList.contains('ai-message--intro')) {
+        child.remove();
+      }
+    });
+
+    renderedMessages.forEach((entry) => {
+      addMessage(entry.content, entry.role, false, { skipPersist: true });
+    });
+
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  function schedulePersistState() {
+    if (persistTimer) {
+      window.clearTimeout(persistTimer);
+    }
+
+    persistTimer = window.setTimeout(() => {
+      persistTimer = null;
+      persistAssistantState();
+    }, PERSISTENCE.debounceMs);
+  }
+
+  function persistAssistantState() {
+    if (persistTimer) {
+      window.clearTimeout(persistTimer);
+      persistTimer = null;
+    }
+
+    try {
+      window.sessionStorage.setItem(PERSISTENCE.stateKey, JSON.stringify({
+        version: 2,
+        updatedAt: Date.now(),
+        isOpen,
+        isMaximized,
+        lastNormalRect: sanitizePersistedRect(lastNormalRect),
+        sessionToken: sessionToken || '',
+        draft: sanitizeStoredText(userInput.value, PERSISTENCE.maxDraftChars),
+        conversationHistory: sanitizePersistedConversationHistory(conversationHistory),
+        renderedMessages: sanitizePersistedRenderedMessages(renderedMessages)
+      }));
+    } catch (error) {
+      // Ignore storage errors and keep runtime state only.
+    }
+  }
+
+  function readPersistedState() {
+    try {
+      const raw = window.sessionStorage.getItem(PERSISTENCE.stateKey);
+      if (!raw) {
+        return null;
+      }
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || parsed.version !== 2) {
+        window.sessionStorage.removeItem(PERSISTENCE.stateKey);
+        return null;
+      }
+
+      if (!parsed.updatedAt || Date.now() - parsed.updatedAt > PERSISTENCE.maxAgeMs) {
+        window.sessionStorage.removeItem(PERSISTENCE.stateKey);
+        return null;
+      }
+
+      return parsed;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function sanitizePersistedConversationHistory(entries) {
+    if (!Array.isArray(entries)) {
+      return [];
+    }
+
+    return entries
+      .filter((entry) => entry && (entry.role === 'user' || entry.role === 'assistant'))
+      .slice(-CONFIG.maxHistoryMessages * 2)
+      .map((entry) => ({
+        role: entry.role,
+        content: sanitizeStoredText(entry.content, PERSISTENCE.maxMessageChars)
+      }))
+      .filter((entry) => entry.content);
+  }
+
+  function sanitizePersistedRenderedMessages(entries) {
+    if (!Array.isArray(entries)) {
+      return [];
+    }
+
+    return entries
+      .filter((entry) => entry && (entry.role === 'user' || entry.role === 'assistant'))
+      .slice(-PERSISTENCE.maxRenderedMessages)
+      .map((entry) => ({
+        role: entry.role,
+        content: sanitizeStoredText(entry.content, PERSISTENCE.maxMessageChars)
+      }))
+      .filter((entry) => entry.content);
+  }
+
+  function sanitizePersistedRect(rect) {
+    if (!rect || typeof rect !== 'object') {
+      return null;
+    }
+
+    const left = Number(rect.left);
+    const top = Number(rect.top);
+    const width = Number(rect.width);
+    const height = Number(rect.height);
+    if (![left, top, width, height].every((value) => Number.isFinite(value))) {
+      return null;
+    }
+
+    return { left, top, width, height };
+  }
+
+  function sanitizeStoredText(value, maxLength) {
+    const normalized = String(value || '')
+      .replace(/\u0000/g, '')
+      .replace(/\r\n?/g, '\n');
+
+    return normalized.length > maxLength
+      ? normalized.slice(0, maxLength)
+      : normalized;
   }
 
   function parseMarkdown(text) {
