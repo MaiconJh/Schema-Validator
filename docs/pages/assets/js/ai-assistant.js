@@ -1925,7 +1925,7 @@
       /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
       function (_, label, url) {
         const token = `@@AI_LINK_${markdownLinkSegments.length}@@`;
-        markdownLinkSegments.push(buildExternalLinkHtml(url, escapeHtml(label)));
+        markdownLinkSegments.push(buildLinkHtml(url, escapeHtml(label)));
         return token;
       }
     );
@@ -1949,7 +1949,7 @@
   function linkifyPlainUrls(text) {
     return String(text || '').replace(/\bhttps?:\/\/[^\s<]+/g, function (match) {
       const split = splitTrailingUrlPunctuation(match);
-      return `${buildExternalLinkHtml(split.url, escapeHtml(split.url))}${split.trailing}`;
+      return `${buildLinkHtml(split.url, escapeHtml(split.url))}${split.trailing}`;
     });
   }
 
@@ -1998,10 +1998,101 @@
     return balance < 0;
   }
 
-  function buildExternalLinkHtml(url, label) {
-    const safeUrl = escapeHtml(url);
-    const safeLabel = label || safeUrl;
-    return `<a href="${safeUrl}" target="_blank" rel="noreferrer noopener">${safeLabel}</a>`;
+  function buildLinkHtml(url, label) {
+    const normalizedHref = resolveChatLinkHref(url);
+    const safeHref = escapeHtml(normalizedHref.href);
+    const safeLabel = label || safeHref;
+
+    if (normalizedHref.isInternalDocumentationLink) {
+      return `<a href="${safeHref}" data-chat-link="internal">${safeLabel}</a>`;
+    }
+
+    return `<a href="${safeHref}" target="_blank" rel="noreferrer noopener" data-chat-link="external">${safeLabel}</a>`;
+  }
+
+  function resolveChatLinkHref(url) {
+    const rawUrl = String(url || '').trim();
+    if (!rawUrl) {
+      return {
+        href: '#',
+        isInternalDocumentationLink: false
+      };
+    }
+
+    try {
+      const parsed = new URL(rawUrl, window.location.href);
+      if (isDocumentationLink(parsed)) {
+        return {
+          href: rebaseDocumentationUrl(parsed),
+          isInternalDocumentationLink: true
+        };
+      }
+
+      return {
+        href: parsed.toString(),
+        isInternalDocumentationLink: false
+      };
+    } catch (error) {
+      return {
+        href: rawUrl,
+        isInternalDocumentationLink: false
+      };
+    }
+  }
+
+  function isDocumentationLink(parsedUrl) {
+    if (!parsedUrl || !/^https?:$/.test(parsedUrl.protocol)) {
+      return false;
+    }
+
+    const docsPath = getDocumentationBasePath();
+    const hostname = parsedUrl.hostname.toLowerCase();
+    const currentHostname = window.location.hostname.toLowerCase();
+    const knownDocsHostnames = new Set([
+      currentHostname,
+      'maiconjh.github.io'
+    ]);
+
+    if (!knownDocsHostnames.has(hostname)) {
+      return false;
+    }
+
+    const pathname = parsedUrl.pathname.replace(/\/index\.html$/, '/');
+    return docsPath === '/'
+      ? pathname.startsWith('/')
+      : pathname === docsPath || pathname.startsWith(`${docsPath}/`);
+  }
+
+  function rebaseDocumentationUrl(parsedUrl) {
+    const docsPath = getDocumentationBasePath();
+    const normalizedPathname = parsedUrl.pathname.replace(/\/index\.html$/, '/');
+    let relativePath = normalizedPathname;
+
+    if (docsPath !== '/' && relativePath.startsWith(docsPath)) {
+      relativePath = relativePath.slice(docsPath.length) || '/';
+    }
+
+    const base = window.location.origin + (docsPath === '/' ? '' : docsPath);
+    return `${base}${relativePath.startsWith('/') ? relativePath : `/${relativePath}`}${parsedUrl.search}${parsedUrl.hash}`;
+  }
+
+  function getDocumentationBasePath() {
+    const configuredBase = window.site && window.site.baseurl
+      ? String(window.site.baseurl).trim()
+      : '';
+
+    if (configuredBase) {
+      return configuredBase === '/' ? '/' : configuredBase.replace(/\/$/, '');
+    }
+
+    const path = window.location.pathname || '/';
+    const knownSegment = '/Schema-Validator';
+    const segmentIndex = path.indexOf(`${knownSegment}/`);
+    if (segmentIndex >= 0) {
+      return knownSegment;
+    }
+
+    return '/';
   }
 
   function enhanceCodeBlocks(container) {
