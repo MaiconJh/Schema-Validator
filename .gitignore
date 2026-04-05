@@ -29,6 +29,9 @@ libs/
 # ============================================
 # Arquivos e diretórios relacionados ao Gradle
 
+#agentes
+*.kilo
+
 # Wrapper do Gradle (não precisa ser versionado)
 gradle/wrapper/
 
@@ -43,6 +46,19 @@ gradle/wrapper/
 
 # Output do Gradle
 build/
+
+
+# ============================================
+# CONFIGURAÇÕES DO ECLIPSE
+# ============================================
+# Arquivos de configuração do Eclipse
+
+# Diretório de configurações do Eclipse
+.settings/
+
+# Arquivos de projeto do Eclipse
+.classpath
+.project
 
 
 # ============================================
@@ -92,6 +108,9 @@ ehthumbs_vista.db
 *.stackdump
 [Dd]esktop.ini
 $RECYCLE.BIN/
+
+# Special Windows device file (accidental creation)
+nul
 
 # macOS
 .DS_Store
