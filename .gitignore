@@ -23,6 +23,9 @@ out/
 lib/
 libs/
 
+# Output de compilação Eclipse
+bin/
+
 
 # ============================================
 # ARQUIVOS DO GRADLE
@@ -31,6 +34,9 @@ libs/
 
 #agentes
 *.kilo
+
+# Cache do Kilo
+.kilo/
 
 # Wrapper do Gradle (não precisa ser versionado)
 gradle/wrapper/
@@ -206,7 +212,12 @@ junit-platform.properties
 
 
 # ============================================
-# DOCUMENTAÇÃO
+# HERRAMIENTAS DE ANÁLISE DE CÓDIGO
+# ============================================
+# Arquivos de ferramentas de análise estática
+
+#_hint (webhint.io)
+.hintrc
 # ============================================
 # Arquivos de documentação gerados
 
@@ -220,7 +231,13 @@ docs/pages/_site_test/
 
 
 # ============================================
-# PLUGINS DO PAPER/SPIGOT
+# CLOUDflare / WRANGLER
+# ============================================
+# Cache do Wrangler (Cloudflare Workers)
+.wrangler/cache/
+
+# Configuração do Wrangler
+wrangler.toml
 # ============================================
 # Arquivos específicos para desenvolvimento de plugins Minecraft
 

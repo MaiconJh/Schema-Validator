@@ -582,7 +582,7 @@ Marks properties as read-only or write-only.
     "oldField": {
       "type": "string",
       "deprecated": true
-n    }
+    }
   }
 }
 ```
