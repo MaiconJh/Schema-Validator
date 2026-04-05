@@ -52,6 +52,7 @@ public class Schema {
     private final List<Schema> prefixItems;
     private final Schema additionalItemsSchema;
     private final Schema containsSchema;
+    private final Boolean containsBoolean;
     private final Integer minContains;
     private final Integer maxContains;
 
@@ -78,6 +79,7 @@ public class Schema {
     private final Schema unevaluatedItemsSchema;
     private final String dynamicRef;
     private final String dynamicAnchor;
+    private final String comment;
 
     // Construtor principal (único)
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
@@ -90,14 +92,14 @@ public class Schema {
                   List<Schema> allOf, List<Schema> anyOf, List<Schema> oneOf,
                   Schema notSchema, Schema ifSchema, Schema thenSchema, Schema elseSchema,
                   Integer minItems, Integer maxItems, Boolean uniqueItems, List<Schema> prefixItems, Schema additionalItemsSchema,
-                  Schema containsSchema, Integer minContains, Integer maxContains,
+                  Schema containsSchema, Boolean containsBoolean, Integer minContains, Integer maxContains,
                   Integer minProperties, Integer maxProperties, Map<String, List<String>> dependentRequired, Map<String, Schema> dependentSchemas,
                   Schema propertyNamesSchema, Boolean unevaluatedPropertiesAllowed, Schema unevaluatedPropertiesSchema,
                   Object constValue, Boolean readOnly, Boolean writeOnly,
                   Object defaultValue, List<Object> examples, Boolean deprecated,
                   String contentEncoding, String contentMediaType, Schema contentSchema,
                   Boolean unevaluatedItemsAllowed, Schema unevaluatedItemsSchema,
-                  String dynamicRef, String dynamicAnchor) {
+                  String dynamicRef, String dynamicAnchor, String comment) {
         this.name = name;
         this.type = type;
         this.properties = properties == null ? Collections.emptyMap() : Collections.unmodifiableMap(properties);
@@ -138,6 +140,7 @@ public class Schema {
         this.prefixItems = prefixItems == null ? Collections.emptyList() : Collections.unmodifiableList(prefixItems);
         this.additionalItemsSchema = additionalItemsSchema;
         this.containsSchema = containsSchema;
+        this.containsBoolean = containsBoolean;
         this.minContains = minContains;
         this.maxContains = maxContains;
 
@@ -164,6 +167,7 @@ public class Schema {
         this.unevaluatedItemsSchema = unevaluatedItemsSchema;
         this.dynamicRef = dynamicRef;
         this.dynamicAnchor = dynamicAnchor;
+        this.comment = comment;
     }
 
     // ========== Getters (todos os campos) ==========
@@ -229,11 +233,12 @@ public class Schema {
     public List<Schema> getPrefixItems() { return prefixItems; }
     public Schema getAdditionalItemsSchema() { return additionalItemsSchema; }
     public Schema getContainsSchema() { return containsSchema; }
+    public Boolean getContainsBoolean() { return containsBoolean; }
     public Integer getMinContains() { return minContains; }
     public Integer getMaxContains() { return maxContains; }
     public boolean hasArrayConstraints() {
         return minItems != null || maxItems != null || uniqueItems != null || containsSchema != null
-                || minContains != null || maxContains != null
+                || containsBoolean != null || minContains != null || maxContains != null
                 || unevaluatedItemsAllowed != null || unevaluatedItemsSchema != null;
     }
 
@@ -267,6 +272,7 @@ public class Schema {
     public Schema getUnevaluatedItemsSchema() { return unevaluatedItemsSchema; }
     public String getDynamicRef() { return dynamicRef; }
     public String getDynamicAnchor() { return dynamicAnchor; }
+    public String getComment() { return comment; }
     public boolean hasContentVocabulary() {
         return contentEncoding != null || contentMediaType != null || contentSchema != null;
     }
@@ -316,6 +322,7 @@ public class Schema {
         private List<Schema> prefixItems = Collections.emptyList();
         private Schema additionalItemsSchema;
         private Schema containsSchema;
+        private Boolean containsBoolean;
         private Integer minContains;
         private Integer maxContains;
         // Object
@@ -340,6 +347,7 @@ public class Schema {
         private Schema unevaluatedItemsSchema;
         private String dynamicRef;
         private String dynamicAnchor;
+        private String comment;
 
         private Builder(String name, SchemaType type) {
             this.name = name;
@@ -384,6 +392,7 @@ public class Schema {
         public Builder prefixItems(List<Schema> prefixItems) { this.prefixItems = prefixItems; return this; }
         public Builder additionalItemsSchema(Schema additionalItemsSchema) { this.additionalItemsSchema = additionalItemsSchema; return this; }
         public Builder containsSchema(Schema containsSchema) { this.containsSchema = containsSchema; return this; }
+        public Builder containsBoolean(Boolean containsBoolean) { this.containsBoolean = containsBoolean; return this; }
         public Builder minContains(Integer minContains) { this.minContains = minContains; return this; }
         public Builder maxContains(Integer maxContains) { this.maxContains = maxContains; return this; }
         // Object
@@ -408,6 +417,7 @@ public class Schema {
         public Builder unevaluatedItemsSchema(Schema unevaluatedItemsSchema) { this.unevaluatedItemsSchema = unevaluatedItemsSchema; return this; }
         public Builder dynamicRef(String dynamicRef) { this.dynamicRef = dynamicRef; return this; }
         public Builder dynamicAnchor(String dynamicAnchor) { this.dynamicAnchor = dynamicAnchor; return this; }
+        public Builder comment(String comment) { this.comment = comment; return this; }
 
         public Schema build() {
             return new Schema(name, type, properties, patternProperties, itemSchema, requiredFields,
@@ -416,14 +426,14 @@ public class Schema {
                     schemaDialect, id, title, description, typeList, ref, version, compatibility,
                     allOf, anyOf, oneOf, notSchema, ifSchema, thenSchema, elseSchema,
                     minItems, maxItems, uniqueItems, prefixItems, additionalItemsSchema,
-                    containsSchema, minContains, maxContains,
+                    containsSchema, containsBoolean, minContains, maxContains,
                     minProperties, maxProperties, dependentRequired, dependentSchemas,
                     propertyNamesSchema, unevaluatedPropertiesAllowed, unevaluatedPropertiesSchema,
                     constValue, readOnly, writeOnly,
                     defaultValue, examples, deprecated,
                     contentEncoding, contentMediaType, contentSchema,
                     unevaluatedItemsAllowed, unevaluatedItemsSchema,
-                    dynamicRef, dynamicAnchor);
+                    dynamicRef, dynamicAnchor, comment);
         }
     }
 }

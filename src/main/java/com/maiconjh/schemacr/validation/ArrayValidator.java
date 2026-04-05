@@ -61,7 +61,21 @@ public class ArrayValidator implements Validator {
         }
 
         // Validate contains/minContains/maxContains constraints
-        if (schema.getContainsSchema() != null) {
+        Boolean containsBoolean = schema.getContainsBoolean();
+        if (containsBoolean != null) {
+            if (containsBoolean) {
+                for (int i = 0; i < list.size(); i++) {
+                    evaluatedItems[i] = true;
+                }
+            } else {
+                errors.add(new ValidationError(
+                        path,
+                        "contains",
+                        "false",
+                        "Array failed 'contains: false' - no items can match"
+                ));
+            }
+        } else if (schema.getContainsSchema() != null) {
             int containsMatches = 0;
             for (int i = 0; i < list.size(); i++) {
                 Object element = list.get(i);
@@ -201,7 +215,11 @@ public class ArrayValidator implements Validator {
                 evaluated[i] = true;
             }
         }
-        if (schema.getContainsSchema() != null) {
+        if (schema.getContainsBoolean() != null && schema.getContainsBoolean()) {
+            for (int i = 0; i < list.size(); i++) {
+                evaluated[i] = true;
+            }
+        } else if (schema.getContainsSchema() != null) {
             for (int i = 0; i < list.size(); i++) {
                 Object element = list.get(i);
                 String childPath = path + "[" + i + "]";

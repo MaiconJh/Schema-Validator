@@ -301,12 +301,21 @@ public class FileSchemaLoader {
                 builder.additionalItemsSchema(toSchema(name + "_additionalItems", castMap(map)));
             }
         }
-        if (raw.containsKey("contains") && raw.get("contains") instanceof Map<?, ?> map) {
-            builder.containsSchema(toSchema(name + "_contains", castMap(map)));
-            builder.minContains(1);
+        if (raw.containsKey("contains")) {
+            Object containsValue = raw.get("contains");
+            if (containsValue instanceof Map<?, ?> map) {
+                builder.containsSchema(toSchema(name + "_contains", castMap(map)));
+            } else if (containsValue instanceof Boolean b) {
+                builder.containsBoolean(b);
+            }
         }
         if (raw.containsKey("minContains") && raw.get("minContains") instanceof Number n) {
             builder.minContains(n.intValue());
+        } else if (raw.containsKey("contains")) {
+            Object containsValue = raw.get("contains");
+            if (containsValue instanceof Map<?, ?>) {
+                builder.minContains(1);
+            }
         }
         if (raw.containsKey("maxContains") && raw.get("maxContains") instanceof Number n) {
             builder.maxContains(n.intValue());
@@ -366,6 +375,7 @@ public class FileSchemaLoader {
             builder.examples(new ArrayList<>(examples));
         }
         if (raw.containsKey("deprecated") && raw.get("deprecated") instanceof Boolean b) builder.deprecated(b);
+        if (raw.containsKey("$comment") && raw.get("$comment") instanceof String comment) builder.comment(comment);
         if (raw.containsKey("contentEncoding") && raw.get("contentEncoding") instanceof String contentEncoding) builder.contentEncoding(contentEncoding);
         if (raw.containsKey("contentMediaType") && raw.get("contentMediaType") instanceof String contentMediaType) builder.contentMediaType(contentMediaType);
         if (raw.containsKey("contentSchema") && raw.get("contentSchema") instanceof Map<?, ?> map) {
