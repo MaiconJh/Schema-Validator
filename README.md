@@ -1,5 +1,15 @@
 # Schema-Validator v1.0.5
 
+
+## Online documentation
+
+- Published docs: <https://maiconjh.github.io/Schema-Validator/>
+- Source index page: [docs/pages/index.md](docs/pages/index.md)
+- Release notes: [RELEASE_NOTES.md](RELEASE_NOTES.md)
+
+[![SkriptHubViewTheDocs](http://skripthub.net/static/addon/ViewTheDocsButton.png)](http://skripthub.net/docs/?addon=Schema-Validator)
+
+
 Schema-Validator is a Paper/Skript plugin that validates JSON or YAML data files against JSON Schema files and ships with a full documentation site for users, schema authors, and maintainers.
 
 > If documentation and code diverge, the code is authoritative.
@@ -211,13 +221,6 @@ Schema-Validator/
 |-- build.gradle
 `-- settings.gradle
 ```
-
-## Online documentation
-
-- Published docs: <https://maiconjh.github.io/Schema-Validator/>
-- Source index page: [docs/pages/index.md](docs/pages/index.md)
-- Release notes: [RELEASE_NOTES.md](RELEASE_NOTES.md)
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
