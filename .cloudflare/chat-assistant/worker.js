@@ -63,6 +63,25 @@ const DOMAIN_HINTS = [
   'docs'
 ];
 
+const GENERIC_SCOPE_TOKENS = new Set([
+  'config',
+  'configuration',
+  'configs',
+  'documentation',
+  'docs',
+  'draft',
+  'example',
+  'examples',
+  'json',
+  'keyword',
+  'keywords',
+  'schema',
+  'schemas',
+  'skript',
+  'validation',
+  'validator'
+]);
+
 const RESPONSE_HEADERS = {
   'Cache-Control': 'no-store',
   'Content-Type': 'application/json; charset=utf-8',
@@ -71,6 +90,7 @@ const RESPONSE_HEADERS = {
 };
 
 const SESSION_HEADER_NAME = 'X-Chat-Session';
+const REFERENCE_LIST_ITEM_PATTERN = /^\s*(?:[-*+]|\d+\.)\s+/;
 
 let inMemorySearchCache = {
   url: '',
@@ -255,7 +275,10 @@ export default {
 
       const upstreamPayload = buildUpstreamPayload(payload, retrieval, config);
       const upstreamResult = await callUpstream(upstreamPayload, config);
-      const reply = ensureReferencesInReply(upstreamResult.reply, retrieval.matches);
+      const reply = ensureReferencesInReply(upstreamResult.reply, retrieval.matches, payload.locale);
+      if (!reply) {
+        throw new Error('upstream_invalid_reply');
+      }
 
       await Promise.all([
         completeGuard(env, sessionKey, requestId, 'success', config),
@@ -730,29 +753,35 @@ function scoreDocument(entry, queryTokens, currentPageUrl) {
 }
 
 function isOutOfScopeQuestion(payload, retrieval) {
-  const normalizedQuestion = normalizeText(payload.question);
   const questionTokens = tokenizeText(payload.question);
   if (!questionTokens.length || questionTokens.length <= 2) {
     return false;
   }
 
-  if (DOMAIN_HINTS.some((hint) => normalizedQuestion.includes(normalizeText(hint)))) {
+  const specificQuestionTokens = questionTokens.filter((token) => !GENERIC_SCOPE_TOKENS.has(token));
+  const localContext = normalizeText([
+    payload.context.pageTitle,
+    payload.context.pageDescription,
+    payload.context.visibleSections.map((section) => section.title).join(' '),
+    payload.context.mentionedSections.map((section) => section.title).join(' ')
+  ].join(' '));
+  const retrievalContext = normalizeText(retrieval.matches
+    .slice(0, 4)
+    .map((match) => [match.title, match.description, match.excerpt].filter(Boolean).join(' '))
+    .join(' '));
+
+  const localSpecificMatches = countTokenMatches(specificQuestionTokens, localContext);
+  const retrievalSpecificMatches = countTokenMatches(specificQuestionTokens, retrievalContext);
+
+  if (!specificQuestionTokens.length) {
+    return !(retrieval.matches.length && retrieval.matches[0].score >= 6);
+  }
+
+  if (localSpecificMatches >= 1 || retrievalSpecificMatches >= 1) {
     return false;
   }
 
-  if (payload.context.pageTitle || payload.context.visibleSections.length || payload.context.mentionedSections.length) {
-    const localContext = normalizeText([
-      payload.context.pageTitle,
-      payload.context.pageDescription,
-      payload.context.visibleSections.map((section) => section.title).join(' '),
-      payload.context.mentionedSections.map((section) => section.title).join(' ')
-    ].join(' '));
-    if (questionTokens.some((token) => localContext.includes(token))) {
-      return false;
-    }
-  }
-
-  return !(retrieval.matches.length && retrieval.matches[0].score >= 4);
+  return true;
 }
 
 function buildUpstreamPayload(payload, retrieval, config) {
@@ -771,7 +800,10 @@ function buildUpstreamPayload(payload, retrieval, config) {
     'Answer only using Schema-Validator documentation context provided by the server.',
     'Refuse unrelated questions and do not improvise beyond the grounded context.',
     'Be concise, technical, and respond in the same language as the user whenever possible.',
-    'End the answer with a "References" section naming the documentation pages or sections used.'
+    'Return only the final user-facing answer in Markdown.',
+    'Never emit tool-call markup, XML tags, <invoke>, <parameter>, or execution traces.',
+    'Do not add a references section or source list.',
+    'The server appends canonical documentation references after your answer.'
   ].join(' ');
 
   const contextPrompt = [
@@ -814,39 +846,72 @@ async function callUpstream(payload, config) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort('timeout'), config.upstreamTimeoutMs);
   try {
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
-
-    if (config.upstreamApiKey) {
-      headers.Authorization = `${config.upstreamAuthScheme} ${config.upstreamApiKey}`;
+    let result = await requestUpstream(payload, config, controller.signal);
+    if (containsRawToolCallMarkup(result.reply)) {
+      result = await requestUpstream(buildToolCallRecoveryPayload(payload), config, controller.signal);
     }
 
-    const response = await fetch(config.upstreamApiUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-      signal: controller.signal
-    });
-
-    const data = await response.json().catch(() => ({}));
-    const reply =
-      data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
-        ? data.choices[0].message.content
-        : '';
-
-    if (!response.ok || !reply) {
-      throw new Error(`Upstream error ${response.status}`);
+    if (!result.ok || !result.reply || containsRawToolCallMarkup(result.reply)) {
+      throw new Error(`Upstream error ${result.status}`);
     }
 
     return {
-      status: response.status,
-      reply
+      status: result.status,
+      reply: result.reply
     };
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+async function requestUpstream(payload, config, signal) {
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  };
+
+  if (config.upstreamApiKey) {
+    headers.Authorization = `${config.upstreamAuthScheme} ${config.upstreamApiKey}`;
+  }
+
+  const response = await fetch(config.upstreamApiUrl, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+    signal
+  });
+
+  const data = await response.json().catch(() => ({}));
+  return {
+    ok: response.ok,
+    status: response.status,
+    reply: extractUpstreamReply(data)
+  };
+}
+
+function extractUpstreamReply(data) {
+  const reply =
+    data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+      ? data.choices[0].message.content
+      : '';
+
+  return String(reply || '').trim();
+}
+
+function containsRawToolCallMarkup(reply) {
+  const text = String(reply || '');
+  return /<[/\w:-]*tool[_-]?call\b/i.test(text)
+    || (/<invoke\b/i.test(text) && /<parameter\b/i.test(text));
+}
+
+function buildToolCallRecoveryPayload(payload) {
+  return {
+    ...payload,
+    messages: payload.messages.concat({
+      role: 'system',
+      content: 'Your previous response exposed internal tool-call markup. Reply again with only the final answer for the end user in plain Markdown. Do not emit XML tags, tool calls, <invoke>, <parameter>, or any hidden reasoning.'
+    })
+  };
 }
 
 async function loadDocsIndex(config) {
@@ -1174,6 +1239,13 @@ function dedupeById(entries, selector) {
   });
 }
 
+function countTokenMatches(tokens, normalizedTextValue) {
+  const haystack = String(normalizedTextValue || '');
+  return new Set(tokens).size
+    ? Array.from(new Set(tokens)).filter((token) => haystack.includes(token)).length
+    : 0;
+}
+
 function parseCookies(header) {
   return header
     .split(';')
@@ -1301,26 +1373,123 @@ function localizedUpstreamError(locale) {
 
 function buildOutOfScopeReply(locale) {
   return locale === 'pt'
-    ? 'Este assistente responde apenas sobre a documentacao do Schema-Validator. Pergunte sobre configuracao, keywords, arquitetura, exemplos ou mencione uma secao da pagina com `@`.\n\nReferences\n- Current page context'
-    : 'This assistant answers only about Schema-Validator documentation. Ask about configuration, keywords, architecture, examples, or mention a page section with `@`.\n\nReferences\n- Current page context';
+    ? `Este assistente responde apenas sobre a documentacao do Schema-Validator. Pergunte sobre configuracao, keywords, arquitetura, exemplos ou mencione uma secao da pagina com \`@\`.\n\n${buildReferencesHeading(locale)}\n- Current page context`
+    : `This assistant answers only about Schema-Validator documentation. Ask about configuration, keywords, architecture, examples, or mention a page section with \`@\`.\n\n${buildReferencesHeading(locale)}\n- Current page context`;
 }
 
-function ensureReferencesInReply(reply, matches) {
-  const cleanReply = cleanText(reply);
+function buildReferencesHeading(locale) {
+  return locale === 'pt' ? 'Referencias' : 'References';
+}
+
+function buildReferencesList(matches) {
+  return matches
+    .slice(0, 4)
+    .map((match) => `- [${String(match.title || '').replace(/[\[\]]/g, '').trim() || match.url}](${match.url})`)
+    .join('\n');
+}
+
+function isReferencesHeading(line) {
+  const normalized = normalizeText(
+    String(line || '')
+      .replace(/^\s{0,3}#{1,6}\s*/, '')
+      .replace(/[:\s]+$/, '')
+  );
+
+  return normalized === 'reference'
+    || normalized === 'references'
+    || normalized === 'referencia'
+    || normalized === 'referencias'
+    || normalized === 'source'
+    || normalized === 'sources'
+    || normalized === 'fonte'
+    || normalized === 'fontes';
+}
+
+function isTrailingReferencesSection(lines, matches) {
+  const contentLines = lines
+    .slice(1)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (!contentLines.length) {
+    return false;
+  }
+
+  const sectionText = normalizeText(contentLines.join('\n'));
+  const hasKnownReference = matches
+    .slice(0, 4)
+    .some((match) => sectionText.includes(normalizeText(match.title)) || sectionText.includes(normalizeText(match.url)));
+
+  if (!hasKnownReference) {
+    return false;
+  }
+
+  return contentLines.every((line) => {
+    return REFERENCE_LIST_ITEM_PATTERN.test(line)
+      || /^\[[^\]]+\]\(https?:\/\/\S+\)\s*$/.test(line)
+      || /^https?:\/\/\S+\s*$/.test(line)
+      || line.length <= 160;
+  });
+}
+
+function stripTrailingReferencesSection(reply, matches) {
+  const normalizedReply = String(reply || '').replace(/\r\n?/g, '\n');
+  const lines = normalizedReply.split('\n');
+
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    if (!isReferencesHeading(lines[index])) {
+      continue;
+    }
+
+    const sectionLines = lines.slice(index);
+    if (!isTrailingReferencesSection(sectionLines, matches)) {
+      continue;
+    }
+
+    return lines.slice(0, index).join('\n').trim();
+  }
+
+  return normalizedReply.trim();
+}
+
+function stripDanglingCodeFence(reply) {
+  const normalizedReply = String(reply || '').replace(/\r\n?/g, '\n').trim();
+  const lines = normalizedReply.split('\n');
+  const fenceLines = lines.filter((line) => /^```/.test(line.trim()));
+
+  if (fenceLines.length !== 1) {
+    return normalizedReply;
+  }
+
+  return lines.filter((line) => !/^```/.test(line.trim())).join('\n').trim();
+}
+
+function hasMeaningfulReplyBody(reply) {
+  const normalized = normalizeText(
+    String(reply || '')
+      .replace(/```/g, ' ')
+      .replace(/[`#>*_\-\[\]()]/g, ' ')
+  );
+
+  return normalized.length >= 8;
+}
+
+function ensureReferencesInReply(reply, matches, locale) {
+  const cleanReply = stripDanglingCodeFence(stripTrailingReferencesSection(reply, matches));
   if (!matches.length) {
     return cleanReply;
   }
 
-  if (/references/i.test(cleanReply)) {
-    return reply;
+  if (!hasMeaningfulReplyBody(cleanReply)) {
+    return '';
   }
 
-  const references = matches
-    .slice(0, 4)
-    .map((match) => `- ${match.title} (${match.url})`)
-    .join('\n');
+  const references = buildReferencesList(matches);
+  const heading = buildReferencesHeading(locale);
 
-  return `${reply.trim()}\n\nReferences\n${references}`;
+  return cleanReply
+    ? `${cleanReply}\n\n${heading}\n${references}`
+    : `${heading}\n${references}`;
 }
 
 async function logEvent(config, type, payload) {

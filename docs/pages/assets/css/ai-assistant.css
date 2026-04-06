@@ -102,6 +102,26 @@
   }
 }
 
+@keyframes ai-assistant-loading-sweep {
+  from {
+    transform: translateX(-130%);
+  }
+
+  to {
+    transform: translateX(130%);
+  }
+}
+
+@keyframes ai-assistant-loading-text {
+  from {
+    background-position: 200% 50%;
+  }
+
+  to {
+    background-position: -20% 50%;
+  }
+}
+
 .ai-assistant-chat.is-maximized {
   border-radius: 24px;
 }
@@ -314,7 +334,84 @@
 
 .ai-message.loading,
 .assistant-message.loading {
-  opacity: 0.72;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  opacity: 1;
+  border-color: rgb(99 102 241 / 0.18);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.04), transparent 72%),
+    linear-gradient(180deg, rgb(15 23 42 / 0.04), transparent 58%),
+    var(--ai-chat-message-bg);
+}
+
+.ai-message.loading::after,
+.assistant-message.loading::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    108deg,
+    transparent 18%,
+    rgb(255 255 255 / 0.06) 38%,
+    rgb(99 102 241 / 0.14) 50%,
+    rgb(255 255 255 / 0.06) 62%,
+    transparent 82%
+  );
+  animation: ai-assistant-loading-sweep 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.ai-message.loading > *,
+.assistant-message.loading > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ai-message.loading p,
+.assistant-message.loading p {
+  color: var(--color-text-secondary, #64748b);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .ai-message.loading p,
+  .assistant-message.loading p {
+    color: transparent;
+    background-image: linear-gradient(
+      90deg,
+      rgb(148 163 184 / 0.78) 0%,
+      rgb(255 255 255 / 0.98) 42%,
+      rgb(148 163 184 / 0.86) 78%
+    );
+    background-size: 220% 100%;
+    background-position: 200% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: ai-assistant-loading-text 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-message.loading::after,
+  .assistant-message.loading::after,
+  .ai-message.loading p,
+  .assistant-message.loading p {
+    animation: none;
+  }
+
+  .ai-message.loading,
+  .assistant-message.loading {
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.03), transparent 72%),
+      var(--ai-chat-message-bg);
+  }
+
+  .ai-message.loading p,
+  .assistant-message.loading p {
+    color: var(--color-text-secondary, #64748b);
+    background: none;
+  }
 }
 
 .ai-message > *:first-child,
