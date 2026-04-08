@@ -9,8 +9,9 @@ import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
 import com.maiconjh.schemacr.core.PluginContext;
-import com.maiconjh.schemacr.core.ValidationService;
+import com.maiconjh.schemacr.core.ValidationOrigin;
 import com.maiconjh.schemacr.schemes.Schema;
+import com.maiconjh.schemacr.schemes.SchemaRegistrationSource;
 import com.maiconjh.schemacr.validation.ValidationError;
 import com.maiconjh.schemacr.validation.ValidationResult;
 
@@ -58,10 +59,14 @@ public class EffValidateData extends Effect {
 
             String schemaName = schemaPath.getFileName().toString();
             Schema schema = PluginContext.getFileSchemaLoader().load(schemaPath, schemaName);
-            PluginContext.getSchemaRegistry().registerSchema(schemaName, schema);
+            PluginContext.getSchemaRegistry().registerSchema(
+                    schemaName,
+                    schema,
+                    SchemaRegistrationSource.SKRIPT,
+                    schemaPath
+            );
 
-            ValidationService service = new ValidationService();
-            ValidationResult result = service.validate(data, schema);
+            ValidationResult result = PluginContext.getPlugin().validateTracked(data, schema, ValidationOrigin.SKRIPT);
             SkriptValidationBridge.setLastResult(result);
 
             if (!result.isSuccess()) {

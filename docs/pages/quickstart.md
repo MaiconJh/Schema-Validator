@@ -83,3 +83,4 @@ Format:
 
 1. Tune startup and strictness in [Configuration](configuration.html).
 2. Inspect keyword support in [Schema keywords](schema-keywords.html).
+3. For plugin-to-plugin integration, use [Java API](java-api.html).

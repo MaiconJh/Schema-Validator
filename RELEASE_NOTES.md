@@ -9,13 +9,95 @@ This addon was created with **Artificial Intelligence assistance**. Use with cau
 |----------|---------|
 | Minecraft | 1.21+ |
 | Java | 21 |
-| Skript | 2.14+ |
+| Skript | Optional, 2.14+ |
 | Server | Paper/Spigot 1.21+ |
 
 ## 📋 Dependencies
 
-- [Skript 2.14+](https://github.com/SkriptLang/Skript)
+- [Skript 2.14+](https://github.com/SkriptLang/Skript) (optional, only for Skript syntax)
 - Paper 1.21+ ou Spigot 1.21+
+
+---
+
+## What's New in v1.4.0 - Schema Metadata and Advanced Admin Commands
+
+### Major Features Added
+
+#### 1. Runtime Schema Metadata
+- Added source tracking for registered schemas
+- Added source path and registration timestamp tracking for file-backed schemas
+- Added selective reload support for one schema at a time when a file-backed source exists
+
+#### 2. Advanced Administrative Commands
+- Added `/sv export <schemaName> [json|yaml]`
+- Added `/sv stats`
+- Added `/sv reload <schemaName>`
+- Expanded `list` and `info` output with registration metadata
+
+#### 3. Validation Metrics
+- Added tracked validation counters for API, command, and Skript flows
+- Added average validation timing to the command stats output
+- Kept self-validation and unrelated direct service usage outside the built-in counters
+
+---
+
+## What's New in v1.3.0 - Administrative Commands
+
+### Major Features Added
+
+#### 1. Administrative Command Interface
+- Added `/schemavalidator` with aliases `/sv` and `/schema`
+- Added `help`, `list`, `info`, `validate-file`, and `reload --all`
+- Added permission nodes for read-only, reload, and full administrative access
+
+#### 2. Operational Validation and Reload
+- Added file-based validation directly from commands for JSON and YAML payloads
+- Added command-driven schema directory reload without requiring a full server restart
+- Reload now reapplies config-backed runtime settings before scanning the directory
+
+#### 3. Documentation Expansion
+- Added a dedicated `docs/pages/commands.md` reference page
+- Updated installation, configuration, overview, and architecture docs to reflect the new administrative surface
+- Updated deprecated pointer docs to documentation version `1.3.0`
+
+---
+
+## What's New in v1.2.0 - Optional Skript Runtime
+
+### Major Features Added
+
+#### 1. Optional Skript Integration at Runtime
+- Removed the hard runtime requirement on Skript from `plugin.yml`
+- Schema-Validator now starts normally even when Skript is not installed
+- Skript syntax registration now runs only when Skript is present and enabled
+
+#### 2. Documentation Expansion
+- Added a dedicated `docs/pages/java-api.md` reference page
+- Updated architecture, installation, overview, and getting-started docs for the hybrid Java/Bukkit plus Skript model
+- Updated legacy pointer docs to the current documentation version
+
+#### 3. Integration Model Cleanup
+- Updated plugin metadata to describe the project as a Paper plugin with optional Skript integration
+- Kept existing Skript behavior intact when Skript is installed
+
+---
+
+## What's New in v1.1.0 - Public Java/Bukkit API
+
+### Major Features Added
+
+#### 1. Public Java/Bukkit Integration API
+- Added `SchemaValidatorAPI` for safe access from other Bukkit plugins
+- Added stable public views for validation results and validation errors
+- Added facade methods for single validation, batch validation, schema presence checks, schema listing, and file-based schema registration
+
+#### 2. Plugin Service Exposure
+- Exposed `ValidationService` from the main plugin to support programmatic validation without changing the existing Skript flow
+- Kept current Skript behavior intact while adding the new integration layer
+
+#### 3. Documentation Updates
+- Added Java/Bukkit API usage guidance to the main README
+- Documented the current runtime limitation that Skript is still required because the plugin keeps `depend: [Skript]`
 
 ---
 

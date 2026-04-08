@@ -51,11 +51,11 @@ Use `strict-mode: true` in CI/staging to catch unsupported keywords before produ
 
 `validation-on-load` validates each loaded schema using generated minimal test data. This can increase startup time and may flag complex schemas early.
 
-### 4. Restart and verify logs
+### 4. Restart or reload and verify
 
 After config changes:
 
-1. restart server
+1. restart server or run `/sv reload --all`
 2. confirm config summary in logs
 3. confirm schema load count
 4. run one known validation command
@@ -76,5 +76,6 @@ After config changes:
 
 ## Continue
 
+- Review administrative usage in [Commands](commands.html)
 - Compare keyword support details in [Schema keywords](schema-keywords.html)
 - Review runtime order in [Validation behavior](validation-behavior.html)

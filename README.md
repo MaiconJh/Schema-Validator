@@ -1,4 +1,4 @@
-# Schema-Validator v1.0.5
+# Schema-Validator v1.4.0
 
 
 ## Online documentation
@@ -10,14 +10,16 @@
 [![SkriptHubViewTheDocs](http://skripthub.net/static/addon/ViewTheDocsButton.png)](http://skripthub.net/docs/?addon=Schema-Validator)
 
 
-Schema-Validator is a Paper/Skript plugin that validates JSON or YAML data files against JSON Schema files and ships with a full documentation site for users, schema authors, and maintainers.
+Schema-Validator is a Paper plugin that validates JSON or YAML data files against JSON Schema files, with optional Skript integration and a public Java/Bukkit API.
 
 > If documentation and code diverge, the code is authoritative.
 
 ## Project at a glance
 
 - Paper plugin for validating JSON and YAML data against schemas
-- Skript integration for running validations and retrieving compact errors
+- Optional Skript integration for running validations and retrieving compact errors
+- Public Java/Bukkit API for programmatic validation from other plugins
+- Administrative command interface for schema inspection, file validation, reload, export, and runtime stats
 - JSON Schema support across object, array, primitive, logical, conditional, reference, and format keywords
 - Jekyll documentation site in `docs/pages/`
 - Interactive documentation features: search, dark mode, table of contents, breadcrumbs, page rating, privacy policy, and AI assistant chat
@@ -25,17 +27,21 @@ Schema-Validator is a Paper/Skript plugin that validates JSON or YAML data files
 
 ## Core plugin functionality
 
-Schema-Validator is focused on operational validation workflows inside a Paper server with Skript.
+Schema-Validator supports two main integration paths inside a Paper server:
+
+- Programmatic validation through `SchemaValidatorAPI`
+- Optional Skript effects and expressions when Skript is installed
+- Administrative command access through `/schemavalidator`, `/sv`, or `/schema`
 
 ### Validation workflow
 
-At runtime, the main flow is:
+At runtime, the core flow is:
 
 1. A schema is loaded and parsed by `FileSchemaLoader`
-2. Data is loaded by `DataFileLoader`
-3. Validation is dispatched by schema type
-4. Errors are stored in `SkriptValidationBridge`
-5. Skript reads the last validation result through `last schema validation errors`
+2. Validation is dispatched by schema type through `ValidationService`
+3. Programmatic callers receive `ValidationResult` directly
+4. If Skript is installed, Skript requests also store the latest result in `SkriptValidationBridge`
+5. Skript reads that latest result through `last schema validation errors`
 
 ### Skript API
 
@@ -46,6 +52,72 @@ validate yaml %string% using schema %string%
 validate json %string% using schema %string%
 last schema validation errors
 ```
+
+### Java/Bukkit API
+
+Schema-Validator now exposes a small programmatic facade for other Bukkit plugins:
+
+```java
+if (SchemaValidatorAPI.isAvailable()) {
+    SchemaValidationResultView result = SchemaValidatorAPI.validate(data, "player");
+    if (!result.isSuccess()) {
+        result.getErrors().forEach(error -> plugin.getLogger().warning(error.getMessage()));
+    }
+}
+```
+
+Consumer plugins should declare a soft dependency:
+
+```yaml
+softdepend:
+  - Schema-Validator
+```
+
+Available entry points:
+
+- `SchemaValidatorAPI.isAvailable()`
+- `SchemaValidatorAPI.validate(Object data, String schemaName)`
+- `SchemaValidatorAPI.validateBatch(List<Object> dataList, String schemaName)`
+- `SchemaValidatorAPI.hasSchema(String schemaName)`
+- `SchemaValidatorAPI.getSchemaNames()`
+- `SchemaValidatorAPI.registerSchemaFromFile(String schemaName, Path schemaFile)`
+
+Current limitation:
+
+- The API depends on the `Schema-Validator` plugin being loaded.
+- Since `v1.2.0`, Skript is optional. Install it only if you need the Skript syntax.
+
+### Commands
+
+Schema-Validator also exposes an administrative command tree:
+
+```text
+/schemavalidator help
+/sv list [page]
+/sv info <schemaName>
+/sv validate-file <schemaName> <path> [--verbose]
+/sv export <schemaName> [json|yaml]
+/sv stats
+/sv reload <schemaName>
+/sv reload --all
+```
+
+Permissions:
+
+- `schemavalidator.use`
+- `schemavalidator.reload`
+- `schemavalidator.admin`
+
+Current reload behavior:
+
+- `/sv reload <schemaName>` reloads a single file-backed schema using its registered source path.
+- `/sv reload --all` reloads or updates schemas from the configured schema directory.
+- Schemas registered programmatically from other plugins are kept unless a directory schema overwrites the same name.
+
+Current export and stats behavior:
+
+- `/sv export` currently works for schemas that were registered from a file-backed source.
+- `/sv stats` tracks validations executed through the built-in command path, Skript path, and `SchemaValidatorAPI`.
 
 ### Configuration features
 
@@ -158,14 +230,14 @@ The documentation source currently covers these pages and workflows.
 
 ### Tutorials
 
-- [Getting started](docs/pages/getting-started.md): mental model for schema loading, validation dispatch, and Skript exposure
+- [Getting started](docs/pages/getting-started.md): mental model for schema loading, validation dispatch, and available integration paths
 - [Quickstart](docs/pages/quickstart.md): one successful and one failing validation
 - [First validation workflow](docs/pages/first-validation.md): intentionally fail a validation and interpret the errors
 - [Examples](docs/pages/examples.md): practical examples for common validation tasks
 
 ### How-to guides
 
-- [Installation](docs/pages/installation.md): build, deploy, and verify the plugin on Paper with Skript
+- [Installation](docs/pages/installation.md): build, deploy, and verify the plugin on Paper, with or without Skript
 - [Configuration](docs/pages/configuration.md): schema loading, cache behavior, and strictness controls
 - [Validate JSON file](docs/pages/validate-json-file.md): JSON-specific execution path
 - [Schema directory workflow](docs/pages/schema-directory-workflow.md): startup autoload and schema registration workflow
@@ -175,6 +247,8 @@ The documentation source currently covers these pages and workflows.
 - [Schema keywords](docs/pages/schema-keywords.md): parsed and enforced keyword behavior
 - [Validation behavior](docs/pages/validation-behavior.md): dispatch order, evaluation order, and error model
 - [Skript API](docs/pages/skript-api.md): registered syntax and runtime semantics
+- [Java API](docs/pages/java-api.md): public Java/Bukkit integration contract and usage
+- [Commands](docs/pages/commands.md): administrative command reference and permissions
 - [Format reference](docs/pages/format-reference.md): supported formats and examples
 - [Config reference](docs/pages/config-reference.md): canonical config table
 - [Examples and schema construction](docs/pages/examples-and-schema-construction.md): reference patterns for building schemas

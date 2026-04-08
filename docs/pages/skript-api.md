@@ -7,6 +7,12 @@ sequence: 12
 permalink: /skript-api.html
 ---
 
+## Availability
+
+This page applies only when Skript is installed on the server.
+
+Since `v1.2.0`, Schema-Validator can start without Skript. When Skript is absent, none of the syntax on this page is registered.
+
 ## Registered syntax
 
 ### Effects
@@ -80,5 +86,7 @@ command /validatesample:
 
 ## Related pages
 
+- Public programmatic entry point: [Java API](java-api.html)
+- Administrative command entry point: [Commands](commands.html)
 - Runtime validation details: [Validation behavior](validation-behavior.html)
 - Keyword support scope: [Schema keywords](schema-keywords.html)

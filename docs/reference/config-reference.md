@@ -7,5 +7,5 @@ This legacy file is kept only as a compatibility pointer.
 
 The published source of truth is docs/pages/**.
 ---
-Last updated: 2026-03-22  
-Documentation version: 0.3.5
+Last updated: 2026-04-08  
+Documentation version: 1.4.0

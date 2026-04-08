@@ -17,8 +17,12 @@ public class SchemaRegistrationService {
     }
 
     public Schema registerFromFile(String schemaName, Path schemaFile) throws IOException {
+        return registerFromFile(schemaName, schemaFile, SchemaRegistrationSource.API);
+    }
+
+    public Schema registerFromFile(String schemaName, Path schemaFile, SchemaRegistrationSource source) throws IOException {
         Schema schema = loader.load(schemaFile, schemaName);
-        registry.registerSchema(schemaName, schema);
+        registry.registerSchema(schemaName, schema, source, schemaFile);
         return schema;
     }
 

@@ -89,6 +89,8 @@ Use permanent `.html` routes for published pages, including:
 - `/schema-keywords.html`
 - `/validation-behavior.html`
 - `/skript-api.html`
+- `/java-api.html`
+- `/commands.html`
 - `/format-reference.html`
 - `/config-reference.html`
 - `/examples-and-schema-construction.html`

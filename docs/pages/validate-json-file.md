@@ -1,6 +1,6 @@
 ---
 title: Validate JSON file
-description: Validate JSON payloads through Skript with reliable path and output handling.
+description: Validate JSON payloads through the optional Skript integration with reliable path and output handling.
 doc_type: how-to
 order: 3
 sequence: 7

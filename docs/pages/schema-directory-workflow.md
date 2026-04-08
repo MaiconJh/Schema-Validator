@@ -25,17 +25,24 @@ Load schemas automatically at startup from one configured directory.
 - Registers schema names as filename without extension.
 - Optionally runs startup self-check when `validation-on-load: true`.
 
-## Known caveat
+## Reload behavior
 
-`autoLoadSchemas()` logs `failedCount` in summary, but current implementation does not increment this counter. Failed files are still logged individually as warnings.
+`/sv reload --all` uses the same configured schema directory and updates or adds schemas found there.
+
+Current limitation:
+
+- Reload does not remove unrelated schemas that were registered from other sources.
+- Single-schema reload depends on the schema having a file-backed registration source.
 
 ## Verification checklist
 
 - Startup log shows directory path used.
 - Loaded schema count is greater than zero.
-- A manual validation command can resolve and execute against one loaded schema.
+- `/sv list` shows the loaded schemas.
+- `/sv validate-file` can resolve and execute against one loaded schema.
 
 ## Related pages
 
+- Administrative inspection and reload: [Commands](commands.html)
 - Key behavior and defaults: [Config reference](config-reference.html)
 - Startup architecture details: [Architecture](architecture.html)

@@ -31,8 +31,24 @@ This site uses Diataxis so each page has one clear purpose:
 1. [Installation](installation.html)
 2. [Schema directory workflow](schema-directory-workflow.html)
 3. [Configuration](configuration.html)
-4. [Config reference](config-reference.html)
-5. [Validation behavior](validation-behavior.html)
+4. [Commands](commands.html)
+5. [Config reference](config-reference.html)
+6. [Validation behavior](validation-behavior.html)
+
+### Plugin integrator / Java API
+
+1. [Installation](installation.html)
+2. [Java API](java-api.html)
+3. [Architecture](architecture.html)
+4. [Validation behavior](validation-behavior.html)
+
+### Server administrator / Commands
+
+1. [Installation](installation.html)
+2. [Commands](commands.html)
+3. [Configuration](configuration.html)
+4. [Schema directory workflow](schema-directory-workflow.html)
+5. [Design constraints](design-constraints.html)
 
 ### Schema author / validator deep dive
 
@@ -68,6 +84,8 @@ This site uses Diataxis so each page has one clear purpose:
 - [Schema keywords](schema-keywords.html)
 - [Validation behavior](validation-behavior.html)
 - [Skript API](skript-api.html)
+- [Java API](java-api.html)
+- [Commands](commands.html)
 - [Format reference](format-reference.html)
 - [Config reference](config-reference.html)
 - [Examples and schema construction](examples-and-schema-construction.html)

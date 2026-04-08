@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Build, deploy, and verify Schema Validator on a Paper server with Skript.
+description: Build, deploy, and verify Schema Validator on a Paper server, with optional Skript integration.
 doc_type: how-to
 order: 1
 sequence: 3
@@ -11,7 +11,7 @@ permalink: /installation.html
 
 - Java 21 toolchain
 - Paper server
-- Skript plugin installed
+- Skript plugin installed only if you want Skript syntax
 
 > [!NOTE]
 > Keep Java and Paper versions aligned with your production server to avoid runtime incompatibilities.
@@ -39,8 +39,8 @@ Expected output artifact:
 
 Check console logs for:
 
-- config load summary (`schema-directory`, `auto-load`, `strict-mode`)
-- Skript syntax registration
+- schema directory creation or load attempts
+- optional Skript syntax registration, or a skip message when Skript is absent
 - final plugin enable line with loaded schema count
 
 ## Verify resources and baseline files
@@ -53,6 +53,31 @@ After first startup, verify these files exist:
 
 The bundled examples are useful for first validation runs and troubleshooting.
 
+## Verify commands
+
+Run:
+
+```text
+/sv help
+```
+
+Expected result:
+
+- the command responds
+- only the subcommands allowed by your permissions are shown
+- if Skript is absent, the command still works
+
+You can also verify:
+
+```text
+/sv stats
+```
+
+Expected result:
+
+- the plugin reports registry and validation counters
+- the command works even when no schemas have been validated yet
+
 ## Troubleshooting
 
 > [!TIP]
@@ -61,8 +86,20 @@ The bundled examples are useful for first validation runs and troubleshooting.
 ### Plugin does not enable
 
 - Confirm Java 21 is used by the server process.
-- Confirm Skript is installed and enabled before this plugin.
+- If you want the Skript integration path, confirm Skript is installed and enabled.
 - Confirm no duplicate old plugin JAR remains in `plugins/`.
+
+### Java/Bukkit API is not available to another plugin
+
+- Confirm `Schema-Validator` is installed and enabled.
+- Add `softdepend: [Schema-Validator]` to the consumer plugin.
+- Check `SchemaValidatorAPI.isAvailable()` before calling validation methods.
+
+### Command does not work
+
+- Confirm the plugin enabled successfully.
+- Confirm your sender has `schemavalidator.use`, `schemavalidator.reload`, or `schemavalidator.admin`.
+- Run `/sv help` from console to bypass player permission issues during troubleshooting.
 
 ### Schemas are not loaded on startup
 

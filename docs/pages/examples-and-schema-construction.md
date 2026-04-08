@@ -2,8 +2,8 @@
 title: Examples and schema construction
 description: Complete reference patterns for constructing schemas with all supported JSON Schema features.
 doc_type: reference
-order: 6
-sequence: 15
+order: 8
+sequence: 17
 permalink: /examples-and-schema-construction.html
 ---
 

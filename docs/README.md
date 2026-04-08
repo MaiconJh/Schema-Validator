@@ -19,5 +19,5 @@ Only internal or process documentation should stay outside `docs/pages`, for exa
 Files under `docs/tutorials/**`, `docs/guides/**`, `docs/reference/**`, and `docs/explanation/**` (except internal process docs) are retained as migration pointers to matching `docs/pages` routes.
 
 ---
-Last updated: 2026-03-22  
-Documentation version: 0.3.5
+Last updated: 2026-04-08  
+Documentation version: 1.4.0

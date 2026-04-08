@@ -7,6 +7,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-04-08 - Schema Metadata, Export, and Stats
+
+### Added
+
+#### Runtime schema metadata
+- Added per-schema registration metadata for source, source path, and registration timestamp
+- Added selective file-backed schema reload support
+- Added file-backed schema export command support
+
+#### Metrics and commands
+- Added runtime validation metrics for API, command, and Skript paths
+- Added `/sv stats`
+- Added `/sv export <schemaName> [json|yaml]`
+- Added `/sv reload <schemaName>`
+
+### Changed
+
+- `list` and `info` now surface registration source metadata
+- Updated command reference and architecture documentation for metrics and export behavior
+- Updated project and documentation version to 1.4.0
+
+---
+
+## [1.3.0] - 2026-04-08 - Administrative Commands
+
+### Added
+
+#### Administrative command interface
+- Added `/schemavalidator` with aliases `/sv` and `/schema`
+- Added `help`, `list`, `info`, `validate-file`, and `reload --all` subcommands
+- Added Bukkit permission nodes for read-only, reload, and admin access
+
+#### Documentation
+- Added a dedicated commands reference page in `docs/pages`
+- Updated installation, configuration, architecture, and overview docs to include the command interface
+- Updated legacy pointer documentation to version 1.3.0
+
+### Changed
+
+- Command-based reload now reapplies config-backed runtime settings before scanning the configured schema directory
+- Schema directory load summaries now count failed files correctly
+- Updated project and documentation version to 1.3.0
+
+---
+
+## [1.2.0] - 2026-04-08 - Optional Skript Runtime and Java API Documentation
+
+### Added
+
+#### Optional Skript Runtime
+- Schema-Validator can now start without Skript installed
+- Added guarded startup registration so Skript syntax is registered only when Skript is present
+
+#### Documentation
+- Added a dedicated Java API reference page in `docs/pages`
+- Updated architecture, installation, getting-started, and overview pages to reflect the hybrid integration model
+- Updated documentation pointers to the current documentation version
+
+### Changed
+
+- Changed `plugin.yml` so Skript is now an optional soft dependency instead of a required dependency
+- Updated plugin description to reflect optional Skript integration and public Java/Bukkit usage
+- Updated project and documentation version to 1.2.0
+
+---
+
+## [1.1.0] - 2026-04-08 - Public Java/Bukkit Integration API
+
+### Added
+
+#### Public Java/Bukkit API
+- Added `SchemaValidatorAPI` as a stable static facade for other Bukkit plugins
+- Added public validation result and validation error view interfaces
+- Added safe schema lookup, batch validation, and schema registration helpers
+
+### Changed
+
+- Exposed `ValidationService` from the main plugin for programmatic consumers
+- Updated README with Java/Bukkit integration guidance and usage examples
+- Updated project and documentation version to 1.1.0
+
+### Notes
+
+- Programmatic access still depends on the `Schema-Validator` plugin being loaded
+- Because this release still declares `depend: [Skript]`, Skript remains required at runtime
+
+---
+
 ## [1.0.0] - 2026-03-24 - Complete Test Suite & Full Coverage
 
 ### Added

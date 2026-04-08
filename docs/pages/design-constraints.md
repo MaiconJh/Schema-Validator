@@ -3,13 +3,13 @@ title: Design constraints
 description: Known runtime constraints and tradeoffs in the current implementation.
 doc_type: explanation
 order: 3
-sequence: 17
+sequence: 19
 permalink: /design-constraints.html
 ---
 
 ## Global result bridge
 
-`SkriptValidationBridge` stores one static `lastResult`. Parallel or interleaved validations can overwrite each other.
+`SkriptValidationBridge` stores one static `lastResult`. Parallel or interleaved validations can overwrite each other. This constraint affects only the Skript path; the Java/Bukkit API returns results directly.
 
 ## Root payload type in Skript path
 
@@ -28,9 +28,13 @@ All major JSON Schema keywords are now supported including:
 - Object constraints (minProperties, maxProperties, dependencies, dependentRequired, dependentSchemas)
 - Metadata ($schema, $id, title, description)
 
-## Startup failure count summary
+## Reload scope
 
-`SchemaValidatorPlugin.autoLoadSchemas()` reports `failedCount` in summary logs, but current implementation does not increment that counter.
+`/sv reload --all` updates or adds schemas from the configured schema directory, but it does not remove unrelated schemas that were registered from other sources.
+
+## Metrics scope
+
+`/sv stats` reflects validations tracked through the built-in command path, Skript path, and `SchemaValidatorAPI`. Direct external use of `getValidationService()` is outside those counters.
 
 ## Why this page matters
 

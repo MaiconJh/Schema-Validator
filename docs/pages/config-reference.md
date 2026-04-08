@@ -2,8 +2,8 @@
 title: Config reference
 description: Canonical table of configuration keys, defaults, and runtime effects.
 doc_type: reference
-order: 5
-sequence: 14
+order: 7
+sequence: 16
 permalink: /config-reference.html
 ---
 

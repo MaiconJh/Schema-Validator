@@ -2,8 +2,8 @@
 title: Format reference
 description: Supported string formats in FormatValidator with practical examples.
 doc_type: reference
-order: 4
-sequence: 13
+order: 6
+sequence: 15
 permalink: /format-reference.html
 ---
 

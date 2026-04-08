@@ -2,6 +2,7 @@ package com.maiconjh.schemacr.schemes;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -14,6 +15,7 @@ public class SchemaRegistry {
 
     private final Map<String, Schema> schemasByName = new ConcurrentHashMap<>();
     private final Map<String, Long> cacheTimestamps = new ConcurrentHashMap<>();
+    private final Map<String, RegisteredSchemaMetadata> metadataByName = new ConcurrentHashMap<>();
     private boolean cacheEnabled = true;
     private long cacheExpiryMs = 5 * 60 * 1000; // 5 minutes default
 
@@ -26,8 +28,21 @@ public class SchemaRegistry {
     }
 
     public void registerSchema(String name, Schema schema) {
+        registerSchema(name, schema, SchemaRegistrationSource.UNKNOWN, null);
+    }
+
+    public void registerSchema(String name,
+                               Schema schema,
+                               SchemaRegistrationSource source,
+                               java.nio.file.Path sourcePath) {
         schemasByName.put(name.toLowerCase(), schema);
         cacheTimestamps.put(name.toLowerCase(), System.currentTimeMillis());
+        metadataByName.put(name.toLowerCase(), new RegisteredSchemaMetadata(
+                name,
+                source,
+                sourcePath == null ? null : sourcePath.toAbsolutePath().normalize(),
+                System.currentTimeMillis()
+        ));
     }
 
     public Optional<Schema> getSchema(String name) {
@@ -42,6 +57,7 @@ public class SchemaRegistry {
             // Cache expired, remove entry
             schemasByName.remove(key);
             cacheTimestamps.remove(key);
+            metadataByName.remove(key);
             return Optional.empty();
         }
         
@@ -52,12 +68,17 @@ public class SchemaRegistry {
         return schemasByName.containsKey(name.toLowerCase());
     }
 
+    public Optional<RegisteredSchemaMetadata> getSchemaMetadata(String name) {
+        return Optional.ofNullable(metadataByName.get(name.toLowerCase()));
+    }
+
     /**
      * Clears all cached schemas.
      */
     public void clearCache() {
         schemasByName.clear();
         cacheTimestamps.clear();
+        metadataByName.clear();
     }
 
     /**
@@ -85,7 +106,11 @@ public class SchemaRegistry {
      * Returns all registered schema names.
      * @return set of schema names
      */
-    public java.util.Set<String> getAllSchemaNames() {
+    public Set<String> getAllSchemaNames() {
         return schemasByName.keySet();
+    }
+
+    public java.util.Collection<RegisteredSchemaMetadata> getAllSchemaMetadata() {
+        return java.util.List.copyOf(metadataByName.values());
     }
 }

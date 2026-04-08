@@ -1,24 +1,24 @@
 package com.maiconjh.schemacr.core;
 
+import com.maiconjh.schemacr.command.SchemaValidatorCommand;
 import com.maiconjh.schemacr.config.PluginConfig;
-import com.maiconjh.schemacr.integration.SkriptSyntaxRegistration;
 import com.maiconjh.schemacr.schemes.FileSchemaLoader;
+import com.maiconjh.schemacr.schemes.RegisteredSchemaMetadata;
 import com.maiconjh.schemacr.schemes.Schema;
+import com.maiconjh.schemacr.schemes.SchemaRegistrationSource;
 import com.maiconjh.schemacr.schemes.SchemaRefResolver;
 import com.maiconjh.schemacr.schemes.SchemaRegistry;
 import com.maiconjh.schemacr.schemes.SchemaType;
 import com.maiconjh.schemacr.validation.ValidationError;
 import com.maiconjh.schemacr.validation.ValidationResult;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -32,6 +32,8 @@ public class SchemaValidatorPlugin extends JavaPlugin {
     private SchemaRegistry schemaRegistry;
     private FileSchemaLoader fileSchemaLoader;
     private PluginConfig config;
+    private ValidationService validationService;
+    private ValidationMetrics validationMetrics;
 
     @Override
     public void onEnable() {
@@ -42,16 +44,19 @@ public class SchemaValidatorPlugin extends JavaPlugin {
 
         this.schemaRegistry = new SchemaRegistry(config.isCacheEnabled(), 5 * 60 * 1000);
         this.fileSchemaLoader = new FileSchemaLoader(getLogger());
-        this.fileSchemaLoader.setFailFastMode(config.isStrictMode());
+        this.validationService = new ValidationService(new SchemaRefResolver(schemaRegistry, getLogger()));
+        this.validationMetrics = new ValidationMetrics();
+        applyRuntimeSettings();
 
         // Auto-load schemas if enabled
         if (config.isAutoLoad()) {
-            autoLoadSchemas();
+            loadSchemasFromConfiguredDirectory(config.isValidateOnLoad());
         }
 
-        // Register Skript syntax and expose simple singleton-style access for skeleton usage.
-        SkriptSyntaxRegistration.register(this);
+        // Expose singleton-style access for existing integrations and optional APIs.
         PluginContext.initialize(this, schemaRegistry, fileSchemaLoader);
+        registerOptionalSkriptIntegration();
+        registerCommandHandler();
 
         // Initialize format validation caches for semantic Minecraft validation
         com.maiconjh.schemacr.validation.FormatValidator.initializeCaches();
@@ -76,10 +81,107 @@ public class SchemaValidatorPlugin extends JavaPlugin {
         return config;
     }
 
+    public ValidationService getValidationService() {
+        return validationService;
+    }
+
+    public ValidationMetrics getValidationMetrics() {
+        return validationMetrics;
+    }
+
+    public ValidationResult validateTracked(Object data, Schema schema, ValidationOrigin origin) {
+        long startedAt = System.nanoTime();
+        ValidationResult result = validationService.validate(data, schema);
+        validationMetrics.record(origin, System.nanoTime() - startedAt, result);
+        return result;
+    }
+
     /**
-     * Automatically loads all schema files from the configured directory.
+     * Reloads config-backed runtime settings and scans the configured schema directory.
+     *
+     * <p>This operation updates or adds schemas from the configured directory and
+     * keeps other already registered schemas intact.</p>
      */
-    private void autoLoadSchemas() {
+    public SchemaReloadSummary reloadSchemasFromConfiguredDirectory() {
+        config.reload();
+        applyRuntimeSettings();
+        return loadSchemasFromConfiguredDirectory(config.isValidateOnLoad());
+    }
+
+    public SchemaSingleReloadResult reloadSchema(String schemaName) {
+        config.reload();
+        applyRuntimeSettings();
+
+        RegisteredSchemaMetadata metadata = schemaRegistry.getSchemaMetadata(schemaName).orElse(null);
+        if (metadata == null) {
+            return new SchemaSingleReloadResult(schemaName, false, null, "Unknown schema.");
+        }
+        if (metadata.sourcePath() == null) {
+            return new SchemaSingleReloadResult(schemaName, false, null,
+                    "Schema has no file-backed source and cannot be reloaded individually.");
+        }
+
+        try {
+            Schema schema = fileSchemaLoader.load(metadata.sourcePath(), schemaName);
+            schemaRegistry.registerSchema(schemaName, schema, metadata.source(), metadata.sourcePath());
+            return new SchemaSingleReloadResult(schemaName, true, metadata.sourcePath(), null);
+        } catch (Exception ex) {
+            getLogger().log(Level.WARNING, "Failed to reload schema '" + schemaName + "' from " + metadata.sourcePath(), ex);
+            String message = ex.getMessage() == null || ex.getMessage().isBlank()
+                    ? ex.getClass().getSimpleName()
+                    : ex.getMessage();
+            return new SchemaSingleReloadResult(schemaName, false, metadata.sourcePath(), message);
+        }
+    }
+
+    /**
+     * Registers the optional Skript integration only when Skript is present.
+     */
+    private void registerOptionalSkriptIntegration() {
+        Plugin skriptPlugin = getServer().getPluginManager().getPlugin("Skript");
+        if (skriptPlugin == null || !skriptPlugin.isEnabled()) {
+            getLogger().info("Skript not detected. Continuing without Skript syntax registration.");
+            return;
+        }
+
+        try {
+            Class<?> registrationClass = Class.forName(
+                    "com.maiconjh.schemacr.integration.SkriptSyntaxRegistration",
+                    true,
+                    getClassLoader()
+            );
+            registrationClass.getMethod("register", SchemaValidatorPlugin.class).invoke(null, this);
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            getLogger().log(Level.WARNING,
+                    "Skript is present, but Schema-Validator could not register Skript syntax. Continuing without Skript integration.",
+                    ex);
+        }
+    }
+
+    /**
+     * Registers the administrative command handler.
+     */
+    private void registerCommandHandler() {
+        PluginCommand command = getCommand("schemavalidator");
+        if (command == null) {
+            getLogger().severe("Command 'schemavalidator' is missing from plugin.yml.");
+            return;
+        }
+
+        SchemaValidatorCommand handler = new SchemaValidatorCommand(this);
+        command.setExecutor(handler);
+        command.setTabCompleter(handler);
+    }
+
+    private void applyRuntimeSettings() {
+        schemaRegistry.setCacheEnabled(config.isCacheEnabled());
+        fileSchemaLoader.setFailFastMode(config.isStrictMode());
+    }
+
+    /**
+     * Loads all schema files from the configured directory.
+     */
+    private SchemaReloadSummary loadSchemasFromConfiguredDirectory(boolean validateLoadedSchemas) {
         Path schemaDir = config.getSchemaDirectory();
         
         if (!Files.exists(schemaDir)) {
@@ -88,7 +190,7 @@ public class SchemaValidatorPlugin extends JavaPlugin {
                 getLogger().info("Created schema directory: " + schemaDir);
             } catch (IOException e) {
                 getLogger().log(Level.WARNING, "Failed to create schema directory: " + schemaDir, e);
-                return;
+                return new SchemaReloadSummary(schemaDir, 0, 1, false);
             }
         }
 
@@ -98,18 +200,27 @@ public class SchemaValidatorPlugin extends JavaPlugin {
         int failedCount = 0;
 
         // Load JSON schemas
-        loadedCount += loadSchemasFromDirectory(schemaDir, ".json");
+        SchemaDirectoryLoadResult jsonLoad = loadSchemasFromDirectory(schemaDir, ".json");
+        loadedCount += jsonLoad.loadedCount();
+        failedCount += jsonLoad.failedCount();
         
         // Load YAML schemas
-        loadedCount += loadSchemasFromDirectory(schemaDir, ".yml");
-        loadedCount += loadSchemasFromDirectory(schemaDir, ".yaml");
+        SchemaDirectoryLoadResult ymlLoad = loadSchemasFromDirectory(schemaDir, ".yml");
+        loadedCount += ymlLoad.loadedCount();
+        failedCount += ymlLoad.failedCount();
+
+        SchemaDirectoryLoadResult yamlLoad = loadSchemasFromDirectory(schemaDir, ".yaml");
+        loadedCount += yamlLoad.loadedCount();
+        failedCount += yamlLoad.failedCount();
 
         // Validate loaded schemas if enabled
-        if (config.isValidateOnLoad() && loadedCount > 0) {
+        boolean validationRan = validateLoadedSchemas && loadedCount > 0;
+        if (validationRan) {
             validateLoadedSchemas();
         }
 
         getLogger().info("Auto-load complete: " + loadedCount + " schemas loaded, " + failedCount + " failed.");
+        return new SchemaReloadSummary(schemaDir, loadedCount, failedCount, validationRan);
     }
 
     /**
@@ -173,8 +284,9 @@ public class SchemaValidatorPlugin extends JavaPlugin {
     /**
      * Loads all schema files with the given extension from the directory.
      */
-    private int loadSchemasFromDirectory(Path directory, String extension) {
-        int count = 0;
+    private SchemaDirectoryLoadResult loadSchemasFromDirectory(Path directory, String extension) {
+        int loadedCount = 0;
+        int failedCount = 0;
         
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, 
                 path -> path.toString().toLowerCase().endsWith(extension))) {
@@ -185,18 +297,35 @@ public class SchemaValidatorPlugin extends JavaPlugin {
                     String schemaName = fileName.substring(0, fileName.lastIndexOf('.'));
                     
                     Schema schema = fileSchemaLoader.load(path, schemaName);
-                    schemaRegistry.registerSchema(schemaName, schema);
+                    schemaRegistry.registerSchema(schemaName, schema, SchemaRegistrationSource.AUTOLOAD, path);
                     
                     getLogger().info("Loaded schema: " + schemaName + " from " + fileName);
-                    count++;
+                    loadedCount++;
                 } catch (Exception e) {
+                    failedCount++;
                     getLogger().log(Level.WARNING, "Failed to load schema: " + path.getFileName(), e);
                 }
             }
         } catch (IOException e) {
+            failedCount++;
             getLogger().log(Level.WARNING, "Failed to read schema directory: " + directory, e);
         }
         
-        return count;
+        return new SchemaDirectoryLoadResult(loadedCount, failedCount);
+    }
+
+    public record SchemaReloadSummary(Path schemaDirectory,
+                                      int loadedCount,
+                                      int failedCount,
+                                      boolean validationRan) {
+    }
+
+    public record SchemaSingleReloadResult(String schemaName,
+                                           boolean success,
+                                           Path sourcePath,
+                                           String errorMessage) {
+    }
+
+    private record SchemaDirectoryLoadResult(int loadedCount, int failedCount) {
     }
 }
