@@ -386,11 +386,14 @@ public class SchemaValidatorCommand implements CommandExecutor, TabCompleter {
 
         if ("--all".equalsIgnoreCase(args[1])) {
             SchemaValidatorPlugin.SchemaReloadSummary summary = plugin.reloadSchemasFromConfiguredDirectory();
+            SchemaValidatorPlugin.DataFileValidationSummary dataSummary = plugin.loadAndValidateDataFiles();
             sender.sendMessage(ChatColor.GREEN + "Reload complete from " + summary.schemaDirectory() + ".");
             sender.sendMessage(ChatColor.GRAY + "Loaded/updated schemas: " + summary.loadedCount());
             sender.sendMessage(ChatColor.GRAY + "Failed loads: " + summary.failedCount());
             sender.sendMessage(ChatColor.GRAY + "Registry size now: " + plugin.getSchemaRegistry().getSchemaCount());
-            sender.sendMessage(ChatColor.YELLOW + "Note: reload --all updates schemas from the configured directory and keeps other registered schemas.");
+            sender.sendMessage(ChatColor.GREEN + "Data files processed: " + dataSummary.loadedCount() + " loaded, " + 
+                    dataSummary.validatedCount() + " validated, " + dataSummary.validationFailedCount() + " validation failed.");
+            sender.sendMessage(ChatColor.YELLOW + "Note: reload --all updates schemas and validates data files.");
             return true;
         }
 

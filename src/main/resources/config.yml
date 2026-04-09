@@ -5,6 +5,10 @@
 # Can be absolute path or relative to plugin data folder
 schema-directory: "schemas"
 
+# Directory where data files are stored (relative to plugin folder)
+# Data files with 'schema-validation-path' key will be validated against the referenced schema
+data-directory: "data"
+
 # Automatically load all schemas from the schema-directory on plugin enable
 # When enabled, all .json and .yaml/.yml files in the directory will be loaded
 auto-load: true
@@ -17,6 +21,10 @@ cache-enabled: true
 # When enabled, validates schema structure and reports errors
 # DISABLED: Example schemas contain oneOf/if/then/else that fail self-validation
 validation-on-load: false
+
+# Automatically validate data files on plugin enable/reload
+# When enabled, files in data-directory with 'schema-validation-path' key will be validated
+auto-validate-data-files: true
 
 # Fail-fast mode for unsupported keywords
 # When enabled, the plugin will throw an exception when loading a schema

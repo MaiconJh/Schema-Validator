@@ -14,10 +14,12 @@ public class PluginConfig {
 
     private final SchemaValidatorPlugin plugin;
     private String schemaDirectory;
+    private String dataDirectory;
     private boolean autoLoad;
     private boolean cacheEnabled;
     private boolean validateOnLoad;
     private boolean strictMode;
+    private boolean autoValidateDataFiles;
 
     public PluginConfig(SchemaValidatorPlugin plugin) {
         this.plugin = plugin;
@@ -32,17 +34,21 @@ public class PluginConfig {
         FileConfiguration config = plugin.getConfig();
         
         this.schemaDirectory = config.getString("schema-directory", "schemas");
+        this.dataDirectory = config.getString("data-directory", "data");
         this.autoLoad = config.getBoolean("auto-load", true);
         this.cacheEnabled = config.getBoolean("cache-enabled", true);
         this.validateOnLoad = config.getBoolean("validation-on-load", true);
         this.strictMode = config.getBoolean("strict-mode", false);
+        this.autoValidateDataFiles = config.getBoolean("auto-validate-data-files", true);
         
         plugin.getLogger().info("Configuration loaded:");
         plugin.getLogger().info("  Schema directory: " + schemaDirectory);
+        plugin.getLogger().info("  Data directory: " + dataDirectory);
         plugin.getLogger().info("  Auto-load: " + autoLoad);
         plugin.getLogger().info("  Cache enabled: " + cacheEnabled);
         plugin.getLogger().info("  Validate on load: " + validateOnLoad);
         plugin.getLogger().info("  Strict mode: " + strictMode);
+        plugin.getLogger().info("  Auto-validate data files: " + autoValidateDataFiles);
     }
 
     /**
@@ -52,6 +58,24 @@ public class PluginConfig {
      */
     public Path getSchemaDirectory() {
         return Paths.get(plugin.getDataFolder().toString(), schemaDirectory);
+    }
+
+    /**
+     * Gets the data directory path relative to plugin data folder.
+     * 
+     * @return Path to data directory
+     */
+    public Path getDataDirectory() {
+        return Paths.get(plugin.getDataFolder().toString(), dataDirectory);
+    }
+
+    /**
+     * Gets the data directory as a string.
+     * 
+     * @return directory name
+     */
+    public String getDataDirectoryName() {
+        return dataDirectory;
     }
 
     /**
@@ -106,5 +130,15 @@ public class PluginConfig {
      */
     public boolean isStrictMode() {
         return strictMode;
+    }
+
+    /**
+     * Checks if data files should be automatically validated when loaded.
+     * When enabled, files with 'schema-validation-path' key will be validated.
+     * 
+     * @return true if auto-validate data files is enabled
+     */
+    public boolean isAutoValidateDataFiles() {
+        return autoValidateDataFiles;
     }
 }

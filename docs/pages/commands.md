@@ -85,14 +85,15 @@ Operational notes:
 /sv reload --all
 ```
 
-Reloads one file-backed schema or updates all schemas from the configured schema directory.
+Reloads one file-backed schema or updates all schemas from the configured schema directory and validates data files.
 
 Current behavior:
 
 - Reload reads the current `config.yml`
 - Reload reapplies `cache-enabled` and `strict-mode`
 - `reload <schemaName>` requires the schema to have a file-backed source path
-- Reload updates or adds schemas found in the configured directory
+- `reload --all` updates or adds schemas from the schema directory
+- `reload --all` also validates data files from the data directory (if `auto-validate-data-files: true`)
 - Reload does not remove schemas that were registered from other sources
 
 ### Export

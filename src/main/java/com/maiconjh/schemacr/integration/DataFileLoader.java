@@ -14,16 +14,31 @@ import java.util.Map;
  */
 public class DataFileLoader {
 
+    public static final String SCHEMA_VALIDATION_PATH_KEY = "schema-validation-path";
+
     private final ObjectMapper jsonMapper = new ObjectMapper();
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
 
-    public Object load(Path path, boolean yaml) throws IOException {
+    public DataLoadResult load(Path path, boolean yaml) throws IOException {
         if (!Files.exists(path)) {
             throw new IOException("Data file does not exist: " + path);
         }
 
         ObjectMapper mapper = yaml ? yamlMapper : jsonMapper;
-        return mapper.readValue(path.toFile(), new TypeReference<Map<String, Object>>() {
-        });
+        Map<String, Object> data = mapper.readValue(path.toFile(), new TypeReference<Map<String, Object>>() {});
+
+        String schemaPath = (String) data.remove(SCHEMA_VALIDATION_PATH_KEY);
+        
+        return new DataLoadResult(data, schemaPath, path);
+    }
+
+    public record DataLoadResult(
+        Map<String, Object> data,
+        String schemaValidationPath,
+        Path sourcePath
+    ) {
+        public boolean hasSchemaValidationPath() {
+            return schemaValidationPath != null && !schemaValidationPath.isBlank();
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.maiconjh.schemacr.core;
 
 import com.maiconjh.schemacr.command.SchemaValidatorCommand;
 import com.maiconjh.schemacr.config.PluginConfig;
+import com.maiconjh.schemacr.integration.DataFileLoader;
 import com.maiconjh.schemacr.schemes.FileSchemaLoader;
 import com.maiconjh.schemacr.schemes.RegisteredSchemaMetadata;
 import com.maiconjh.schemacr.schemes.Schema;
@@ -51,6 +52,11 @@ public class SchemaValidatorPlugin extends JavaPlugin {
         // Auto-load schemas if enabled
         if (config.isAutoLoad()) {
             loadSchemasFromConfiguredDirectory(config.isValidateOnLoad());
+        }
+
+        // Auto-load and validate data files if enabled
+        if (config.isAutoValidateDataFiles()) {
+            loadAndValidateDataFiles();
         }
 
         // Expose singleton-style access for existing integrations and optional APIs.
@@ -213,14 +219,122 @@ public class SchemaValidatorPlugin extends JavaPlugin {
         loadedCount += yamlLoad.loadedCount();
         failedCount += yamlLoad.failedCount();
 
-        // Validate loaded schemas if enabled
-        boolean validationRan = validateLoadedSchemas && loadedCount > 0;
-        if (validationRan) {
-            validateLoadedSchemas();
-        }
+        // Note: Schema self-validation was removed - it produced false positives
+        // because generated test data couldn't satisfy enum, format, oneOf constraints.
+        // Use 'sv validate <schema>' command to manually test schemas instead.
 
         getLogger().info("Auto-load complete: " + loadedCount + " schemas loaded, " + failedCount + " failed.");
-        return new SchemaReloadSummary(schemaDir, loadedCount, failedCount, validationRan);
+        return new SchemaReloadSummary(schemaDir, loadedCount, failedCount, false);
+    }
+
+    /**
+     * Loads and validates data files from the configured data directory.
+     * Files with 'schema-validation-path' key will be validated against the referenced schema.
+     */
+    private DataFileValidationSummary loadAndValidateDataFilesInternal() {
+        Path dataDir = config.getDataDirectory();
+        
+        if (!Files.exists(dataDir)) {
+            try {
+                Files.createDirectories(dataDir);
+                getLogger().info("Created data directory: " + dataDir);
+            } catch (IOException e) {
+                getLogger().log(Level.WARNING, "Failed to create data directory: " + dataDir, e);
+                return new DataFileValidationSummary(dataDir, 0, 0, 0, 0);
+            }
+        }
+
+        getLogger().info("Loading data files from: " + dataDir);
+        
+        int totalFiles = 0;
+        int loadedCount = 0;
+        int validatedCount = 0;
+        int validationFailedCount = 0;
+
+        DataFileLoader dataFileLoader = new DataFileLoader();
+
+        // Load JSON data files
+        DataFileLoadResult jsonResult = loadDataFilesFromDirectory(dataDir, ".json", dataFileLoader);
+        totalFiles += jsonResult.totalFiles();
+        loadedCount += jsonResult.loadedCount();
+        validatedCount += jsonResult.validatedCount();
+        validationFailedCount += jsonResult.validationFailedCount();
+
+        // Load YAML data files
+        DataFileLoadResult ymlResult = loadDataFilesFromDirectory(dataDir, ".yml", dataFileLoader);
+        totalFiles += ymlResult.totalFiles();
+        loadedCount += ymlResult.loadedCount();
+        validatedCount += ymlResult.validatedCount();
+        validationFailedCount += ymlResult.validationFailedCount();
+
+        DataFileLoadResult yamlResult = loadDataFilesFromDirectory(dataDir, ".yaml", dataFileLoader);
+        totalFiles += yamlResult.totalFiles();
+        loadedCount += yamlResult.loadedCount();
+        validatedCount += yamlResult.validatedCount();
+        validationFailedCount += yamlResult.validationFailedCount();
+
+        getLogger().info("Data files processed: " + totalFiles + " total, " + loadedCount + " loaded, " + 
+                validatedCount + " validated, " + validationFailedCount + " validation failed.");
+        return new DataFileValidationSummary(dataDir, totalFiles, loadedCount, validatedCount, validationFailedCount);
+    }
+
+    /**
+     * Loads data files with the given extension from the directory and validates them if they have schema-validation-path.
+     */
+    private DataFileLoadResult loadDataFilesFromDirectory(Path directory, String extension, DataFileLoader loader) {
+        int totalFiles = 0;
+        int loadedCount = 0;
+        int validatedCount = 0;
+        int validationFailedCount = 0;
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory,
+                path -> path.toString().toLowerCase().endsWith(extension) && !path.toString().contains(".schema"))) {
+            
+            for (Path path : stream) {
+                totalFiles++;
+                try {
+                    boolean isYaml = extension.equals(".yml") || extension.equals(".yaml");
+                    DataFileLoader.DataLoadResult loadResult = loader.load(path, isYaml);
+                    loadedCount++;
+
+                    if (loadResult.hasSchemaValidationPath()) {
+                        String schemaPath = loadResult.schemaValidationPath();
+                        Path fullSchemaPath = config.getSchemaDirectory().resolve(schemaPath);
+
+                        if (!Files.exists(fullSchemaPath)) {
+                            getLogger().warning("Schema file not found for '" + path.getFileName() + "': " + fullSchemaPath);
+                            continue;
+                        }
+
+                        String schemaName = fullSchemaPath.getFileName().toString();
+                        Schema schema = fileSchemaLoader.load(fullSchemaPath, schemaName);
+                        schemaRegistry.registerSchema(schemaName, schema, SchemaRegistrationSource.AUTOLOAD, fullSchemaPath);
+
+                        ValidationResult result = validationService.validate(loadResult.data(), schema);
+
+                        if (result.isSuccess()) {
+                            validatedCount++;
+                            getLogger().info("Validated data file: " + path.getFileName() + " against schema: " + schemaName);
+                        } else {
+                            validationFailedCount++;
+                            getLogger().warning("Validation failed for data file '" + path.getFileName() + "':");
+                            for (ValidationError error : result.getErrors()) {
+                                getLogger().warning("  - " + error.getNodePath() + ": " + error.getDescription());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Failed to load data file: " + path.getFileName(), e);
+                }
+            }
+        } catch (IOException e) {
+            getLogger().log(Level.WARNING, "Failed to read data directory: " + directory, e);
+        }
+
+        return new DataFileLoadResult(totalFiles, loadedCount, validatedCount, validationFailedCount);
+    }
+
+    private record DataFileLoadResult(int totalFiles, int loadedCount, int validatedCount, int validationFailedCount) {
     }
 
     /**
@@ -320,10 +434,18 @@ public class SchemaValidatorPlugin extends JavaPlugin {
                                       boolean validationRan) {
     }
 
+    public record DataFileValidationSummary(Path dataDirectory, int totalFiles, int loadedCount, 
+            int validatedCount, int validationFailedCount) {
+    }
+
     public record SchemaSingleReloadResult(String schemaName,
                                            boolean success,
                                            Path sourcePath,
                                            String errorMessage) {
+    }
+
+    public DataFileValidationSummary loadAndValidateDataFiles() {
+        return loadAndValidateDataFilesInternal();
     }
 
     private record SchemaDirectoryLoadResult(int loadedCount, int failedCount) {

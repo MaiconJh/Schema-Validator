@@ -55,7 +55,8 @@ public class EffValidateData extends Effect {
             Path schemaPath = Path.of(schemaFile);
 
             DataFileLoader dataLoader = new DataFileLoader();
-            Object data = dataLoader.load(dataPath, yamlMode);
+            DataFileLoader.DataLoadResult loadResult = dataLoader.load(dataPath, yamlMode);
+            Object data = loadResult.data();
 
             String schemaName = schemaPath.getFileName().toString();
             Schema schema = PluginContext.getFileSchemaLoader().load(schemaPath, schemaName);

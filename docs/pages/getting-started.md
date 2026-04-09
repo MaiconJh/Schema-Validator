@@ -70,3 +70,18 @@ Every error includes a path, for example `$.player.inventory[2].material`.
 3. Tune behavior in [Configuration](configuration.html).
 4. Integrate from another plugin through [Java API](java-api.html).
 5. Inspect runtime state through [Commands](commands.html).
+
+## Auto-validation of data files
+
+The plugin can automatically validate data files at startup/reload. Each data file can specify which schema to validate against using the `schema-validation-path` key:
+
+```yaml
+# data/my-block.yml
+schema-validation-path: "custom-block.schema.json"
+name: "Diamond Block"
+id: "diamond_block"
+rarity: "epic"
+type: "block"
+```
+
+The `schema-validation-path` value is relative to the `schema-directory`. When `auto-validate-data-files: true` in config, files with this key will be validated automatically.
