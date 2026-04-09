@@ -162,9 +162,9 @@ public final class FormatValidator {
         "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]+$"
     );
 
-    // Minecraft sound event ID pattern
+    // Minecraft sound event ID pattern (namespace:name or just name)
     private static final Pattern MINECRAFT_SOUND = Pattern.compile(
-        "^[a-z][a-z0-9_.*]*:[a-z][a-z0-9_.*]+$"
+        "^(?:[a-z][a-z0-9_.-]*:)?[a-z][a-z0-9_.-]+$"
     );
 
     // Minecraft potion ID pattern
@@ -550,7 +550,8 @@ public final class FormatValidator {
         if (!handleCacheFallback(value)) {
             return false;
         }
-        return VALID_SOUNDS.contains(value);
+        String checkValue = value.startsWith("minecraft:") ? value : "minecraft:" + value;
+        return VALID_SOUNDS.contains(checkValue);
     }
 
     /**
