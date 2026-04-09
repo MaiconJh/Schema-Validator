@@ -3,7 +3,6 @@
   "title": "Conditional Player Validation",
   "description": "Demonstrates oneOf, not, and if/then/else conditional validation",
   "type": "object",
-  "required": ["playerType", "name", "stats"],
   "additionalProperties": false,
   "properties": {
     "playerType": {
@@ -16,9 +15,7 @@
       "maxLength": 32
     },
     "level": {
-      "type": "number",
-      "minimum": 1,
-      "maximum": 100
+      "type": "number"
     },
     "stats": {
       "type": "object"
@@ -32,13 +29,14 @@
   },
   "oneOf": [
     {
-      "required": ["stats"],
+      "additionalProperties": false,
       "properties": {
         "playerType": {
           "const": "warrior"
         },
         "stats": {
           "type": "object",
+          "additionalProperties": false,
           "required": ["strength", "defense"],
           "properties": {
             "strength": {
@@ -53,16 +51,18 @@
             }
           }
         }
-      }
+      },
+      "required": ["playerType", "name", "stats"]
     },
     {
-      "required": ["stats"],
+      "additionalProperties": false,
       "properties": {
         "playerType": {
           "const": "mage"
         },
         "stats": {
           "type": "object",
+          "additionalProperties": false,
           "required": ["intelligence", "mana"],
           "properties": {
             "intelligence": {
@@ -77,16 +77,18 @@
             }
           }
         }
-      }
+      },
+      "required": ["playerType", "name", "stats"]
     },
     {
-      "required": ["stats"],
+      "additionalProperties": false,
       "properties": {
         "playerType": {
           "const": "rogue"
         },
         "stats": {
           "type": "object",
+          "additionalProperties": false,
           "required": ["agility", "stealth"],
           "properties": {
             "agility": {
@@ -101,7 +103,8 @@
             }
           }
         }
-      }
+      },
+      "required": ["playerType", "name", "stats"]
     }
   ],
   "not": {

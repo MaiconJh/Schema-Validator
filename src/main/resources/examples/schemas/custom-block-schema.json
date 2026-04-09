@@ -1,4 +1,5 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": false,
   "patternProperties": {
@@ -225,7 +226,6 @@
                 },
                 "value": {
                   "type": "string",
-                  "format": "minecraft-item",
                   "description": "Valor do drop (item, variável ou comando)"
                 },
                 "amount": {

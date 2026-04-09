@@ -3,7 +3,6 @@
   "title": "Complex Minecraft Item",
   "description": "Advanced example combining oneOf, not, if/then/else with $ref and allOf",
   "type": "object",
-  "required": ["itemType", "id", "name"],
   "additionalProperties": false,
   "properties": {
     "itemType": {
@@ -69,8 +68,9 @@
   },
   "oneOf": [
     {
+      "additionalProperties": false,
       "description": "Weapon item - must have damage stats",
-      "required": ["itemType", "damage"],
+      "required": ["itemType", "damage", "name", "id"],
       "properties": {
         "itemType": {
           "const": "weapon"
@@ -110,8 +110,9 @@
       }
     },
     {
+      "additionalProperties": false,
       "description": "Armor item - must have defense stats",
-      "required": ["itemType", "defense"],
+      "required": ["itemType", "defense", "name", "id"],
       "properties": {
         "itemType": {
           "const": "armor"
@@ -136,8 +137,9 @@
       }
     },
     {
+      "additionalProperties": false,
       "description": "Tool item - must have durability and special properties",
-      "required": ["itemType", "durability"],
+      "required": ["itemType", "durability", "name", "id"],
       "properties": {
         "itemType": {
           "const": "tool"
@@ -160,8 +162,9 @@
       }
     },
     {
+      "additionalProperties": false,
       "description": "Food item - must have nutrition value",
-      "required": ["itemType"],
+      "required": ["itemType", "name", "id"],
       "properties": {
         "itemType": {
           "const": "food"
@@ -197,8 +200,9 @@
       }
     },
     {
+      "additionalProperties": false,
       "description": "Potion item - must have effects",
-      "required": ["itemType", "effects"],
+      "required": ["itemType", "effects", "name", "id"],
       "properties": {
         "itemType": {
           "const": "potion"

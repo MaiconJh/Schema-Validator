@@ -3,7 +3,6 @@
   "title": "Data Types with Formats",
   "description": "Demonstrates format validation (email, uri, date-time, ipv4, ipv6, etc.) and multipleOf",
   "type": "object",
-  "required": ["playerId", "email", "website", "registeredAt", "ipAddress"],
   "additionalProperties": false,
   "properties": {
     "playerId": {
