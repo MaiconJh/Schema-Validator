@@ -228,6 +228,8 @@ site/
 javadoc/
 docs/_site/
 docs/pages/_site_test/
+docs/pages/_site/
+docs/pages/.jekyll-cache/
 
 
 # ============================================
@@ -277,3 +279,4 @@ settings.gradle.kts
 # Documentação do projeto
 !README.md
 !LICENSE
+
