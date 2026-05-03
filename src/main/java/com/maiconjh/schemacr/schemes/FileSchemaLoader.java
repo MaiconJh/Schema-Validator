@@ -228,6 +228,9 @@ public class FileSchemaLoader {
         if (raw.containsKey("$ref") && raw.get("$ref") instanceof String ref) builder.ref(ref);
         if (raw.containsKey("$dynamicRef") && raw.get("$dynamicRef") instanceof String dynamicRef) builder.dynamicRef(dynamicRef);
         if (raw.containsKey("$dynamicAnchor") && raw.get("$dynamicAnchor") instanceof String dynamicAnchor) builder.dynamicAnchor(dynamicAnchor);
+        if ((raw.containsKey("$defs") || raw.containsKey("definitions")) && !definitions.isEmpty()) {
+            builder.defs(new HashMap<>(definitions));
+        }
 
         // composition
         if (raw.containsKey("allOf") && raw.get("allOf") instanceof List<?> allOfRaw) {

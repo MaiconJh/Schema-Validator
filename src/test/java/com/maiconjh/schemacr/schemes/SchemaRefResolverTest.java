@@ -259,6 +259,23 @@ class SchemaRefResolverTest {
         }
 
         @Test
+        @DisplayName("shouldResolveLocalDefsReference")
+        void shouldResolveLocalDefsReference() {
+            Schema positive = Schema.builder("positiveInteger", SchemaType.INTEGER)
+                    .exclusiveMinimum(0)
+                    .build();
+            Schema mainSchema = Schema.builder("MainSchema", SchemaType.OBJECT)
+                    .defs(Map.of("positiveInteger", positive))
+                    .build();
+            registry.registerSchema("MainSchema", mainSchema);
+
+            Schema resolved = resolver.resolveRef("#/$defs/positiveInteger", "MainSchema");
+
+            assertNotNull(resolved, "Expected to resolve #/$defs reference");
+            assertEquals("positiveInteger", resolved.getName());
+        }
+
+        @Test
         @DisplayName("shouldResolveDynamicRefByAnchor")
         void shouldResolveDynamicRefByAnchor() {
             Schema anchored = Schema.builder("Anchored", SchemaType.OBJECT)

@@ -40,6 +40,7 @@ public class Schema {
     private final String ref;
     private final String version;
     private final String compatibility;
+    private final Map<String, Schema> defs;
     private final List<Schema> allOf;
     private final List<Schema> anyOf;
     private final List<Schema> oneOf;
@@ -93,7 +94,7 @@ public class Schema {
                   boolean legacyExclusiveMinimum, boolean legacyExclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, String format, Number multipleOf,
                   List<Object> enumValues, String schemaDialect, String id, String title, String description,
-                  List<String> typeList, String ref, String version, String compatibility,
+                  List<String> typeList, String ref, String version, String compatibility, Map<String, Schema> defs,
                   List<Schema> allOf, List<Schema> anyOf, List<Schema> oneOf,
                   Schema notSchema, Schema ifSchema, Schema thenSchema, Schema elseSchema,
                   Integer minItems, Integer maxItems, Boolean uniqueItems, List<Schema> prefixItems, Schema additionalItemsSchema,
@@ -123,7 +124,7 @@ public class Schema {
         this.pattern = pattern;
         this.format = format;
         this.multipleOf = multipleOf;
-        this.enumValues = immutableList(enumValues);
+        this.enumValues = immutableList(enumValues).stream().map(Schema::freezeJsonValue).toList();
         this.schemaDialect = schemaDialect;
         this.id = id;
         this.title = title;
@@ -132,6 +133,7 @@ public class Schema {
         this.ref = ref;
         this.version = version;
         this.compatibility = compatibility;
+        this.defs = immutableMap(defs);
         this.allOf = immutableList(allOf);
         this.anyOf = immutableList(anyOf);
         this.oneOf = immutableList(oneOf);
@@ -162,11 +164,11 @@ public class Schema {
 
         // Const and metadata
         this.constPresent = constPresent;
-        this.constValue = constValue;
+        this.constValue = freezeJsonValue(constValue);
         this.readOnly = readOnly;
         this.writeOnly = writeOnly;
-        this.defaultValue = defaultValue;
-        this.examples = immutableList(examples);
+        this.defaultValue = freezeJsonValue(defaultValue);
+        this.examples = immutableList(examples).stream().map(Schema::freezeJsonValue).toList();
         this.deprecated = deprecated;
         this.contentEncoding = contentEncoding;
         this.contentMediaType = contentMediaType;
@@ -219,6 +221,8 @@ public class Schema {
     public boolean isRef() { return ref != null && !ref.isEmpty(); }
     public String getVersion() { return version; }
     public String getCompatibility() { return compatibility; }
+    public Map<String, Schema> getDefs() { return defs; }
+    public boolean hasDefs() { return !defs.isEmpty(); }
     public List<Schema> getAllOf() { return allOf; }
     public List<Schema> getAnyOf() { return anyOf; }
     public List<Schema> getOneOf() { return oneOf; }
@@ -322,6 +326,7 @@ public class Schema {
         private String ref;
         private String version;
         private String compatibility;
+        private Map<String, Schema> defs = Collections.emptyMap();
         private List<Schema> allOf = Collections.emptyList();
         private List<Schema> anyOf = Collections.emptyList();
         private List<Schema> oneOf = Collections.emptyList();
@@ -395,6 +400,7 @@ public class Schema {
         public Builder ref(String ref) { this.ref = ref; return this; }
         public Builder version(String version) { this.version = version; return this; }
         public Builder compatibility(String compatibility) { this.compatibility = compatibility; return this; }
+        public Builder defs(Map<String, Schema> defs) { this.defs = defs; return this; }
         public Builder allOf(List<Schema> allOf) { this.allOf = allOf; return this; }
         public Builder anyOf(List<Schema> anyOf) { this.anyOf = anyOf; return this; }
         public Builder oneOf(List<Schema> oneOf) { this.oneOf = oneOf; return this; }
@@ -441,7 +447,7 @@ public class Schema {
                     additionalProperties, minimum, maximum, exclusiveMinimum, exclusiveMaximum,
                     legacyExclusiveMinimum, legacyExclusiveMaximum,
                     minLength, maxLength, pattern, format, multipleOf, enumValues,
-                    schemaDialect, id, title, description, typeList, ref, version, compatibility,
+                    schemaDialect, id, title, description, typeList, ref, version, compatibility, defs,
                     allOf, anyOf, oneOf, notSchema, ifSchema, thenSchema, elseSchema,
                     minItems, maxItems, uniqueItems, prefixItems, additionalItemsSchema,
                     containsSchema, containsBoolean, minContains, maxContains,
@@ -472,5 +478,23 @@ public class Schema {
                         Map.Entry::getKey,
                         entry -> List.copyOf(entry.getValue())
                 ));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T freezeJsonValue(T value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Map<?, ?> map) {
+            return (T) map.entrySet().stream()
+                    .collect(Collectors.toUnmodifiableMap(
+                            entry -> String.valueOf(entry.getKey()),
+                            entry -> freezeJsonValue(entry.getValue())
+                    ));
+        }
+        if (value instanceof List<?> list) {
+            return (T) list.stream().map(Schema::freezeJsonValue).toList();
+        }
+        return value;
     }
 }
