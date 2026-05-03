@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.logging.Level;
 
 /**
@@ -35,6 +36,7 @@ public class SchemaValidatorPlugin extends JavaPlugin {
     private PluginConfig config;
     private ValidationService validationService;
     private ValidationMetrics validationMetrics;
+    private AsyncValidationService asyncValidationService;
 
     @Override
     public void onEnable() {
@@ -47,6 +49,9 @@ public class SchemaValidatorPlugin extends JavaPlugin {
         this.fileSchemaLoader = new FileSchemaLoader(getLogger());
         this.validationService = new ValidationService(new SchemaRefResolver(schemaRegistry, getLogger()));
         this.validationMetrics = new ValidationMetrics();
+        if (config.isAsyncEnabled()) {
+            this.asyncValidationService = new AsyncValidationService(this, config.getAsyncPoolSize(), config.getAsyncQueueCapacity());
+        }
         applyRuntimeSettings();
 
         // Auto-load schemas if enabled
@@ -72,6 +77,9 @@ public class SchemaValidatorPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (asyncValidationService != null) {
+            asyncValidationService.shutdown();
+        }
         getLogger().info("Schema-Validator disabled.");
     }
 
@@ -93,6 +101,10 @@ public class SchemaValidatorPlugin extends JavaPlugin {
 
     public ValidationMetrics getValidationMetrics() {
         return validationMetrics;
+    }
+
+    public Optional<AsyncValidationService> getAsyncValidationService() {
+        return Optional.ofNullable(asyncValidationService);
     }
 
     public ValidationResult validateTracked(Object data, Schema schema, ValidationOrigin origin) {

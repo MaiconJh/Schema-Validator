@@ -1,3 +1,7 @@
+## 1.5.0 - 2026-05-02
+- Async validation with configurable pool and queue.
+- New command: /sv validate-async <arquivo> <schema> [--verbose].
+
 ## ⚠️ Important Notice
 
 This addon was created with **Artificial Intelligence assistance**. Use with caution and report any bugs found.

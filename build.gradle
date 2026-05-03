@@ -1,9 +1,10 @@
 plugins {
     id 'java'
+    id 'jacoco'
 }
 
 group = 'com.maiconjh'
-version = '1.4.0'
+version = '1.5.0'
 
 java {
     toolchain {
@@ -26,6 +27,8 @@ dependencies {
     implementation 'org.yaml:snakeyaml:2.2'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.mockito:mockito-core:5.12.0'
+    testImplementation 'be.seeseemelk:MockBukkit-v1.21:3.116.0'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -55,3 +58,6 @@ jar {
 test {
     useJUnitPlatform()
 }
+
+jacoco { toolVersion = '0.8.12' }
+jacocoTestReport { dependsOn test }

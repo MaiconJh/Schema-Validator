@@ -15,6 +15,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -60,6 +61,7 @@ public class SchemaValidatorCommand implements CommandExecutor, TabCompleter {
             case "list" -> handleList(sender, label, args);
             case "info" -> handleInfo(sender, label, args);
             case "validate-file" -> handleValidateFile(sender, label, args);
+            case "validate-async" -> handleValidateAsync(sender, label, args);
             case "export" -> handleExport(sender, label, args);
             case "stats" -> handleStats(sender, label);
             case "reload" -> handleReload(sender, label, args);
@@ -79,6 +81,7 @@ public class SchemaValidatorCommand implements CommandExecutor, TabCompleter {
                 suggestions.add("list");
                 suggestions.add("info");
                 suggestions.add("validate-file");
+                suggestions.add("validate-async");
                 suggestions.add("export");
                 suggestions.add("stats");
             }
@@ -91,6 +94,7 @@ public class SchemaValidatorCommand implements CommandExecutor, TabCompleter {
         if (args.length == 2) {
             return switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "info", "validate-file", "export" -> filterSuggestions(sortedSchemaNames(), args[1]);
+                case "validate-async" -> List.of();
                 case "reload" -> canReload(sender)
                         ? filterSuggestions(combineReloadSuggestions(), args[1])
                         : List.of();
@@ -100,6 +104,10 @@ public class SchemaValidatorCommand implements CommandExecutor, TabCompleter {
 
         if (args.length == 3 && "export".equalsIgnoreCase(args[0])) {
             return filterSuggestions(List.of("json", "yaml"), args[2]);
+        }
+
+        if (args.length >= 4 && "validate-async".equalsIgnoreCase(args[0])) {
+            return filterSuggestions(List.of("--verbose"), args[args.length - 1]);
         }
 
         if (args.length >= 3 && "validate-file".equalsIgnoreCase(args[0])) {
@@ -288,6 +296,58 @@ public class SchemaValidatorCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
+
+    private boolean handleValidateAsync(CommandSender sender, String label, String[] args) {
+        if (!canUse(sender)) {
+            return deny(sender);
+        }
+        if (args.length < 3) {
+            sender.sendMessage(ChatColor.RED + "Usage: /" + label + " validate-async <path> <schemaName> [--verbose]");
+            return true;
+        }
+
+        String schemaName = args[2];
+        Schema schema = plugin.getSchemaRegistry().getSchema(schemaName).orElse(null);
+        if (schema == null) {
+            sender.sendMessage(ChatColor.RED + "Unknown schema: " + schemaName);
+            return true;
+        }
+        boolean verbose = java.util.Arrays.asList(args).contains("--verbose");
+        Path path = Path.of(args[1]);
+
+        Object data;
+        try {
+            data = loadDataFromFile(path);
+        } catch (Exception ex) {
+            sender.sendMessage(ChatColor.RED + "Could not read data file: " + ex.getMessage());
+            return true;
+        }
+
+        var asyncService = plugin.getAsyncValidationService().orElse(null);
+        if (asyncService == null) {
+            sender.sendMessage(ChatColor.RED + "Async validation is disabled in config.yml.");
+            return true;
+        }
+
+        asyncService.validateAsync(data, schemaName).thenAccept(result -> new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (result.isSuccess()) {
+                    sender.sendMessage(ChatColor.GREEN + "Async validation passed for schema '" + schemaName + "'.");
+                    return;
+                }
+                List<ValidationError> errors = result.getErrors();
+                sender.sendMessage(ChatColor.RED + "Async validation failed with " + errors.size() + " error(s).");
+                List<ValidationError> toDisplay = verbose ? errors : List.of(errors.getFirst());
+                for (ValidationError error : toDisplay) {
+                    sender.sendMessage(ChatColor.GRAY + "- " + error.toCompactString());
+                }
+            }
+        }.runTask(plugin));
+
+        sender.sendMessage(ChatColor.YELLOW + "Async validation started for schema '" + schemaName + "'.");
+        return true;
+    }
     private boolean handleExport(CommandSender sender, String label, String[] args) {
         if (!canUse(sender)) {
             return deny(sender);
