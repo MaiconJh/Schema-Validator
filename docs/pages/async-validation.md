@@ -22,10 +22,10 @@ This page describes how to enable and use asynchronous validation in Schema-Vali
 
 Add the `async-validation` section to your `config.yml`:
 ```yaml
-  async-validation:
-    enabled: false          # set to true to enable
-    thread-pool-size: 2     # number of threads for concurrent validations
-    queue-capacity: 1000    # maximum queue size before rejection policy applies
+async-validation:
+  enabled: false          # set to true to enable
+  thread-pool-size: 2     # number of threads for concurrent validations
+  queue-capacity: 1000    # maximum queue size before rejection policy applies
 ```
 
 > [!NOTE]
@@ -42,11 +42,13 @@ Add the `async-validation` section to your `config.yml`:
 **Syntax:** `/sv validate-async <file_path> <schema_name>`
 
 **Example:**
-  /sv validate-async plugins/MyPlugin/config.yml my-schema
+```text
+/sv validate-async plugins/MyPlugin/config.yml my-schema
+```
 
 **Behavior:**
-❯ The command immediately returns: "Async validation started for [file]".
-❯ When validation completes (on the main thread), a success or error message will be displayed in chat.
+- The command immediately returns: "Async validation started for [file]".
+- When validation completes (on the main thread), a success or error message will be displayed in chat.
 
 **Required permission:** `schemavalidator.admin` (same as other commands)
 
@@ -56,21 +58,22 @@ For plugin developers, Schema-Validator exposes an async API.
 
 ### Obtain the async service
 
-  Optional<AsyncValidationService> asyncService = SchemaValidatorPlugin.getInstance().getAsyncValidationService();
-  if (asyncService.isPresent()) {
-      CompletableFuture<ValidationResult> future = asyncService.get().validateAsync(request);
-  } else {
-      // fallback to sync or warn that async is disabled
-  }
+```java
+Optional<AsyncValidationService> asyncService = SchemaValidatorPlugin.getInstance().getAsyncValidationService();
+if (asyncService.isPresent()) {
+    CompletableFuture<ValidationResult> future = asyncService.get().validateAsync(request);
+} else {
+    // fallback to sync or warn that async is disabled
+}
+```
 
 ### AsyncSchemaValidatorAPI interface
 
 ```java
-
-  public interface AsyncSchemaValidatorAPI {
-      CompletableFuture<ValidationResult> validateAsync(ValidationRequest request);
-      CompletableFuture<List<ValidationResult>> validateBatchAsync(List<ValidationRequest> requests);
-  }
+public interface AsyncSchemaValidatorAPI {
+    CompletableFuture<ValidationResult> validateAsync(ValidationRequest request);
+    CompletableFuture<List<ValidationResult>> validateBatchAsync(List<ValidationRequest> requests);
+}
 ```
 
 ### AsyncValidationCompleteEvent
@@ -78,15 +81,14 @@ For plugin developers, Schema-Validator exposes an async API.
 This event is called on the main thread after validation completes.
 
 ```java
-
-  @EventHandler
-  public void onAsyncValidationComplete(AsyncValidationCompleteEvent event) {
-      if (event.getResult().isValid()) {
-          Bukkit.getLogger().info("Async validation succeeded: " + event.getFilePath());
-      } else {
-          Bukkit.getLogger().warning("Validation errors for " + event.getFilePath() + ": " + event.getResult().getErrors());
-      }
-  }
+@EventHandler
+public void onAsyncValidationComplete(AsyncValidationCompleteEvent event) {
+    if (event.getResult().isValid()) {
+        Bukkit.getLogger().info("Async validation succeeded: " + event.getFilePath());
+    } else {
+        Bukkit.getLogger().warning("Validation errors for " + event.getFilePath() + ": " + event.getResult().getErrors());
+    }
+}
 ```
 
 > [!IMPORTANT]
@@ -94,9 +96,9 @@ This event is called on the main thread after validation completes.
 
 ## Best practices
 
-❯ Keep `thread-pool-size` between 1 and 4 for small servers; up to 8 for dedicated servers.
-❯ Do not use the async API for validations that modify server state (the service is read-only).
-❯ If your server has many files to validate on startup, enable `async-validation.enabled` to avoid locking the main thread.
+- Keep `thread-pool-size` between 1 and 4 for small servers; up to 8 for dedicated servers.
+- Do not use the async API for validations that modify server state (the service is read-only).
+- If your server has many files to validate on startup, enable `async-validation.enabled` to avoid locking the main thread.
 
 ## Tests
 
@@ -107,7 +109,9 @@ Unit and integration tests are located at:
 
 To run locally (if you have a Java development environment set up):
 
-  ./gradlew test
+```bash
+./gradlew test
+```
 
 ## Troubleshooting
 
@@ -126,3 +130,4 @@ To run locally (if you have a Java development environment set up):
 
 > [!CAUTION]
 > If you disable async validation, the async APIs, commands, and events will not be available. Ensure your plugins and scripts handle this gracefully.
+```
