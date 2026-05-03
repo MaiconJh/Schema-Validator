@@ -21,11 +21,12 @@ This page describes how to enable and use asynchronous validation in Schema-Vali
 ## Configuration (config.yml)
 
 Add the `async-validation` section to your `config.yml`:
-
+```yaml
   async-validation:
     enabled: false          # set to true to enable
     thread-pool-size: 2     # number of threads for concurrent validations
     queue-capacity: 1000    # maximum queue size before rejection policy applies
+```
 
 > [!NOTE]
 > Async validation is **disabled by default** to maintain backward compatibility.
@@ -64,14 +65,19 @@ For plugin developers, Schema-Validator exposes an async API.
 
 ### AsyncSchemaValidatorAPI interface
 
+```java
+
   public interface AsyncSchemaValidatorAPI {
       CompletableFuture<ValidationResult> validateAsync(ValidationRequest request);
       CompletableFuture<List<ValidationResult>> validateBatchAsync(List<ValidationRequest> requests);
   }
+```
 
 ### AsyncValidationCompleteEvent
 
 This event is called on the main thread after validation completes.
+
+```java
 
   @EventHandler
   public void onAsyncValidationComplete(AsyncValidationCompleteEvent event) {
@@ -81,6 +87,7 @@ This event is called on the main thread after validation completes.
           Bukkit.getLogger().warning("Validation errors for " + event.getFilePath() + ": " + event.getResult().getErrors());
       }
   }
+```
 
 > [!IMPORTANT]
 > Do not use the async API for validations that modify server state; the async service is read-only.
@@ -95,8 +102,8 @@ This event is called on the main thread after validation completes.
 
 Unit and integration tests are located at:
 
-- `src/test/java/com/maiconjh/schemacr/core/AsyncValidationServiceTest.java`
-- `src/test/java/com/maiconjh/schemacr/command/ValidateAsyncCommandTest.java`
+- [AsyncValidationServiceTest.java](/src/test/java/com/maiconjh/schemacr/core/AsyncValidationServiceTest.java)
+- [ValidateAsyncCommandTest.java](/src/test/java/com/maiconjh/schemacr/command/ValidateAsyncCommandTest.java)
 
 To run locally (if you have a Java development environment set up):
 
