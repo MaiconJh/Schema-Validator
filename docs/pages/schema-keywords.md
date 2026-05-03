@@ -35,7 +35,7 @@ A keyword can be accepted at parse time but still not enforced at runtime.
 ### Primitive constraints
 
 - `enum`
-- `const`
+- `const` (including `const: null`)
 - `minimum`, `maximum`
 - `exclusiveMinimum`, `exclusiveMaximum` (numeric form per 2019-09/2020-12 + boolean legacy)
 - `multipleOf`
@@ -91,6 +91,16 @@ All keywords below are now fully enforced at runtime and verified by 373 unit te
 - `deprecated` — Deprecation status
 - `contentEncoding` / `contentMediaType` / `contentSchema` — Content vocabulary constraints
 - `$comment` / `comment` — Annotations (`comment` as legacy alias)
+
+## Numeric boundary semantics (Draft 2020-12)
+
+- `exclusiveMinimum` and `exclusiveMaximum` numeric values are treated as strict bounds.
+- Legacy boolean exclusives are still accepted for compatibility with older schemas.
+- When numeric `exclusiveMinimum` / `exclusiveMaximum` is present, it takes precedence over legacy boolean behavior tied to `minimum` / `maximum`.
+
+## `const` semantics
+
+- `const` is treated as present even when the value is `null` (`const: null`), matching JSON Schema semantics.
 
 ## Unsupported keyword handling
 

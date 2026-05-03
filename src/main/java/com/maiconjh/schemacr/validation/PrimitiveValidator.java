@@ -62,12 +62,22 @@ public class PrimitiveValidator implements Validator {
 
         // Validate numeric constraints (min/max)
         if ((type == SchemaType.NUMBER || type == SchemaType.INTEGER) && data instanceof Number number) {
-            if (schema.getMinimum() != null) {
-                boolean minValid = schema.isExclusiveMinimum()
+            if (schema.getExclusiveMinimum() != null) {
+                boolean minValid = number.doubleValue() > schema.getExclusiveMinimum().doubleValue();
+                if (!minValid) {
+                    errors.add(new ValidationError(
+                            path,
+                            "exclusiveMinimum",
+                            String.valueOf(number),
+                            "Value must be > " + schema.getExclusiveMinimum()
+                    ));
+                }
+            } else if (schema.getMinimum() != null) {
+                boolean minValid = schema.usesLegacyExclusiveMinimum()
                         ? number.doubleValue() > schema.getMinimum().doubleValue()
                         : number.doubleValue() >= schema.getMinimum().doubleValue();
                 if (!minValid) {
-                    String operator = schema.isExclusiveMinimum() ? ">" : ">=";
+                    String operator = schema.usesLegacyExclusiveMinimum() ? ">" : ">=";
                     errors.add(new ValidationError(
                             path,
                             "minimum",
@@ -76,12 +86,22 @@ public class PrimitiveValidator implements Validator {
                     ));
                 }
             }
-            if (schema.getMaximum() != null) {
-                boolean maxValid = schema.isExclusiveMaximum()
+            if (schema.getExclusiveMaximum() != null) {
+                boolean maxValid = number.doubleValue() < schema.getExclusiveMaximum().doubleValue();
+                if (!maxValid) {
+                    errors.add(new ValidationError(
+                            path,
+                            "exclusiveMaximum",
+                            String.valueOf(number),
+                            "Value must be < " + schema.getExclusiveMaximum()
+                    ));
+                }
+            } else if (schema.getMaximum() != null) {
+                boolean maxValid = schema.usesLegacyExclusiveMaximum()
                         ? number.doubleValue() < schema.getMaximum().doubleValue()
                         : number.doubleValue() <= schema.getMaximum().doubleValue();
                 if (!maxValid) {
-                    String operator = schema.isExclusiveMaximum() ? "<" : "<=";
+                    String operator = schema.usesLegacyExclusiveMaximum() ? "<" : "<=";
                     errors.add(new ValidationError(
                             path,
                             "maximum",

@@ -257,6 +257,35 @@ class PrimitiveValidatorTest {
     }
 
     @Test
+    @DisplayName("shouldValidateNumericExclusiveMinimumDraft202012")
+    void shouldValidateNumericExclusiveMinimumDraft202012() {
+        schema = Schema.builder("score", SchemaType.NUMBER)
+                .exclusiveMinimum(10)
+                .build();
+
+        List<ValidationError> invalid = validator.validate(10, schema, "/score", "score");
+        List<ValidationError> valid = validator.validate(10.1, schema, "/score", "score");
+
+        assertFalse(invalid.isEmpty(), "Expected equality to fail for exclusiveMinimum");
+        assertTrue(valid.isEmpty(), "Expected values above exclusiveMinimum to pass");
+    }
+
+    @Test
+    @DisplayName("shouldSupportLegacyBooleanExclusiveMaximum")
+    void shouldSupportLegacyBooleanExclusiveMaximum() {
+        schema = Schema.builder("limit", SchemaType.NUMBER)
+                .maximum(5)
+                .exclusiveMaximum(true)
+                .build();
+
+        List<ValidationError> invalid = validator.validate(5, schema, "/limit", "limit");
+        List<ValidationError> valid = validator.validate(4.99, schema, "/limit", "limit");
+
+        assertFalse(invalid.isEmpty(), "Expected equality to fail when legacy exclusiveMaximum=true");
+        assertTrue(valid.isEmpty(), "Expected values below max to pass");
+    }
+
+    @Test
     @DisplayName("shouldPass_whenLongIntegerValueMatchesIntegerType")
     void shouldPass_whenLongIntegerValueMatchesIntegerType() {
         // Arrange

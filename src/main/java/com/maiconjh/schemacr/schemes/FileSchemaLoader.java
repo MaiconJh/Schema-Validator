@@ -174,8 +174,22 @@ public class FileSchemaLoader {
         if (raw.containsKey("minimum") && raw.get("minimum") instanceof Number min) builder.minimum(min);
         if (raw.containsKey("maximum") && raw.get("maximum") instanceof Number max) builder.maximum(max);
         if (raw.containsKey("multipleOf") && raw.get("multipleOf") instanceof Number mult) builder.multipleOf(mult);
-        if (raw.containsKey("exclusiveMinimum") && raw.get("exclusiveMinimum") instanceof Boolean exclMin) builder.exclusiveMinimum(exclMin);
-        if (raw.containsKey("exclusiveMaximum") && raw.get("exclusiveMaximum") instanceof Boolean exclMax) builder.exclusiveMaximum(exclMax);
+        if (raw.containsKey("exclusiveMinimum")) {
+            Object exclusiveMinimum = raw.get("exclusiveMinimum");
+            if (exclusiveMinimum instanceof Number n) {
+                builder.exclusiveMinimum(n);
+            } else if (exclusiveMinimum instanceof Boolean legacy) {
+                builder.exclusiveMinimum(legacy);
+            }
+        }
+        if (raw.containsKey("exclusiveMaximum")) {
+            Object exclusiveMaximum = raw.get("exclusiveMaximum");
+            if (exclusiveMaximum instanceof Number n) {
+                builder.exclusiveMaximum(n);
+            } else if (exclusiveMaximum instanceof Boolean legacy) {
+                builder.exclusiveMaximum(legacy);
+            }
+        }
 
         // string
         if (raw.containsKey("minLength") && raw.get("minLength") instanceof Number minLen) builder.minLength(minLen.intValue());

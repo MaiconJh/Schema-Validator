@@ -3,6 +3,7 @@ package com.maiconjh.schemacr.schemes;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Schema model used by validators.
@@ -21,8 +22,10 @@ public class Schema {
     private final Object additionalProperties; // Can be Boolean or Schema
     private final Number minimum;
     private final Number maximum;
-    private final boolean exclusiveMinimum;
-    private final boolean exclusiveMaximum;
+    private final Number exclusiveMinimum;
+    private final Number exclusiveMaximum;
+    private final boolean legacyExclusiveMinimum;
+    private final boolean legacyExclusiveMaximum;
     private final Integer minLength;
     private final Integer maxLength;
     private final String pattern;
@@ -66,6 +69,7 @@ public class Schema {
     private final Schema unevaluatedPropertiesSchema;
 
     // Const and metadata keywords
+    private final boolean constPresent;
     private final Object constValue;
     private final Boolean readOnly;
     private final Boolean writeOnly;
@@ -85,7 +89,8 @@ public class Schema {
     public Schema(String name, SchemaType type, Map<String, Schema> properties, 
                   Map<String, Schema> patternProperties, Schema itemSchema, List<String> requiredFields, 
                   Object additionalProperties, Number minimum, Number maximum, 
-                  boolean exclusiveMinimum, boolean exclusiveMaximum,
+                  Number exclusiveMinimum, Number exclusiveMaximum,
+                  boolean legacyExclusiveMinimum, boolean legacyExclusiveMaximum,
                   Integer minLength, Integer maxLength, String pattern, String format, Number multipleOf,
                   List<Object> enumValues, String schemaDialect, String id, String title, String description,
                   List<String> typeList, String ref, String version, String compatibility,
@@ -95,39 +100,41 @@ public class Schema {
                   Schema containsSchema, Boolean containsBoolean, Integer minContains, Integer maxContains,
                   Integer minProperties, Integer maxProperties, Map<String, List<String>> dependentRequired, Map<String, Schema> dependentSchemas,
                   Schema propertyNamesSchema, Boolean unevaluatedPropertiesAllowed, Schema unevaluatedPropertiesSchema,
-                  Object constValue, Boolean readOnly, Boolean writeOnly,
+                  boolean constPresent, Object constValue, Boolean readOnly, Boolean writeOnly,
                   Object defaultValue, List<Object> examples, Boolean deprecated,
                   String contentEncoding, String contentMediaType, Schema contentSchema,
                   Boolean unevaluatedItemsAllowed, Schema unevaluatedItemsSchema,
                   String dynamicRef, String dynamicAnchor, String comment) {
         this.name = name;
         this.type = type;
-        this.properties = properties == null ? Collections.emptyMap() : Collections.unmodifiableMap(properties);
-        this.patternProperties = patternProperties == null ? Collections.emptyMap() : Collections.unmodifiableMap(patternProperties);
+        this.properties = immutableMap(properties);
+        this.patternProperties = immutableMap(patternProperties);
         this.itemSchema = itemSchema;
-        this.requiredFields = requiredFields == null ? Collections.emptyList() : Collections.unmodifiableList(requiredFields);
+        this.requiredFields = immutableList(requiredFields);
         this.additionalProperties = additionalProperties != null ? additionalProperties : true;
         this.minimum = minimum;
         this.maximum = maximum;
         this.exclusiveMinimum = exclusiveMinimum;
         this.exclusiveMaximum = exclusiveMaximum;
+        this.legacyExclusiveMinimum = legacyExclusiveMinimum;
+        this.legacyExclusiveMaximum = legacyExclusiveMaximum;
         this.minLength = minLength;
         this.maxLength = maxLength;
         this.pattern = pattern;
         this.format = format;
         this.multipleOf = multipleOf;
-        this.enumValues = enumValues == null ? Collections.emptyList() : Collections.unmodifiableList(enumValues);
+        this.enumValues = immutableList(enumValues);
         this.schemaDialect = schemaDialect;
         this.id = id;
         this.title = title;
         this.description = description;
-        this.typeList = typeList;
+        this.typeList = immutableList(typeList);
         this.ref = ref;
         this.version = version;
         this.compatibility = compatibility;
-        this.allOf = allOf == null ? Collections.emptyList() : Collections.unmodifiableList(allOf);
-        this.anyOf = anyOf == null ? Collections.emptyList() : Collections.unmodifiableList(anyOf);
-        this.oneOf = oneOf == null ? Collections.emptyList() : Collections.unmodifiableList(oneOf);
+        this.allOf = immutableList(allOf);
+        this.anyOf = immutableList(anyOf);
+        this.oneOf = immutableList(oneOf);
         this.notSchema = notSchema;
         this.ifSchema = ifSchema;
         this.thenSchema = thenSchema;
@@ -137,7 +144,7 @@ public class Schema {
         this.minItems = minItems;
         this.maxItems = maxItems;
         this.uniqueItems = uniqueItems;
-        this.prefixItems = prefixItems == null ? Collections.emptyList() : Collections.unmodifiableList(prefixItems);
+        this.prefixItems = immutableList(prefixItems);
         this.additionalItemsSchema = additionalItemsSchema;
         this.containsSchema = containsSchema;
         this.containsBoolean = containsBoolean;
@@ -147,18 +154,19 @@ public class Schema {
         // Object constraints
         this.minProperties = minProperties;
         this.maxProperties = maxProperties;
-        this.dependentRequired = dependentRequired == null ? Collections.emptyMap() : Collections.unmodifiableMap(dependentRequired);
-        this.dependentSchemas = dependentSchemas == null ? Collections.emptyMap() : Collections.unmodifiableMap(dependentSchemas);
+        this.dependentRequired = immutableMapOfLists(dependentRequired);
+        this.dependentSchemas = immutableMap(dependentSchemas);
         this.propertyNamesSchema = propertyNamesSchema;
         this.unevaluatedPropertiesAllowed = unevaluatedPropertiesAllowed;
         this.unevaluatedPropertiesSchema = unevaluatedPropertiesSchema;
 
         // Const and metadata
+        this.constPresent = constPresent;
         this.constValue = constValue;
         this.readOnly = readOnly;
         this.writeOnly = writeOnly;
         this.defaultValue = defaultValue;
-        this.examples = examples == null ? Collections.emptyList() : Collections.unmodifiableList(examples);
+        this.examples = immutableList(examples);
         this.deprecated = deprecated;
         this.contentEncoding = contentEncoding;
         this.contentMediaType = contentMediaType;
@@ -193,8 +201,12 @@ public class Schema {
     }
     public Number getMinimum() { return minimum; }
     public Number getMaximum() { return maximum; }
-    public boolean isExclusiveMinimum() { return exclusiveMinimum; }
-    public boolean isExclusiveMaximum() { return exclusiveMaximum; }
+    public Number getExclusiveMinimum() { return exclusiveMinimum; }
+    public Number getExclusiveMaximum() { return exclusiveMaximum; }
+    public boolean usesLegacyExclusiveMinimum() { return legacyExclusiveMinimum; }
+    public boolean usesLegacyExclusiveMaximum() { return legacyExclusiveMaximum; }
+    public boolean isExclusiveMinimum() { return legacyExclusiveMinimum; }
+    public boolean isExclusiveMaximum() { return legacyExclusiveMaximum; }
     public Integer getMinLength() { return minLength; }
     public Integer getMaxLength() { return maxLength; }
     public String getPattern() { return pattern; }
@@ -258,7 +270,7 @@ public class Schema {
 
     // Const & metadata getters
     public Object getConstValue() { return constValue; }
-    public boolean hasConst() { return constValue != null; }
+    public boolean hasConst() { return constPresent; }
     public Boolean isReadOnly() { return readOnly; }
     public Boolean isWriteOnly() { return writeOnly; }
     public boolean hasReadWriteOnly() { return readOnly != null || writeOnly != null; }
@@ -292,8 +304,10 @@ public class Schema {
         private Object additionalProperties = true; // Can be Boolean or Schema
         private Number minimum;
         private Number maximum;
-        private boolean exclusiveMinimum = false;
-        private boolean exclusiveMaximum = false;
+        private Number exclusiveMinimum;
+        private Number exclusiveMaximum;
+        private boolean legacyExclusiveMinimum = false;
+        private boolean legacyExclusiveMaximum = false;
         private Integer minLength;
         private Integer maxLength;
         private String pattern;
@@ -334,6 +348,7 @@ public class Schema {
         private Boolean unevaluatedPropertiesAllowed;
         private Schema unevaluatedPropertiesSchema;
         // Const & metadata
+        private boolean constPresent = false;
         private Object constValue;
         private Boolean readOnly;
         private Boolean writeOnly;
@@ -362,8 +377,10 @@ public class Schema {
         public Builder additionalProperties(Schema additionalPropertiesSchema) { this.additionalProperties = additionalPropertiesSchema; return this; }
         public Builder minimum(Number minimum) { this.minimum = minimum; return this; }
         public Builder maximum(Number maximum) { this.maximum = maximum; return this; }
-        public Builder exclusiveMinimum(boolean exclusiveMinimum) { this.exclusiveMinimum = exclusiveMinimum; return this; }
-        public Builder exclusiveMaximum(boolean exclusiveMaximum) { this.exclusiveMaximum = exclusiveMaximum; return this; }
+        public Builder exclusiveMinimum(boolean exclusiveMinimum) { this.legacyExclusiveMinimum = exclusiveMinimum; return this; }
+        public Builder exclusiveMaximum(boolean exclusiveMaximum) { this.legacyExclusiveMaximum = exclusiveMaximum; return this; }
+        public Builder exclusiveMinimum(Number exclusiveMinimum) { this.exclusiveMinimum = exclusiveMinimum; return this; }
+        public Builder exclusiveMaximum(Number exclusiveMaximum) { this.exclusiveMaximum = exclusiveMaximum; return this; }
         public Builder minLength(Integer minLength) { this.minLength = minLength; return this; }
         public Builder maxLength(Integer maxLength) { this.maxLength = maxLength; return this; }
         public Builder pattern(String pattern) { this.pattern = pattern; return this; }
@@ -404,7 +421,7 @@ public class Schema {
         public Builder unevaluatedPropertiesAllowed(Boolean unevaluatedPropertiesAllowed) { this.unevaluatedPropertiesAllowed = unevaluatedPropertiesAllowed; return this; }
         public Builder unevaluatedPropertiesSchema(Schema unevaluatedPropertiesSchema) { this.unevaluatedPropertiesSchema = unevaluatedPropertiesSchema; return this; }
         // Const & metadata
-        public Builder constValue(Object constValue) { this.constValue = constValue; return this; }
+        public Builder constValue(Object constValue) { this.constPresent = true; this.constValue = constValue; return this; }
         public Builder readOnly(Boolean readOnly) { this.readOnly = readOnly; return this; }
         public Builder writeOnly(Boolean writeOnly) { this.writeOnly = writeOnly; return this; }
         public Builder defaultValue(Object defaultValue) { this.defaultValue = defaultValue; return this; }
@@ -422,6 +439,7 @@ public class Schema {
         public Schema build() {
             return new Schema(name, type, properties, patternProperties, itemSchema, requiredFields,
                     additionalProperties, minimum, maximum, exclusiveMinimum, exclusiveMaximum,
+                    legacyExclusiveMinimum, legacyExclusiveMaximum,
                     minLength, maxLength, pattern, format, multipleOf, enumValues,
                     schemaDialect, id, title, description, typeList, ref, version, compatibility,
                     allOf, anyOf, oneOf, notSchema, ifSchema, thenSchema, elseSchema,
@@ -429,11 +447,30 @@ public class Schema {
                     containsSchema, containsBoolean, minContains, maxContains,
                     minProperties, maxProperties, dependentRequired, dependentSchemas,
                     propertyNamesSchema, unevaluatedPropertiesAllowed, unevaluatedPropertiesSchema,
-                    constValue, readOnly, writeOnly,
+                    constPresent, constValue, readOnly, writeOnly,
                     defaultValue, examples, deprecated,
                     contentEncoding, contentMediaType, contentSchema,
                     unevaluatedItemsAllowed, unevaluatedItemsSchema,
                     dynamicRef, dynamicAnchor, comment);
         }
+    }
+
+    private static <T> List<T> immutableList(List<T> source) {
+        return source == null ? Collections.emptyList() : List.copyOf(source);
+    }
+
+    private static <K, V> Map<K, V> immutableMap(Map<K, V> source) {
+        return source == null ? Collections.emptyMap() : Map.copyOf(source);
+    }
+
+    private static Map<String, List<String>> immutableMapOfLists(Map<String, List<String>> source) {
+        if (source == null || source.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return source.entrySet().stream()
+                .collect(Collectors.toUnmodifiableMap(
+                        Map.Entry::getKey,
+                        entry -> List.copyOf(entry.getValue())
+                ));
     }
 }
