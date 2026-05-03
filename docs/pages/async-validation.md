@@ -1,3 +1,12 @@
+---
+title: Async Validation
+description: How to configure and use asynchronous schema validation (CLI and API).
+doc_type: how-to
+order: 20
+sequence: 1
+permalink: /async-validation.html
+---
+
 # Async Validation
 
 This page describes how to enable and use asynchronous schema validation in Schema-Validator, both from the CLI and via the programmatic API.
