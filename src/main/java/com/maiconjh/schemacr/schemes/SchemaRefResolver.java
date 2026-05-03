@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +50,7 @@ public class SchemaRefResolver {
 
     private final SchemaRegistry registry;
     private final Logger logger;
-    private final Map<String, Schema> resolvedCache = new HashMap<>();
+    private final Map<String, Schema> resolvedCache = new ConcurrentHashMap<>();
     private final Map<String, Schema> externalSchemaCache = new ConcurrentHashMap<>();
     private final Set<String> resolving = ConcurrentHashMap.newKeySet();
     private final Path schemaBaseDirectory;
@@ -108,8 +107,9 @@ public class SchemaRefResolver {
 
         // Check cache first
         String cacheKey = currentSchemaName + "->" + ref;
-        if (resolvedCache.containsKey(cacheKey)) {
-            return resolvedCache.get(cacheKey);
+        Schema cached = resolvedCache.get(cacheKey);
+        if (cached != null) {
+            return cached;
         }
 
         // Check if already being resolved (circular reference)
@@ -156,7 +156,9 @@ public class SchemaRefResolver {
         }
 
         // Cache the result
-        resolvedCache.put(cacheKey, resolved);
+        if (resolved != null) {
+            resolvedCache.put(cacheKey, resolved);
+        }
         
         if (resolved == null) {
             logger.warning("Failed to resolve $ref: " + ref + " in schema " + currentSchemaName);
@@ -546,6 +548,12 @@ public class SchemaRefResolver {
 
         if ("items".equals(part) && current.getItemSchema() != null) {
             return current.getItemSchema();
+        }
+        if ("$defs".equals(part) || "definitions".equals(part)) {
+            return current;
+        }
+        if (current.hasDefs() && current.getDefs().containsKey(part)) {
+            return current.getDefs().get(part);
         }
 
         // Handle prefixItems container (returns the schema with prefixItems)

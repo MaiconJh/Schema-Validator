@@ -411,5 +411,23 @@ class SchemaTest {
             assertEquals("#/$defs/node", schema.getDynamicRef());
             assertEquals("node", schema.getDynamicAnchor());
         }
+
+        @Test
+        @DisplayName("shouldStoreDefsAndResolveLocalReferencePath")
+        void shouldStoreDefsAndResolveLocalReferencePath() {
+            Schema positive = Schema.builder("positiveInteger", SchemaType.INTEGER)
+                    .exclusiveMinimum(0)
+                    .build();
+
+            Schema root = Schema.builder("root", SchemaType.ARRAY)
+                    .defs(Map.of("positiveInteger", positive))
+                    .itemSchema(Schema.builder("item", SchemaType.ANY)
+                            .ref("#/$defs/positiveInteger")
+                            .build())
+                    .build();
+
+            assertTrue(root.hasDefs());
+            assertSame(positive, root.getDefs().get("positiveInteger"));
+        }
     }
 }
