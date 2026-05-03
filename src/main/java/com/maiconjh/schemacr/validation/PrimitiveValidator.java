@@ -207,7 +207,7 @@ public class PrimitiveValidator implements Validator {
         }
 
         // Validate const constraint
-        if (schema.getConstValue() != null) {
+        if (schema.hasConst()) {
             ConstValidator constValidator = new ConstValidator(schema.getConstValue());
             errors.addAll(constValidator.validate(data, schema, path, parentKey));
         }

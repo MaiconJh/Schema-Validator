@@ -286,6 +286,21 @@ class PrimitiveValidatorTest {
     }
 
     @Test
+    @DisplayName("shouldValidateConstNullWhenConstKeywordIsPresent")
+    void shouldValidateConstNullWhenConstKeywordIsPresent() {
+        schema = Schema.builder("nullableConst", SchemaType.ANY)
+                .constValue(null)
+                .build();
+
+        List<ValidationError> valid = validator.validate(null, schema, "/nullableConst", "nullableConst");
+        List<ValidationError> invalid = validator.validate("x", schema, "/nullableConst", "nullableConst");
+
+        assertTrue(valid.isEmpty(), "Expected null to pass when const is null");
+        assertFalse(invalid.isEmpty(), "Expected non-null to fail when const is null");
+        assertEquals("const", invalid.get(0).getExpectedType(), "Expected const keyword validation error");
+    }
+
+    @Test
     @DisplayName("shouldPass_whenLongIntegerValueMatchesIntegerType")
     void shouldPass_whenLongIntegerValueMatchesIntegerType() {
         // Arrange
