@@ -7,8 +7,8 @@ sequence: 1
 permalink: /async-validation.html
 ---
 
-> [!WARNING]
-> This feature is not yet available in the current version "v1.4.0", and will be released in version v1.5.0 after being released on [releases](https://github.com/MaiconJh/Schema-Validator/releases).
+> [!NOTE]
+> Async validation is available in the current release line and is maintained in **v1.6.0**.
 
 # Async Validation
 
@@ -127,7 +127,7 @@ To run locally (if you have a Java development environment set up):
 
 ## Final notes
 
-- Async validation was introduced in version **1.5.0**.
+- Async validation is available and documented for version **1.6.0**.
 - To maintain compatibility with legacy Skript scripts, synchronous behavior remains unchanged.
 - Async validation is **optional**; servers that do not enable it will continue with traditional synchronous validation.
 

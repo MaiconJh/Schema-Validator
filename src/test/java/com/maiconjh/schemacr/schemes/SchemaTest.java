@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -252,6 +254,36 @@ class SchemaTest {
             assertFalse(schema.hasConst(), "Const should default to false");
             assertFalse(schema.hasReadWriteOnly(), "Read/Write only should default to false");
             assertFalse(schema.hasFormat(), "Format should default to false");
+        }
+
+        @Test
+        @DisplayName("shouldKeepConstNullAsPresent - const null deve ser tratado como presente")
+        void shouldKeepConstNullAsPresent() {
+            Schema schema = Schema.builder("nullConst", SchemaType.NULL)
+                    .constValue(null)
+                    .build();
+
+            assertTrue(schema.hasConst(), "Const should be marked as present even when null");
+            assertNull(schema.getConstValue(), "Const value should remain null");
+        }
+
+        @Test
+        @DisplayName("shouldDefensivelyCopyCollections - coleções devem ser copiadas defensivamente")
+        void shouldDefensivelyCopyCollections() {
+            List<String> required = new ArrayList<>(List.of("name"));
+            Map<String, List<String>> dependentRequired = new HashMap<>();
+            dependentRequired.put("credit_card", new ArrayList<>(List.of("billing_address")));
+
+            Schema schema = Schema.builder("defensiveCopy", SchemaType.OBJECT)
+                    .requiredFields(required)
+                    .dependentRequired(dependentRequired)
+                    .build();
+
+            required.add("mutated");
+            dependentRequired.get("credit_card").add("mutated");
+
+            assertEquals(List.of("name"), schema.getRequiredFields());
+            assertEquals(List.of("billing_address"), schema.getDependentRequired().get("credit_card"));
         }
 
         @Test
