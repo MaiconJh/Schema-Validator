@@ -21,6 +21,16 @@ public class PrimitiveValidator implements Validator {
         List<ValidationError> errors = new ArrayList<>();
         SchemaType type = schema.getType();
 
+        if (schema.hasTypeUnion() && !schema.allowsType(data)) {
+            errors.add(new ValidationError(
+                    path,
+                    "type",
+                    ValidationUtils.typeName(data),
+                    "Value must match one of: " + schema.getAllowedTypes()
+            ));
+            return errors;
+        }
+
         if (type == SchemaType.ANY) {
             return errors;
         }
@@ -146,8 +156,8 @@ public class PrimitiveValidator implements Validator {
                 ));
             }
             if (schema.getPattern() != null) {
-                Pattern regex = Pattern.compile(schema.getPattern());
-                if (!regex.matcher(str).matches()) {
+                Pattern regex = schema.getCompiledPattern();
+                if (regex != null && !regex.matcher(str).find()) {
                     errors.add(new ValidationError(
                             path,
                             "pattern",

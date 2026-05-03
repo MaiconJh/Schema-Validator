@@ -1,9 +1,13 @@
 package com.maiconjh.schemacr.schemes;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 
 /**
  * Schema model used by validators.
@@ -29,6 +33,7 @@ public class Schema {
     private final Integer minLength;
     private final Integer maxLength;
     private final String pattern;
+    private final Pattern compiledPattern;
     private final String format;
     private final Number multipleOf;
     private final List<Object> enumValues;
@@ -37,6 +42,7 @@ public class Schema {
     private final String title;
     private final String description;
     private final List<String> typeList;
+    private final Set<SchemaType> allowedSchemaTypes;
     private final String ref;
     private final String version;
     private final String compatibility;
@@ -122,6 +128,7 @@ public class Schema {
         this.minLength = minLength;
         this.maxLength = maxLength;
         this.pattern = pattern;
+        this.compiledPattern = compileNullable(pattern);
         this.format = format;
         this.multipleOf = multipleOf;
         this.enumValues = immutableList(enumValues).stream().map(Schema::freezeJsonValue).toList();
@@ -130,6 +137,7 @@ public class Schema {
         this.title = title;
         this.description = description;
         this.typeList = immutableList(typeList);
+        this.allowedSchemaTypes = compileAllowedTypes(this.typeList);
         this.ref = ref;
         this.version = version;
         this.compatibility = compatibility;
@@ -212,6 +220,7 @@ public class Schema {
     public Integer getMinLength() { return minLength; }
     public Integer getMaxLength() { return maxLength; }
     public String getPattern() { return pattern; }
+    public Pattern getCompiledPattern() { return compiledPattern; }
     public String getFormat() { return format; }
     public boolean hasFormat() { return format != null && !format.isEmpty(); }
     public Number getMultipleOf() { return multipleOf; }
@@ -239,8 +248,12 @@ public class Schema {
     public String getId() { return id; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
-    public boolean hasTypeUnion() { return typeList != null && !typeList.isEmpty(); }
+    public boolean hasTypeUnion() { return !allowedSchemaTypes.isEmpty(); }
     public List<String> getAllowedTypes() { return typeList != null ? typeList : Collections.emptyList(); }
+    public Set<SchemaType> getAllowedSchemaTypes() { return allowedSchemaTypes; }
+    public boolean allowsType(Object value) {
+        return allowedSchemaTypes.isEmpty() || allowedSchemaTypes.contains(detectType(value));
+    }
 
     // Array getters
     public Integer getMinItems() { return minItems; }
@@ -478,6 +491,50 @@ public class Schema {
                         Map.Entry::getKey,
                         entry -> List.copyOf(entry.getValue())
                 ));
+    }
+
+    private static Pattern compileNullable(String regex) {
+        return regex == null || regex.isBlank() ? null : Pattern.compile(regex);
+    }
+
+    private static Set<SchemaType> compileAllowedTypes(List<String> types) {
+        if (types == null || types.isEmpty()) {
+            return Set.of();
+        }
+        EnumSet<SchemaType> result = EnumSet.noneOf(SchemaType.class);
+        for (String rawType : types) {
+            result.add(parseSchemaType(rawType));
+        }
+        return Set.copyOf(result);
+    }
+
+    private static SchemaType parseSchemaType(String rawType) {
+        if (rawType == null) return SchemaType.ANY;
+        return switch (rawType.toLowerCase(Locale.ROOT)) {
+            case "object" -> SchemaType.OBJECT;
+            case "array" -> SchemaType.ARRAY;
+            case "string" -> SchemaType.STRING;
+            case "integer" -> SchemaType.INTEGER;
+            case "number" -> SchemaType.NUMBER;
+            case "boolean" -> SchemaType.BOOLEAN;
+            case "null" -> SchemaType.NULL;
+            default -> SchemaType.ANY;
+        };
+    }
+
+    private static SchemaType detectType(Object value) {
+        if (value == null) return SchemaType.NULL;
+        if (value instanceof Map<?, ?>) return SchemaType.OBJECT;
+        if (value instanceof List<?>) return SchemaType.ARRAY;
+        if (value instanceof Boolean) return SchemaType.BOOLEAN;
+        if (value instanceof String) return SchemaType.STRING;
+        if (value instanceof Number number) return isIntegerNumber(number) ? SchemaType.INTEGER : SchemaType.NUMBER;
+        return SchemaType.ANY;
+    }
+
+    private static boolean isIntegerNumber(Number number) {
+        double value = number.doubleValue();
+        return value == Math.floor(value) && !Double.isInfinite(value);
     }
 
     @SuppressWarnings("unchecked")

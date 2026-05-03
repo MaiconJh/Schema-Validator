@@ -202,37 +202,18 @@ class PrimitiveValidatorTest {
     @Test
     @DisplayName("shouldHandleMultipleTypes")
     void shouldHandleMultipleTypes() {
-        // Arrange
-        // Schema: type: ["string", "number"] (using typeList for union type)
-        // Note: PrimitiveValidator currently only validates the primary type, not typeList
-        
         schema = Schema.builder("flexField", SchemaType.STRING)
                 .typeList(Arrays.asList("string", "number"))
                 .build();
-        
-        // First test: string value should pass (matches primary type)
-        Object dataString = "hello";
 
-        // Act
-        List<ValidationError> errorsString = validator.validate(dataString, schema, "/flexField", "flexField");
+        List<ValidationError> errorsString = validator.validate("hello", schema, "/flexField", "flexField");
+        List<ValidationError> errorsNumber = validator.validate(42, schema, "/flexField", "flexField");
+        List<ValidationError> errorsBoolean = validator.validate(true, schema, "/flexField", "flexField");
 
-        // Assert - string value should pass (type matches primary type)
         assertTrue(errorsString.isEmpty(), "Expected no validation errors for string value");
-        
-        // Second test: number value - fails because validator only checks primary type (STRING)
-        // This documents current behavior where typeList is NOT validated by PrimitiveValidator
-        Object dataNumber = 42;
-        
-        // Act
-        List<ValidationError> errorsNumber = validator.validate(dataNumber, schema, "/flexField", "flexField");
-        
-        // Assert - Current behavior: fails because primary type is STRING
-        // The typeList is ignored - this test documents the limitation
-        assertFalse(errorsNumber.isEmpty(), "Expected validation error because typeList is not validated");
-        assertEquals(1, errorsNumber.size(), "Expected exactly one error");
-        
-        ValidationError error = errorsNumber.get(0);
-        assertEquals("string", error.getExpectedType(), "Expected keyword to be 'string' (primary type)");
+        assertTrue(errorsNumber.isEmpty(), "Expected no validation errors for number value");
+        assertFalse(errorsBoolean.isEmpty(), "Expected type-union validation failure for boolean");
+        assertEquals("type", errorsBoolean.get(0).getExpectedType(), "Expected type union keyword");
     }
 
     // Additional edge case tests for comprehensive coverage
