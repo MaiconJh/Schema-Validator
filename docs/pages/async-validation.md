@@ -7,6 +7,9 @@ sequence: 1
 permalink: /async-validation.html
 ---
 
+> [!WARNING]
+> This feature is not yet available in the current version "v1.4.0", and will be released in version v1.5.0 after being released on [releases](https://github.com/MaiconJh/Schema-Validator/releases).
+
 # Async Validation
 
 This page describes how to enable and use asynchronous validation in Schema-Validator, preventing server lag during validation of large or many files.
