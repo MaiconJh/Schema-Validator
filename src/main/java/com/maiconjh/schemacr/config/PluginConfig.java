@@ -20,6 +20,9 @@ public class PluginConfig {
     private boolean validateOnLoad;
     private boolean strictMode;
     private boolean autoValidateDataFiles;
+    private boolean asyncEnabled;
+    private int asyncPoolSize;
+    private int asyncQueueCapacity;
 
     public PluginConfig(SchemaValidatorPlugin plugin) {
         this.plugin = plugin;
@@ -40,6 +43,9 @@ public class PluginConfig {
         this.validateOnLoad = config.getBoolean("validation-on-load", true);
         this.strictMode = config.getBoolean("strict-mode", false);
         this.autoValidateDataFiles = config.getBoolean("auto-validate-data-files", true);
+        this.asyncEnabled = config.getBoolean("async-validation.enabled", false);
+        this.asyncPoolSize = config.getInt("async-validation.thread-pool-size", 2);
+        this.asyncQueueCapacity = config.getInt("async-validation.queue-capacity", 1000);
         
         plugin.getLogger().info("Configuration loaded:");
         plugin.getLogger().info("  Schema directory: " + schemaDirectory);
@@ -49,6 +55,9 @@ public class PluginConfig {
         plugin.getLogger().info("  Validate on load: " + validateOnLoad);
         plugin.getLogger().info("  Strict mode: " + strictMode);
         plugin.getLogger().info("  Auto-validate data files: " + autoValidateDataFiles);
+        plugin.getLogger().info("  Async validation enabled: " + asyncEnabled);
+        plugin.getLogger().info("  Async thread pool size: " + asyncPoolSize);
+        plugin.getLogger().info("  Async queue capacity: " + asyncQueueCapacity);
     }
 
     /**
@@ -140,5 +149,32 @@ public class PluginConfig {
      */
     public boolean isAutoValidateDataFiles() {
         return autoValidateDataFiles;
+    }
+
+    /**
+     * Checks if async validation is enabled.
+     * 
+     * @return true if async validation is enabled
+     */
+    public boolean isAsyncEnabled() {
+        return asyncEnabled;
+    }
+
+    /**
+     * Gets the async thread pool size.
+     * 
+     * @return number of threads for async validation
+     */
+    public int getAsyncPoolSize() {
+        return asyncPoolSize;
+    }
+
+    /**
+     * Gets the async queue capacity.
+     * 
+     * @return maximum queue size before rejection policy applies
+     */
+    public int getAsyncQueueCapacity() {
+        return asyncQueueCapacity;
     }
 }

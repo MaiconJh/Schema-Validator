@@ -31,3 +31,9 @@ auto-validate-data-files: true
 # that contains unsupported keywords instead of just logging a warning
 # RECOMMENDED: Enable this in production to catch schema issues early
 strict-mode: false
+
+# Async validation settings
+async-validation:
+  enabled: false
+  thread-pool-size: 2
+  queue-capacity: 1000

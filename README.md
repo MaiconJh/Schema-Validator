@@ -1,4 +1,4 @@
-# Schema-Validator v1.4.0
+# Schema-Validator v1.5.0
 
 
 ## Online documentation
@@ -298,3 +298,14 @@ Schema-Validator/
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+
+## Async Validation
+Use `/sv validate-async <arquivo> <schema> [--verbose]` to validate without blocking the main thread.
+
+```yaml
+async-validation:
+  enabled: false
+  thread-pool-size: 2
+  queue-capacity: 1000
+```

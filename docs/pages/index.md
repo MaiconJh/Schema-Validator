@@ -240,3 +240,7 @@ Schema-Validator supports multiple JSON Schema drafts. Understanding the differe
 - [Examples and schema construction](examples-and-schema-construction.html) - Practical schema patterns
 - [Format reference](format-reference.html) - Supported string formats
 - [Validation behavior](validation-behavior.html) - Runtime execution order
+
+
+## Async Validation
+See [Async Validation](async-validation.md) for async command/API/configuration details.
